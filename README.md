@@ -19,6 +19,7 @@ Yet Another Genshin Impact Scanner
 - 下载单exe可执行文件，右键管理员运行
 
 ### 命令行使用
+假设你知道如何使用命令行工具  
 查看选项
 ```shell
 yas --help

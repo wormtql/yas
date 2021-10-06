@@ -1,0 +1,24 @@
+name: Rust
+
+on:
+  push:
+    tags:
+      - "*"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --release
+    - name: Release
+      uses: actions/upload-artifact@v2
+      with:
+        name: yas
+        path: target/release/yas.exe

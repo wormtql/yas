@@ -4,23 +4,43 @@ use std::sync::mpsc;
 use std::convert::From;
 use std::collections::HashSet;
 use std::io::stdin;
+use std::fs;
 
 use enigo::*;
-use log::{info, warn, error};
+use log::{info, warn, error, debug};
+use clap::{ArgMatches};
 
 use crate::info::info::ScanInfo;
 use crate::inference::inference::CRNNModel;
-use crate::common::{utils, RawImage, PixelRect};
+use crate::common::{utils, RawImage, PixelRect, RawCaptureImage, PixelRectBound};
 use crate::capture;
 use crate::common::color::Color;
 use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
 
+pub struct YasScannerConfig {
+    max_row: u32,
+    capture_only: bool,
+    min_star: u32,
+    max_wait_switch_artifact: u32,
+}
+
+impl YasScannerConfig {
+    pub fn from_match(matches: ArgMatches) -> YasScannerConfig {
+        YasScannerConfig {
+            max_row: matches.value_of("max-row").unwrap_or("1000").parse::<u32>().unwrap(),
+            capture_only: matches.is_present("capture-only"),
+            min_star: matches.value_of("min-star").unwrap_or("4").parse::<u32>().unwrap(),
+            max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("500").parse::<u32>().unwrap(),
+        }
+    }
+}
 
 pub struct YasScanner {
     model: CRNNModel,
     enigo: Enigo,
 
     info: ScanInfo,
+    config: YasScannerConfig,
 
     row: u32,
     col: u32,
@@ -90,20 +110,6 @@ impl YasScanResult {
     }
 }
 
-pub struct CapturesToBeResolved {
-    im_title: RawImage,
-    im_main_stat_name: RawImage,
-    im_main_stat_value: RawImage,
-    im_sub_stat_1: RawImage,
-    im_sub_stat_2: RawImage,
-    im_sub_stat_3: RawImage,
-    im_sub_stat_4: RawImage,
-    im_level: RawImage,
-    im_equip: RawImage,
-
-    star: u32,
-}
-
 fn calc_pool(row: &Vec<u8>) -> f64 {
     let len = row.len() / 4;
     let mut pool: f64 = 0.0;
@@ -116,7 +122,7 @@ fn calc_pool(row: &Vec<u8>) -> f64 {
 }
 
 impl YasScanner {
-    pub fn new(info: ScanInfo) -> YasScanner {
+    pub fn new(info: ScanInfo, config: YasScannerConfig) -> YasScanner {
         let row = info.art_row;
         let col = info.art_col;
 
@@ -127,6 +133,7 @@ impl YasScanner {
             ),
             enigo: Enigo::new(),
             info,
+            config,
 
             row,
             col,
@@ -146,7 +153,7 @@ impl YasScanner {
     pub fn move_to(&mut self, row: u32, col: u32) {
         let info = &self.info;
         let left = info.left + info.left_margin + (info.art_width + info.art_gap_x) * col + info.art_width / 2;
-        let top = info.top + info.top_margin + (info.art_height + info.art_gap_y) * row + info.art_height / 2;
+        let top = info.top + info.top_margin + (info.art_height + info.art_gap_y) * row + info.art_height / 4;
         self.enigo.mouse_move_to(left as i32, top as i32);
     }
 
@@ -165,8 +172,7 @@ impl YasScanner {
     fn get_art_count(&mut self) -> Result<u32, String> {
         let info = &self.info;
         let raw_after_pp = self.info.art_count_position.capture_relative(info).unwrap();
-        // let im = raw_after_pp.to_gray_image();
-        // im.save("count.png").unwrap();
+        raw_after_pp.to_gray_image().save("count.png");
         let s = self.model.inference_string(&raw_after_pp);
         info!("raw count string: {}", s);
         if s.starts_with("圣遗物") {
@@ -242,10 +248,8 @@ impl YasScanner {
     }
 
     fn wait_until_switched(&mut self) -> bool {
-        // let mut pool1 = 0.0;
-
         let now = SystemTime::now();
-        while now.elapsed().unwrap().as_millis() < 1000 {
+        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_artifact as u128 {
             // let pool_start = SystemTime::now();
             let rect = PixelRect {
                 left: self.info.left as i32 + self.info.pool_position.left,
@@ -265,9 +269,9 @@ impl YasScanner {
                 self.pool = pool;
                 // }
 
-                // self.avg_switch_time = (self.avg_switch_time * self.scanned_count as f64 + now.elapsed().unwrap().as_millis() as f64) / (self.scanned_count as f64 + 1.0);
-                // self.scanned_count += 1;
-                // info!("avg switch time: {}", self.avg_switch_time);
+                self.avg_switch_time = (self.avg_switch_time * self.scanned_count as f64 + now.elapsed().unwrap().as_millis() as f64) / (self.scanned_count as f64 + 1.0);
+                self.scanned_count += 1;
+                // info!("avg switch time: {}ms", self.avg_switch_time);
                 return true;
             }
         }
@@ -275,32 +279,23 @@ impl YasScanner {
         false
     }
 
-    fn capture_all(&mut self) -> CapturesToBeResolved {
+    fn capture_panel(&mut self) -> Result<RawCaptureImage, String> {
         let now = SystemTime::now();
-        let im_title = self.info.title_position.capture_relative(&self.info).unwrap();
-        let im_main_stat_name = self.info.main_stat_name_position.capture_relative(&self.info).unwrap();
-        let im_main_stat_value = self.info.main_stat_value_position.capture_relative(&self.info).unwrap();
-        let im_sub_stat_1 = self.info.sub_stat1_position.capture_relative(&self.info).unwrap();
-        let im_sub_stat_2 = self.info.sub_stat2_position.capture_relative(&self.info).unwrap();
-        let im_sub_stat_3 = self.info.sub_stat3_position.capture_relative(&self.info).unwrap();
-        let im_sub_stat_4 = self.info.sub_stat4_position.capture_relative(&self.info).unwrap();
-        let im_level = self.info.level_position.capture_relative(&self.info).unwrap();
-        let im_equip = self.info.equip_position.capture_relative(&self.info).unwrap();
-        let star = self.get_star();
-        // println!("capture time: {}ms", now.elapsed().unwrap().as_millis());
-
-        CapturesToBeResolved {
-            im_title,
-            im_main_stat_name,
-            im_main_stat_value,
-            im_sub_stat_1,
-            im_sub_stat_2,
-            im_sub_stat_3,
-            im_sub_stat_4,
-            im_level,
-            im_equip,
-            star,
-        }
+        let w = self.info.panel_position.right - self.info.panel_position.left;
+        let h = self.info.panel_position.bottom - self.info.panel_position.top;
+        let rect: PixelRect = PixelRect {
+            left: self.info.left as i32 + self.info.panel_position.left,
+            top: self.info.top as i32 + self.info.panel_position.top,
+            width: w,
+            height: h,
+        };
+        let u8_arr = capture::capture_absolute(&rect)?;
+        // info!("capture time: {}ms", now.elapsed().unwrap().as_millis());
+        Ok(RawCaptureImage {
+            data: u8_arr,
+            w: w as u32,
+            h: h as u32,
+        })
     }
 
     fn get_star(&self) -> u32 {
@@ -333,7 +328,49 @@ impl YasScanner {
         star
     }
 
+    fn start_capture_only(&mut self) {
+        fs::create_dir("captures");
+        let info = &self.info.clone();
+
+        let count = self.info.art_count_position.capture_relative(info).unwrap();
+        count.to_gray_image().save("captures/count.png");
+
+        let convert_rect = |rect: &PixelRectBound| {
+            PixelRect {
+                left: rect.left - info.panel_position.left,
+                top: rect.top - info.panel_position.top,
+                width: rect.right - rect.left,
+                height: rect.bottom - rect.top,
+            }
+        };
+
+        let panel = self.capture_panel().unwrap();
+        let im_title = panel.crop_and_preprocess(&convert_rect(&info.title_position));
+        im_title.to_gray_image().save("captures/title.png");
+        let im_main_stat_name = panel.crop_and_preprocess(&convert_rect(&info.main_stat_name_position));
+        im_main_stat_name.to_gray_image().save("captures/main_stat_name.png");
+        let im_main_stat_value = panel.crop_and_preprocess(&convert_rect(&info.main_stat_value_position));
+        im_main_stat_value.to_gray_image().save("captures/main_stat_value.png");
+        let im_sub_stat_1 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat1_position));
+        im_sub_stat_1.to_gray_image().save("captures/sub_stat_1.png");
+        let im_sub_stat_2 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat2_position));
+        im_sub_stat_2.to_gray_image().save("captures/sub_stat_2.png");
+        let im_sub_stat_3 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat3_position));
+        im_sub_stat_3.to_gray_image().save("captures/sub_stat_3.png");
+        let im_sub_stat_4 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat4_position));
+        im_sub_stat_4.to_gray_image().save("captures/sub_stat_4.png");
+        let im_level = panel.crop_and_preprocess(&convert_rect(&info.level_position));
+        im_level.to_gray_image().save("captures/level.png");
+        let im_equip = panel.crop_and_preprocess(&convert_rect(&info.equip_position));
+        im_equip.to_gray_image().save("captures/equip.png");
+    }
+
     pub fn start(&mut self) -> Vec<InternalArtifact> {
+        if self.config.capture_only {
+            self.start_capture_only();
+            return Vec::new();
+        }
+
         let mut count = match self.get_art_count() {
             Ok(v) => v,
             Err(_) => 1000,
@@ -357,7 +394,8 @@ impl YasScanner {
         info!("total row: {}", total_row);
         info!("last column: {}", last_row_col);
 
-        let (tx, rx) = mpsc::channel::<Option<CapturesToBeResolved>>();
+        let (tx, rx) = mpsc::channel::<Option<(RawCaptureImage, u32)>>();
+        let info_2 = self.info.clone();
         // v bvvmnvbm
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
@@ -368,26 +406,35 @@ impl YasScanner {
             let mut error_count = 0;
             let mut dup_count = 0;
             let mut hash = HashSet::new();
+            let mut consecutive_dup_count = 0;
+            let info = info_2;
+
+            let convert_rect = |rect: &PixelRectBound| {
+                PixelRect {
+                    left: rect.left - info.panel_position.left,
+                    top: rect.top - info.panel_position.top,
+                    width: rect.right - rect.left,
+                    height: rect.bottom - rect.top,
+                }
+            };
 
             for i in rx {
-                let item = match i {
+                let (capture, star) = match i {
                     Some(v) => v,
                     None => break,
                 };
                 let now = SystemTime::now();
-                let str_title = model.inference_string(&item.im_title);
-                let str_main_stat_name = model.inference_string(&item.im_main_stat_name);
-                let str_main_stat_value = model.inference_string(&item.im_main_stat_value);
-                let str_sub_stat_1 = model.inference_string(&item.im_sub_stat_1);
-                let str_sub_stat_2 = model.inference_string(&item.im_sub_stat_2);
-                let str_sub_stat_3 = model.inference_string(&item.im_sub_stat_3);
-                let str_sub_stat_4 = model.inference_string(&item.im_sub_stat_4);
-                let str_level = model.inference_string(&item.im_level);
-                let str_equip = model.inference_string(&item.im_equip);
+                let str_title = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.title_position)));
+                let str_main_stat_name = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.main_stat_name_position)));
+                let str_main_stat_value = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.main_stat_value_position)));
+                let str_sub_stat_1 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat1_position)));
+                let str_sub_stat_2 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat2_position)));
+                let str_sub_stat_3 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat3_position)));
+                let str_sub_stat_4 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat4_position)));
+                let str_level = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.level_position)));
+                let str_equip = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.equip_position)));
                 let predict_time = now.elapsed().unwrap().as_millis();
                 // println!("predict time: {}ms", predict_time);
-
-                let star = item.star;
 
                 let result = YasScanResult {
                     name: str_title,
@@ -406,8 +453,10 @@ impl YasScanner {
                 if let Some(a) = art {
                     if hash.contains(&a) {
                         dup_count += 1;
-                        error!("dup artifact detected: {:?}", result);
+                        consecutive_dup_count += 1;
+                        warn!("dup artifact detected: {:?}", result);
                     } else {
+                        consecutive_dup_count = 0;
                         hash.insert(a.clone());
                         results.push(a);
                     }
@@ -415,6 +464,10 @@ impl YasScanner {
                     error!("wrong detection: {:?}", result);
                     error_count += 1;
                     // println!("error parsing results");
+                }
+                if consecutive_dup_count >= info.art_row {
+                    error!("检测到连续多个重复圣遗物，可能为翻页错误，或者为非背包顶部开始扫描");
+                    break;
                 }
             }
 
@@ -434,7 +487,7 @@ impl YasScanner {
         utils::sleep(1000);
         self.sample_initial_color();
 
-        'outer: while scanned_count < 1000 {
+        'outer: while scanned_count < count {
             'row: for row in start_row..self.row {
                 let c = if scanned_row == total_row - 1 { last_row_col } else { self.col };
                 'col: for col in 0..c {
@@ -447,20 +500,22 @@ impl YasScanner {
 
                     self.wait_until_switched();
 
-                    let captures = self.capture_all();
-                    if captures.star <= 3 {
+                    let capture = self.capture_panel().unwrap();
+                    let star = self.get_star();
+                    if star < self.config.min_star {
                         break 'outer;
                     }
-                    tx.send(Some(captures)).unwrap();
+                    tx.send(Some((capture, star))).unwrap();
 
                     scanned_count += 1;
                 } // end 'col
 
                 scanned_row += 1;
 
-                // if scanned_row > 0 {
-                //     break 'outer;
-                // }
+                if scanned_row >= self.config.max_row {
+                    info!("max row reached, quiting...");
+                    break 'outer;
+                }
             } // end 'row
 
             let remain = count - scanned_count;
@@ -476,6 +531,7 @@ impl YasScanner {
 
         info!("扫描结束，等待识别线程结束，请勿关闭程序");
         let results: Vec<InternalArtifact> = handle.join().unwrap();
+        info!("count: {}", results.len());
         results
     }
 }

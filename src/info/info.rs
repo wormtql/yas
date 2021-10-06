@@ -10,6 +10,7 @@ pub struct ScanInfo {
     pub main_stat_name_position: PixelRectBound,
     pub main_stat_value_position: PixelRectBound,
     pub level_position: PixelRectBound,
+    pub panel_position: PixelRectBound,
 
     pub sub_stat1_position: PixelRectBound,
     pub sub_stat2_position: PixelRectBound,
@@ -79,6 +80,7 @@ impl ScanInfo {
             main_stat_name_position: my_get_rect((1099, 211, 1230, 247)),
             main_stat_value_position: my_get_rect((1099, 247, 1243, 285)),
             level_position: my_get_rect((1104, 359, 1147, 378)),
+            panel_position: my_get_rect((1077, 100, 1487, 800)),
 
             sub_stat1_position: my_get_rect((1118, 398, 1377, 422)),
             sub_stat2_position: my_get_rect((1118, 431, 1377, 454)),
@@ -132,6 +134,7 @@ impl ScanInfo {
             main_stat_name_position: my_get_rect((990, 194, 1105, 223)),
             main_stat_value_position: my_get_rect((990, 223, 1105, 262)),
             level_position: my_get_rect((993, 323, 1032, 340)),
+            panel_position: my_get_rect((969, 90, 1338, 810)),
 
             sub_stat1_position: my_get_rect((1006, 356, 1188, 383)),
             sub_stat2_position: my_get_rect((1006, 385, 1188, 411)),
@@ -146,7 +149,7 @@ impl ScanInfo {
             art_gap_x: get_scalar(17.0, w, width),
             art_gap_y: get_scalar(17.0, h, height),
 
-            art_row: 5,
+            art_row: 6,
             art_col: 7,
 
             left_margin: get_scalar(155.0, w, width),
@@ -182,6 +185,7 @@ impl ScanInfo {
             main_stat_name_position: my_get_rect((880, 175, 984, 200)),
             main_stat_value_position: my_get_rect((880, 200, 970, 233)),
             level_position: my_get_rect((883, 287, 916, 303)),
+            panel_position: my_get_rect((862, 80, 1189, 879)),
 
             sub_stat1_position: my_get_rect((894, 320, 1054, 339)),
             sub_stat2_position: my_get_rect((894, 345, 1054, 365)),

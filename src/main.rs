@@ -6,16 +6,19 @@ use yas::capture::{capture_absolute, capture_absolute_image};
 use yas::inference::pre_process::{to_gray, raw_to_img, normalize, crop, pre_process, image_to_raw};
 use yas::info::info;
 
-use winapi::um::winuser::{SetForegroundWindow};
+use winapi::um::winuser::{SetForegroundWindow, GetDpiForSystem, SetThreadDpiAwarenessContext, ShowWindow, SW_SHOW, SW_RESTORE};
+
+use clap::{Arg, App};
 
 use image::{ImageBuffer, Pixel};
 use image::imageops::grayscale;
 use yas::common::{RawImage, PixelRect};
-use yas::scanner::yas_scanner::YasScanner;
+use yas::scanner::yas_scanner::{YasScanner, YasScannerConfig};
 use yas::inference::inference::CRNNModel;
 use yas::expo::mona_uranai::MonaFormat;
 use env_logger::{Env, Builder, Target};
 use log::{info, LevelFilter};
+use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
 
 fn open_local(path: String) -> RawImage {
     let img = image::open(path).unwrap();
@@ -38,6 +41,18 @@ fn main() {
         utils::error_and_quit("请以管理员身份运行该程序")
     }
 
+    let matches = App::new("YAS - 原神圣遗物导出器")
+        .version("0.1.0")
+        .author("wormtql <584130248@qq.com>")
+        .about("Genshin Impact Artifact Exporter")
+        .arg(Arg::with_name("max-row").long("max-row").takes_value(true).help("最大扫描行数"))
+        .arg(Arg::with_name("capture-only").long("capture-only").required(false).takes_value(false).help("只保存截图，不进行扫描，debug专用"))
+        .arg(Arg::with_name("min-star").long("min-star").takes_value(true).help("最小星级").min_values(1).max_values(5))
+        .arg(Arg::with_name("max-wait-switch-artifact").long("max-wait-switch-artifact").takes_value(true).min_values(10).help("切换圣遗物最大等待时间(ms)"))
+        .get_matches();
+    let config = YasScannerConfig::from_match(matches);
+
+    unsafe { SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE); }
     let hwnd = match utils::find_window(String::from("原神")) {
         Err(s) => {
             utils::error_and_quit("未找到原神窗口，请确认原神已经开启");
@@ -45,10 +60,18 @@ fn main() {
         Ok(h) => h,
     };
 
+    unsafe { ShowWindow(hwnd, SW_RESTORE); }
+    // utils::sleep(1000);
     unsafe { SetForegroundWindow(hwnd); }
     utils::sleep(1000);
 
-    let rect = utils::get_client_rect(hwnd).unwrap();
+    let mut rect = utils::get_client_rect(hwnd).unwrap();
+
+    // rect.scale(1.25);
+    info!("detected left: {}", rect.left);
+    info!("detected top: {}", rect.top);
+    info!("detected width: {}", rect.width);
+    info!("detected height: {}", rect.height);
 
     let mut info: info::ScanInfo;
     if rect.height * 16 == rect.width * 9 {
@@ -61,7 +84,7 @@ fn main() {
         utils::error_and_quit("不支持的分辨率");
     }
 
-    let mut scanner = YasScanner::new(info.clone());
+    let mut scanner = YasScanner::new(info.clone(), config);
 
     let now = SystemTime::now();
     let results = scanner.start();

@@ -3,6 +3,8 @@ use crate::inference::pre_process::{pre_process, to_gray, raw_to_img};
 use crate::info::info::ScanInfo;
 use image::{GrayImage, RgbImage};
 use crate::capture::capture_absolute;
+use std::time::SystemTime;
+use log::{info};
 
 pub mod utils;
 pub mod buffer;
@@ -14,6 +16,15 @@ pub struct PixelRect {
     pub top: i32,
     pub width: i32,
     pub height: i32,
+}
+
+impl PixelRect {
+    pub fn scale(&mut self, ratio: f64) {
+        self.left = (self.left as f64 * ratio).round() as i32;
+        self.top = (self.top as f64 * ratio).round() as i32;
+        self.width = (self.width as f64 * ratio).round() as i32;
+        self.height = (self.height as f64 * ratio).round() as i32;
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -49,9 +60,12 @@ impl PixelRectBound {
             width: w,
             height: h,
         };
+        let now = SystemTime::now();
         let raw_u8 = capture::capture_absolute(&rect).unwrap();
+        info!("capture raw time: {}ms", now.elapsed().unwrap().as_millis());
         let raw_gray = to_gray(raw_u8, w as u32, h as u32);
         let raw_after_pp = pre_process(raw_gray);
+        info!("preprocess time: {}ms", now.elapsed().unwrap().as_millis());
         Ok(raw_after_pp)
     }
 
@@ -75,9 +89,46 @@ pub struct RawImage {
     pub h: u32,
 }
 
+pub struct RawCaptureImage {
+    pub data: Vec<u8>,
+    pub w: u32,
+    pub h: u32,
+}
+
 impl RawImage {
     pub fn to_gray_image(&self) -> GrayImage {
         raw_to_img(&self)
+    }
+}
+
+impl RawCaptureImage {
+    pub fn crop_and_preprocess(&self, rect: &PixelRect) -> RawImage {
+        // let now = SystemTime::now();
+        let vol = rect.width * rect.height;
+        let mut data = vec![0.0; vol as usize];
+        for i in rect.left..rect.left + rect.width {
+            for j in rect.top..rect.top + rect.height {
+                let x = i;
+                let y = self.h as i32 - j - 1;
+                let b: u8 = self.data[((y * self.w as i32 + x) * 4) as usize];
+                let g: u8 = self.data[((y * self.w as i32 + x) * 4 + 1) as usize];
+                let r: u8 = self.data[((y * self.w as i32 + x) * 4 + 2) as usize];
+
+                let gray = r as f32 * 0.2989 + g as f32 * 0.5870 + b as f32 * 0.1140;
+                let new_index = ((j - rect.top) * rect.width + i - rect.left) as usize;
+                data[new_index] = gray;
+            }
+        }
+
+        let im = RawImage {
+            data,
+            w: rect.width as u32,
+            h: rect.height as u32,
+        };
+        let im = pre_process(im);
+        // info!("preprocess time: {}ms", now.elapsed().unwrap().as_millis());
+        // im.to_gray_image().save("test.png");
+        im
     }
 }
 

@@ -6,11 +6,19 @@ use std::os::windows::ffi::OsStrExt;
 use std::ptr::null_mut;
 use std::mem::size_of;
 
-use winapi::um::winuser::{FindWindowW, GetDC, GetClientRect, SetForegroundWindow};
-use winapi::shared::windef::{HWND, HDC, RECT, HBITMAP};
+use winapi::um::winuser::{
+    FindWindowW,
+    GetDC,
+    ReleaseDC,
+    SetThreadDpiAwarenessContext,
+    GetClientRect,
+    SetForegroundWindow
+};
+use winapi::shared::windef::{HWND, HDC, RECT, HBITMAP, DPI_AWARENESS_CONTEXT};
 use winapi::shared::ntdef::NULL;
 use winapi::um::wingdi::{
     CreateCompatibleDC,
+    DeleteObject,
     BitBlt,
     SRCCOPY,
     CreateCompatibleBitmap,
@@ -30,12 +38,12 @@ use image::ImageBuffer;
 
 use crate::common::{PixelRect, PixelRectBound};
 use crate::common::color::Color;
-use self::winapi::um::wingdi::DeleteObject;
-use self::winapi::um::winuser::ReleaseDC;
+use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
 
 
 #[cfg(windows)]
 unsafe fn unsafe_capture(rect: &PixelRect) -> Result<Vec<u8>, String> {
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
     // let dc_screen: HDC = GetDC(null_mut());
     // let dc_window: HDC = GetDC(handle);
     let dc_window: HDC = GetDC(null_mut());

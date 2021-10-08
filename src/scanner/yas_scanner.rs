@@ -22,6 +22,7 @@ pub struct YasScannerConfig {
     capture_only: bool,
     min_star: u32,
     max_wait_switch_artifact: u32,
+    scroll_stop: u32,
 }
 
 impl YasScannerConfig {
@@ -31,6 +32,7 @@ impl YasScannerConfig {
             capture_only: matches.is_present("capture-only"),
             min_star: matches.value_of("min-star").unwrap_or("4").parse::<u32>().unwrap(),
             max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("500").parse::<u32>().unwrap(),
+            scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap()
         }
     }
 }
@@ -196,7 +198,7 @@ impl YasScanner {
         let max_scroll = 20;
         while count < max_scroll {
             self.enigo.mouse_scroll_y(-5);
-            utils::sleep(80);
+            utils::sleep(self.config.scroll_stop);
             count += 1;
             let color: Color = self.get_color();
             // println!("{:?}", color);
@@ -240,7 +242,7 @@ impl YasScanner {
             }
 
             self.enigo.mouse_scroll_y(-1);
-            utils::sleep(50);
+            utils::sleep(self.config.scroll_stop);
             count += 1;
         }
 

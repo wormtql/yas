@@ -1,4 +1,5 @@
 use std::time::{Duration, Instant, SystemTime};
+use std::path::Path;
 use std::io::stdin;
 
 use yas::common::utils;
@@ -49,8 +50,9 @@ fn main() {
         .arg(Arg::with_name("capture-only").long("capture-only").required(false).takes_value(false).help("只保存截图，不进行扫描，debug专用"))
         .arg(Arg::with_name("min-star").long("min-star").takes_value(true).help("最小星级").min_values(1).max_values(5))
         .arg(Arg::with_name("max-wait-switch-artifact").long("max-wait-switch-artifact").takes_value(true).min_values(10).help("切换圣遗物最大等待时间(ms)"))
+        .arg(Arg::with_name("output-dir").long("output-dir").short("o").takes_value(true).help("输出目录").default_value("."))
         .get_matches();
-    let config = YasScannerConfig::from_match(matches);
+    let config = YasScannerConfig::from_match(&matches);
 
     unsafe { SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE); }
     let hwnd = match utils::find_window(String::from("原神")) {
@@ -91,7 +93,10 @@ fn main() {
     let mona = MonaFormat::new(&results);
     let t = now.elapsed().unwrap().as_secs_f64();
     info!("time: {}s", t);
-    mona.save(String::from("mona.json"));
+
+    let output_dir = Path::new(matches.value_of("output-dir").unwrap());
+    let output_filename = output_dir.join("mona.json");
+    mona.save(String::from(output_filename.to_str().unwrap()));
     // let info = info;
     // let img = info.art_count_position.capture_relative(&info).unwrap();
 

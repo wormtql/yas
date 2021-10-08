@@ -25,7 +25,7 @@ pub struct YasScannerConfig {
 }
 
 impl YasScannerConfig {
-    pub fn from_match(matches: ArgMatches) -> YasScannerConfig {
+    pub fn from_match(matches: &ArgMatches) -> YasScannerConfig {
         YasScannerConfig {
             max_row: matches.value_of("max-row").unwrap_or("1000").parse::<u32>().unwrap(),
             capture_only: matches.is_present("capture-only"),
@@ -172,7 +172,7 @@ impl YasScanner {
     fn get_art_count(&mut self) -> Result<u32, String> {
         let info = &self.info;
         let raw_after_pp = self.info.art_count_position.capture_relative(info).unwrap();
-        raw_after_pp.to_gray_image().save("count.png");
+        // raw_after_pp.to_gray_image().save("count.png");
         let s = self.model.inference_string(&raw_after_pp);
         info!("raw count string: {}", s);
         if s.starts_with("圣遗物") {

@@ -60,7 +60,7 @@ fn main() {
     }
 
     let matches = App::new("YAS - 原神圣遗物导出器")
-        .version("0.1.1")
+        .version("0.1.2")
         .author("wormtql <584130248@qq.com>")
         .about("Genshin Impact Artifact Exporter")
         .arg(Arg::with_name("max-row").long("max-row").takes_value(true).help("最大扫描行数"))

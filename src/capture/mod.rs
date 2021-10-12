@@ -4,7 +4,7 @@ use std::ffi::{OsStr};
 use std::iter::once;
 use std::os::windows::ffi::OsStrExt;
 use std::ptr::null_mut;
-use std::mem::size_of;
+use std::mem::{size_of, transmute};
 
 use winapi::um::winuser::{
     FindWindowW,
@@ -39,27 +39,20 @@ use image::ImageBuffer;
 use crate::common::{PixelRect, PixelRectBound};
 use crate::common::color::Color;
 use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
+use self::winapi::um::wingdi::{GetDeviceCaps, HORZRES};
+use self::winapi::shared::windef::DPI_AWARENESS_CONTEXT_SYSTEM_AWARE;
 
 
 #[cfg(windows)]
 unsafe fn unsafe_capture(rect: &PixelRect) -> Result<Vec<u8>, String> {
-    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
-    // let dc_screen: HDC = GetDC(null_mut());
-    // let dc_window: HDC = GetDC(handle);
+    // SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+
     let dc_window: HDC = GetDC(null_mut());
 
     let dc_mem: HDC = CreateCompatibleDC(dc_window);
     if dc_mem.is_null() {
         return Err(String::from("CreateCompatibleDC Failed"));
     }
-
-    // let mut rc_client: RECT = RECT {
-    //     left: 0,
-    //     top: 0,
-    //     right: 0,
-    //     bottom: 0,
-    // };
-    // GetClientRect(handle, &mut rc_client);
 
     let hbm: HBITMAP = CreateCompatibleBitmap(dc_window, rect.width, rect.height);
     if hbm.is_null() {

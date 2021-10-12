@@ -69,9 +69,9 @@ pub fn normalize(im: &mut RawImage, auto_inverse: bool) {
                 // println!("123");
                 data[index] = 1.0 - data[index];
             }
-            if data[index] < 0.6 {
-                data[index] = 0.0;
-            }
+            // if data[index] < 0.6 {
+            //     data[index] = 0.0;
+            // }
         }
     }
 }
@@ -189,7 +189,18 @@ pub fn pre_process(im: RawImage) -> RawImage {
     let mut im = crop(&im);
     normalize(&mut im, false);
 
-    let im = resize_and_pad(&im);
+    let mut im = resize_and_pad(&im);
+    for i in 0..im.w {
+        for j in 0..im.h {
+            let index = get_index(im.w, i, j);
+            let p = im.data[index];
+            if p < 0.6 {
+                im.data[index] = 0.0;
+            } else {
+                im.data[index] = 1.0;
+            }
+        }
+    }
 
     im
 }

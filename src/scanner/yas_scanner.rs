@@ -16,6 +16,7 @@ use crate::common::{utils, RawImage, PixelRect, RawCaptureImage, PixelRectBound}
 use crate::capture;
 use crate::common::color::Color;
 use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
+use crate::inference::pre_process::pre_process;
 
 pub struct YasScannerConfig {
     max_row: u32,

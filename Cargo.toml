@@ -16,6 +16,7 @@ log = "0.4.14"
 env_logger = "0.9.0"
 edit-distance = "2.1.0"
 clap = "2.33.3"
+os_info = "3.0.7"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser", "winbase", "wingdi", "winnt", "securitybaseapi"] }
+winapi = { version = "0.3", features = ["winuser", "winbase", "wingdi", "winnt", "securitybaseapi", "shellscalingapi"] }

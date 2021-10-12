@@ -6,20 +6,24 @@ use yas::common::utils;
 use yas::capture::{capture_absolute, capture_absolute_image};
 use yas::inference::pre_process::{to_gray, raw_to_img, normalize, crop, pre_process, image_to_raw};
 use yas::info::info;
-
-use winapi::um::winuser::{SetForegroundWindow, GetDpiForSystem, SetThreadDpiAwarenessContext, ShowWindow, SW_SHOW, SW_RESTORE};
-
-use clap::{Arg, App};
-
-use image::{ImageBuffer, Pixel};
-use image::imageops::grayscale;
 use yas::common::{RawImage, PixelRect};
 use yas::scanner::yas_scanner::{YasScanner, YasScannerConfig};
 use yas::inference::inference::CRNNModel;
 use yas::expo::mona_uranai::MonaFormat;
+
+use winapi::um::winuser::{SetForegroundWindow, GetDpiForSystem, SetThreadDpiAwarenessContext, ShowWindow, SW_SHOW, SW_RESTORE, GetSystemMetrics, SetProcessDPIAware};
+use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
+use winapi::um::wingdi::{HORZRES, GetDeviceCaps};
+use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
+
+use clap::{Arg, App};
+use image::{ImageBuffer, Pixel};
+use image::imageops::grayscale;
 use env_logger::{Env, Builder, Target};
 use log::{info, LevelFilter};
-use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
+use os_info;
+
+
 
 fn open_local(path: String) -> RawImage {
     let img = image::open(path).unwrap();
@@ -29,13 +33,26 @@ fn open_local(path: String) -> RawImage {
     raw_img
 }
 
-fn main() {
-    // let mut raw = open_local(String::from("data/test/15.png"));
-    // let raw = pre_process(raw);
-    // // normalize(&mut raw, true);
-    // let img = raw_to_img(&raw);
-    // img.save("test.png").unwrap();
+fn set_dpi_awareness() {
+    let os = os_info::get();
 
+    // unsafe  {
+    //     SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+    // }
+    if os.version() >= &os_info::Version::from_string("8.1") {
+        info!("Windows version >= 8.1");
+        unsafe  {
+            SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+        }
+    } else {
+        info!("Windows version < 8.1");
+        unsafe {
+            SetProcessDPIAware();
+        }
+    }
+}
+
+fn main() {
     Builder::new().filter_level(LevelFilter::Info).init();
 
     if !utils::is_admin() {
@@ -55,7 +72,8 @@ fn main() {
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
-    unsafe { SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE); }
+    set_dpi_awareness();
+
     let hwnd = match utils::find_window(String::from("原神")) {
         Err(s) => {
             utils::error_and_quit("未找到原神窗口，请确认原神已经开启");
@@ -75,6 +93,8 @@ fn main() {
     info!("detected top: {}", rect.top);
     info!("detected width: {}", rect.width);
     info!("detected height: {}", rect.height);
+
+    let temp = capture_absolute_image(&rect).unwrap().save("test.png");
 
     let mut info: info::ScanInfo;
     if rect.height * 16 == rect.width * 9 {

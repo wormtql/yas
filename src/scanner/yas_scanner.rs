@@ -24,6 +24,7 @@ pub struct YasScannerConfig {
     min_star: u32,
     max_wait_switch_artifact: u32,
     scroll_stop: u32,
+    number: u32,
 }
 
 impl YasScannerConfig {
@@ -33,7 +34,8 @@ impl YasScannerConfig {
             capture_only: matches.is_present("capture-only"),
             min_star: matches.value_of("min-star").unwrap_or("4").parse::<u32>().unwrap(),
             max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("500").parse::<u32>().unwrap(),
-            scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap()
+            scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
+            number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap()
         }
     }
 }
@@ -173,24 +175,28 @@ impl YasScanner {
     }
 
     fn get_art_count(&mut self) -> Result<u32, String> {
-        let info = &self.info;
-        let raw_after_pp = self.info.art_count_position.capture_relative(info).unwrap();
-        // raw_after_pp.to_gray_image().save("count.png");
-        let s = self.model.inference_string(&raw_after_pp);
-        info!("raw count string: {}", s);
-        if s.starts_with("圣遗物") {
-            let chars = s.chars().collect::<Vec<char>>();
-            let count_str = (&chars[4..chars.len() - 5]).iter().collect::<String>();
-            let count = match count_str.parse::<u32>() {
-                Ok(v) => v,
-                Err(_) => {
-                    return Err(String::from("无法识别圣遗物数量"));
-                }
-            };
+        let count = self.config.number;
+        if let 0 = count {
+            let info = &self.info;
+            let raw_after_pp = self.info.art_count_position.capture_relative(info).unwrap();
+            // raw_after_pp.to_gray_image().save("count.png");
+            let s = self.model.inference_string(&raw_after_pp);
+            info!("raw count string: {}", s);
+            if s.starts_with("圣遗物") {
+                let chars = s.chars().collect::<Vec<char>>();
+                let count_str = (&chars[4..chars.len() - 5]).iter().collect::<String>();
+                let count = match count_str.parse::<u32>() {
+                    Ok(v) => v,
+                    Err(_) => {
+                        return Err(String::from("无法识别圣遗物数量"));
+                    }
+                };
+                return Ok(count);
+            }
+            Err(String::from("无法识别圣遗物数量"))
+        } else {
             return Ok(count);
         }
-
-        Err(String::from("无法识别圣遗物数量"))
     }
 
     fn scroll_one_row(&mut self) -> bool {

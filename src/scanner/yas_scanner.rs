@@ -25,6 +25,7 @@ pub struct YasScannerConfig {
     max_wait_switch_artifact: u32,
     scroll_stop: u32,
     number: u32,
+    verbose: bool,
 }
 
 impl YasScannerConfig {
@@ -35,7 +36,8 @@ impl YasScannerConfig {
             min_star: matches.value_of("min-star").unwrap_or("4").parse::<u32>().unwrap(),
             max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("500").parse::<u32>().unwrap(),
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
-            number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap()
+            number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap(),
+            verbose: matches.is_present("verbose"),
         }
     }
 }
@@ -406,6 +408,7 @@ impl YasScanner {
         let (tx, rx) = mpsc::channel::<Option<(RawCaptureImage, u32)>>();
         let info_2 = self.info.clone();
         // v bvvmnvbm
+        let is_verbose = self.config.verbose;
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
             let mut model = CRNNModel::new(
@@ -457,6 +460,9 @@ impl YasScanner {
                     equip: str_equip,
                     star,
                 };
+                if is_verbose {
+                    info!("{:?}", result);
+                }
                 // println!("{:?}", result);
                 let art = result.to_internal_artifact();
                 if let Some(a) = art {
@@ -500,7 +506,13 @@ impl YasScanner {
             'row: for row in start_row..self.row {
                 let c = if scanned_row == total_row - 1 { last_row_col } else { self.col };
                 'col: for col in 0..c {
+                    // 大于最大数量则退出
                     if scanned_count > count {
+                        break 'outer;
+                    }
+
+                    // 右键终止
+                    if utils::is_rmb_down() {
                         break 'outer;
                     }
 

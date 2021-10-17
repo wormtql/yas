@@ -69,7 +69,8 @@ fn main() {
         .arg(Arg::with_name("max-wait-switch-artifact").long("max-wait-switch-artifact").takes_value(true).min_values(10).help("切换圣遗物最大等待时间(ms)"))
         .arg(Arg::with_name("output-dir").long("output-dir").short("o").takes_value(true).help("输出目录").default_value("."))
         .arg(Arg::with_name("scroll-stop").long("scroll-stop").takes_value(true).help("翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）"))
-        .arg(Arg::with_name("number").long("number").takes_value(true).help("圣遗物数量").min_values(1).max_values(1500))
+        .arg(Arg::with_name("number").long("number").takes_value(true).help("指定圣遗物数量（在自动识别数量不准确时使用）").min_values(1).max_values(1500))
+        .arg(Arg::with_name("verbose").long("verbose").help("显示详细信息"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 

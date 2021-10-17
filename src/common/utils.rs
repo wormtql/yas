@@ -8,7 +8,7 @@ use std::io::stdin;
 use std::process;
 
 use log::{error, info};
-use winapi::um::winuser::{FindWindowW, GetClientRect, ClientToScreen};
+use winapi::um::winuser::{FindWindowW, GetClientRect, ClientToScreen, GetAsyncKeyState, VK_RBUTTON};
 use winapi::shared::windef::{HWND, RECT as WinRect, POINT as WinPoint};
 
 use crate::common::PixelRect;
@@ -108,5 +108,16 @@ unsafe fn is_admin_unsafe() -> bool {
 pub fn is_admin() -> bool {
     unsafe {
         is_admin_unsafe()
+    }
+}
+
+pub fn is_rmb_down() -> bool {
+    unsafe {
+        let state = GetAsyncKeyState(VK_RBUTTON);
+        if state == 0 {
+            return false;
+        }
+
+        state & 1 > 0
     }
 }

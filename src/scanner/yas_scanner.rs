@@ -64,6 +64,13 @@ pub struct YasScanner {
     scanned_count: u32,
 }
 
+enum ScrollResult {
+    TLE,
+    Interrupt,
+    Success,
+    Skip,
+}
+
 #[derive(Debug)]
 pub struct YasScanResult {
     name: String,
@@ -201,11 +208,15 @@ impl YasScanner {
         }
     }
 
-    fn scroll_one_row(&mut self) -> bool {
+    fn scroll_one_row(&mut self) -> ScrollResult {
         let mut state = 0;
         let mut count = 0;
         let max_scroll = 20;
         while count < max_scroll {
+            if utils::is_rmb_down() {
+                return ScrollResult::Interrupt;
+            }
+
             self.enigo.mouse_scroll_y(-5);
             utils::sleep(self.config.scroll_stop);
             count += 1;
@@ -217,14 +228,14 @@ impl YasScanner {
                 self.avg_scroll_one_row = (self.avg_scroll_one_row * self.scrolled_rows as f64 + count as f64) / (self.scrolled_rows as f64 + 1.0);
                 info!("avg scroll/row: {}", self.avg_scroll_one_row);
                 self.scrolled_rows += 1;
-                return true;
+                return ScrollResult::Success;
             }
         }
 
-        false
+        ScrollResult::TLE
     }
 
-    fn scroll_rows(&mut self, count: u32) {
+    fn scroll_rows(&mut self, count: u32) -> ScrollResult {
         if self.scrolled_rows >= 5 {
             let scroll = ((self.avg_scroll_one_row * count as f64 - 3.0).round() as u32).max(0);
             for _ in 0..scroll {
@@ -232,14 +243,18 @@ impl YasScanner {
             }
             utils::sleep(400);
             self.align_row();
-            return;
+            return ScrollResult::Skip;
         }
 
         for _ in 0..count {
-            if !self.scroll_one_row() {
-                break;
+            match self.scroll_one_row() {
+                ScrollResult::TLE => return ScrollResult::TLE,
+                ScrollResult::Interrupt => return ScrollResult::Interrupt,
+                _ => (),
             }
         }
+
+        ScrollResult::Success
     }
 
     fn align_row(&mut self) -> bool {
@@ -543,7 +558,14 @@ impl YasScanner {
             let remain_row = (remain + self.col - 1) / self.col;
             let scroll_row = remain_row.min(self.row);
             start_row = self.row - scroll_row;
-            self.scroll_rows(scroll_row);
+            match self.scroll_rows(scroll_row) {
+                ScrollResult::TLE => {
+                    error!("翻页出现问题");
+                    break 'outer;
+                },
+                ScrollResult::Interrupt => break 'outer,
+                _ => (),
+            }
 
             utils::sleep(100);
         }

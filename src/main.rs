@@ -52,6 +52,18 @@ fn set_dpi_awareness() {
     }
 }
 
+fn get_version() -> String {
+    let s = include_str!("../Cargo.toml");
+    for line in s.lines() {
+        if line.starts_with("version = ") {
+            let temp = line.split("\"").collect::<Vec<_>>();
+            return String::from(temp[temp.len() - 2]);
+        }
+    }
+
+    String::from("unknown_version")
+}
+
 fn main() {
     Builder::new().filter_level(LevelFilter::Info).init();
 
@@ -59,8 +71,10 @@ fn main() {
         utils::error_and_quit("请以管理员身份运行该程序")
     }
 
+    let version = get_version();
+
     let matches = App::new("YAS - 原神圣遗物导出器")
-        .version("0.1.2")
+        .version(version.as_str())
         .author("wormtql <584130248@qq.com>")
         .about("Genshin Impact Artifact Exporter")
         .arg(Arg::with_name("max-row").long("max-row").takes_value(true).help("最大扫描行数"))

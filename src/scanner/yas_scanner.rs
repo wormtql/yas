@@ -26,6 +26,9 @@ pub struct YasScannerConfig {
     scroll_stop: u32,
     number: u32,
     verbose: bool,
+
+    // offset_x: i32,
+    // offset_y: i32,
 }
 
 impl YasScannerConfig {
@@ -38,6 +41,9 @@ impl YasScannerConfig {
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
             number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap(),
             verbose: matches.is_present("verbose"),
+
+            // offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
+            // offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
         }
     }
 }
@@ -65,7 +71,7 @@ pub struct YasScanner {
 }
 
 enum ScrollResult {
-    TLE,
+    TLE,            // time limit exceeded
     Interrupt,
     Success,
     Skip,
@@ -166,8 +172,8 @@ impl YasScanner {
 impl YasScanner {
     pub fn move_to(&mut self, row: u32, col: u32) {
         let info = &self.info;
-        let left = info.left + info.left_margin + (info.art_width + info.art_gap_x) * col + info.art_width / 2;
-        let top = info.top + info.top_margin + (info.art_height + info.art_gap_y) * row + info.art_height / 4;
+        let left = info.left + (info.left_margin + (info.art_width + info.art_gap_x) * col + info.art_width / 2) as i32;
+        let top = info.top + (info.top_margin + (info.art_height + info.art_gap_y) * row + info.art_height / 4) as i32;
         self.enigo.mouse_move_to(left as i32, top as i32);
     }
 
@@ -176,9 +182,9 @@ impl YasScanner {
     }
 
     fn get_color(&self) -> Color {
-        let flag_x = self.info.flag_x + self.info.left;
-        let flag_y = self.info.flag_y + self.info.top;
-        let color = capture::get_color(flag_x, flag_y);
+        let flag_x = self.info.flag_x as i32 + self.info.left;
+        let flag_y = self.info.flag_y as i32 + self.info.top;
+        let color = capture::get_color(flag_x as u32, flag_y as u32);
 
         color
     }
@@ -326,8 +332,8 @@ impl YasScanner {
 
     fn get_star(&self) -> u32 {
         let color = capture::get_color(
-            self.info.star_x + self.info.left,
-            self.info.star_y + self.info.top
+            (self.info.star_x as i32 + self.info.left) as u32,
+            (self.info.star_y as i32 + self.info.top) as u32
         );
 
         let color_1 = Color::from(113, 119, 139);

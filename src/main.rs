@@ -85,6 +85,8 @@ fn main() {
         .arg(Arg::with_name("scroll-stop").long("scroll-stop").takes_value(true).help("翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）"))
         .arg(Arg::with_name("number").long("number").takes_value(true).help("指定圣遗物数量（在自动识别数量不准确时使用）").min_values(1).max_values(1500))
         .arg(Arg::with_name("verbose").long("verbose").help("显示详细信息"))
+        .arg(Arg::with_name("offset-x").long("offset-x").takes_value(true).help("人为指定横坐标偏移（截图有偏移时可用该选项校正）"))
+        .arg(Arg::with_name("offset-y").long("offset-y").takes_value(true).help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
@@ -114,14 +116,19 @@ fn main() {
 
     let mut info: info::ScanInfo;
     if rect.height * 16 == rect.width * 9 {
-        info = info::ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left as u32, rect.top as u32);
+        info = info::ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else if rect.height * 8 == rect.width * 5 {
-        info = info::ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left as u32, rect.top as u32);
+        info = info::ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else if rect.height * 4 == rect.width * 3 {
-        info = info::ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left as u32, rect.top as u32);
+        info = info::ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else {
         utils::error_and_quit("不支持的分辨率");
     }
+
+    let offset_x = matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap();
+    let offset_y = matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap();
+    info.left += offset_x;
+    info.top += offset_y;
 
     let mut scanner = YasScanner::new(info.clone(), config);
 

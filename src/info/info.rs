@@ -33,8 +33,8 @@ pub struct ScanInfo {
 
     pub width: u32,
     pub height: u32,
-    pub left: u32,
-    pub top: u32,
+    pub left: i32,
+    pub top: i32,
 
     pub flag_x: u32,
     pub flag_y: u32,
@@ -64,7 +64,7 @@ fn get_rect(rect: (u32, u32, u32, u32), src_h: u32, src_w: u32, dst_h: u32, dst_
 }
 
 impl ScanInfo {
-    pub fn from_16_9(width: u32, height: u32, left: u32, top: u32) -> ScanInfo {
+    pub fn from_16_9(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
         let w: u32 = 1600;
         let h: u32 = 900;
 
@@ -118,7 +118,7 @@ impl ScanInfo {
         info
     }
 
-    pub fn from_8_5(width: u32, height: u32, left: u32, top: u32) -> ScanInfo {
+    pub fn from_8_5(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
         let w: u32 = 1440;
         let h: u32 = 900;
 
@@ -172,7 +172,7 @@ impl ScanInfo {
         info
     }
 
-    pub fn from_4_3(width: u32, height: u32, left: u32, top: u32) -> ScanInfo {
+    pub fn from_4_3(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
         let w: u32 = 1280;
         let h: u32 = 960;
 

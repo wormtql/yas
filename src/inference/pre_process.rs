@@ -194,7 +194,7 @@ pub fn pre_process(im: RawImage) -> RawImage {
         for j in 0..im.h {
             let index = get_index(im.w, i, j);
             let p = im.data[index];
-            if p < 0.5 {
+            if p < 0.53 {
                 im.data[index] = 0.0;
             } else {
                 im.data[index] = 1.0;

@@ -159,6 +159,27 @@ pub fn raw_to_img(im: &RawImage) -> GrayImage {
     img
 }
 
+pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
+    let width = im.w;
+    let height = im.h;
+    let data = &im.data;
+
+    let img = ImageBuffer::from_fn(width, height, |x, y| {
+        let index = get_index(width, x, y);
+        let pixel =  data[index] as u32;
+        let pixel: u8 = if pixel > 255 {
+            255
+        } else if pixel < 0 {
+            0
+        } else {
+            pixel as u8
+        };
+        image::Luma([pixel])
+    });
+
+    img
+}
+
 pub fn resize_and_pad(im: &RawImage) -> RawImage {
     let w = im.w;
     let h = im.h;

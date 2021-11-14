@@ -57,7 +57,7 @@ impl CRNNModel {
         }
     }
 
-    pub fn inference_string(&mut self, img: &RawImage) -> String {
+    pub fn inference_string(&self, img: &RawImage) -> String {
         let tensor: Tensor = tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
             let index = img.w * y as u32 + x as u32;
             img.data[index as usize]

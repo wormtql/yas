@@ -446,7 +446,9 @@ impl YasScanner {
             let info = info_2;
 
             let mut cnt = 0;
-            fs::create_dir("dumps");
+            if is_dump_mode {
+                fs::create_dir("dumps").expect("Err");
+            }
 
             let convert_rect = |rect: &PixelRectBound| {
                 PixelRect {

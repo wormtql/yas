@@ -70,6 +70,8 @@ pub enum ArtifactSetName {
     TenacityOfTheMillelith,
     EmblemOfSeveredFate,
     ShimenawaReminiscence,
+    HuskOfOpulentDreams,
+    OceanHuedClam,
 }
 
 #[derive(Debug, Clone)]
@@ -199,6 +201,8 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         "无垢之花", "贤医之羽", "停摆之刻", "超越之盏", "嗤笑之面",
         "明威之镡", "切落之羽", "雷云之笼", "绯花之壶", "华饰之兜",
         "羁缠之花", "思忆之矢", "朝露之时", "祈望之心", "无常之面",
+        "荣花之期", "华馆之羽", "众生之谣", "梦醒之瓢", "形骸之笠",
+        "海染之花", "渊宫之羽", "离别之贝", "真珠之笼", "海祇之冠",
     ];
 
     let mut min_index = 0;
@@ -392,6 +396,16 @@ impl ArtifactSetName {
             "朝露之时" => Some(ArtifactSetName::ShimenawaReminiscence),
             "祈望之心" => Some(ArtifactSetName::ShimenawaReminiscence),
             "无常之面" => Some(ArtifactSetName::ShimenawaReminiscence),
+            "荣花之期" => Some(ArtifactSetName::HuskOfOpulentDreams),
+            "华馆之羽" => Some(ArtifactSetName::HuskOfOpulentDreams),
+            "众生之谣" => Some(ArtifactSetName::HuskOfOpulentDreams),
+            "梦醒之瓢" => Some(ArtifactSetName::HuskOfOpulentDreams),
+            "形骸之笠" => Some(ArtifactSetName::HuskOfOpulentDreams),
+            "海染之花" => Some(ArtifactSetName::OceanHuedClam),
+            "渊宫之羽" => Some(ArtifactSetName::OceanHuedClam),
+            "离别之贝" => Some(ArtifactSetName::OceanHuedClam),
+            "真珠之笼" => Some(ArtifactSetName::OceanHuedClam),
+            "海祇之冠" => Some(ArtifactSetName::OceanHuedClam),
             _ => None,
         }
     }
@@ -565,6 +579,16 @@ impl ArtifactSlot {
             "朝露之时" => Some(ArtifactSlot::Sand),
             "祈望之心" => Some(ArtifactSlot::Goblet),
             "无常之面" => Some(ArtifactSlot::Head),
+            "荣花之期" => Some(ArtifactSlot::Flower),
+            "华馆之羽" => Some(ArtifactSlot::Feather),
+            "众生之谣" => Some(ArtifactSlot::Sand),
+            "梦醒之瓢" => Some(ArtifactSlot::Goblet),
+            "形骸之笠" => Some(ArtifactSlot::Head),
+            "海染之花" => Some(ArtifactSlot::Flower),
+            "渊宫之羽" => Some(ArtifactSlot::Feather),
+            "离别之贝" => Some(ArtifactSlot::Sand),
+            "真珠之笼" => Some(ArtifactSlot::Goblet),
+            "海祇之冠" => Some(ArtifactSlot::Head),
             _ => None,
         }
     }

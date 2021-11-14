@@ -73,6 +73,8 @@ impl ArtifactSetName {
             ArtifactSetName::TenacityOfTheMillelith => "tenacityOfTheMillelith",
             ArtifactSetName::EmblemOfSeveredFate => "emblemOfSeveredFate",
             ArtifactSetName::ShimenawaReminiscence => "shimenawaReminiscence",
+            ArtifactSetName::HuskOfOpulentDreams => "huskOfOpulentDreams",
+            ArtifactSetName::OceanHuedClam => "oceanHuedClam",
         };
         String::from(temp)
     }

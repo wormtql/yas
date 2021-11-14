@@ -1,5 +1,5 @@
 use crate::capture;
-use crate::inference::pre_process::{pre_process, to_gray, raw_to_img};
+use crate::inference::pre_process::{pre_process, to_gray, raw_to_img, uint8_raw_to_img};
 use crate::info::info::ScanInfo;
 use image::{GrayImage, RgbImage};
 use crate::capture::capture_absolute;
@@ -99,10 +99,14 @@ impl RawImage {
     pub fn to_gray_image(&self) -> GrayImage {
         raw_to_img(&self)
     }
+
+    pub fn grayscale_to_gray_image(&self) -> GrayImage {
+        uint8_raw_to_img(&self)
+    }
 }
 
 impl RawCaptureImage {
-    pub fn crop_and_preprocess(&self, rect: &PixelRect) -> RawImage {
+    pub fn crop_to_raw_img(&self, rect: &PixelRect) -> RawImage {
         // let now = SystemTime::now();
         let vol = rect.width * rect.height;
         let mut data = vec![0.0; vol as usize];
@@ -125,7 +129,9 @@ impl RawCaptureImage {
             w: rect.width as u32,
             h: rect.height as u32,
         };
-        let im = pre_process(im);
+        // let im = pre_process(im);
+        // No preprocess!
+
         // info!("preprocess time: {}ms", now.elapsed().unwrap().as_millis());
         // im.to_gray_image().save("test.png");
         im

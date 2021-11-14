@@ -78,14 +78,14 @@ impl ScanInfo {
 
             title_position: my_get_rect((1099, 107, 1359, 139)),
             main_stat_name_position: my_get_rect((1099, 211, 1230, 247)),
-            main_stat_value_position: my_get_rect((1099, 247, 1243, 285)),
+            main_stat_value_position: my_get_rect((1099, 247, 1243, 290)),
             level_position: my_get_rect((1104, 359, 1147, 378)),
             panel_position: my_get_rect((1077, 100, 1487, 800)),
 
-            sub_stat1_position: my_get_rect((1118, 398, 1377, 422)),
-            sub_stat2_position: my_get_rect((1118, 431, 1377, 454)),
-            sub_stat3_position: my_get_rect((1118, 462, 1377, 486)),
-            sub_stat4_position: my_get_rect((1118, 496, 1377, 518)),
+            sub_stat1_position: my_get_rect((1118, 398, 1377, 426)),
+            sub_stat2_position: my_get_rect((1118, 431, 1377, 458)),
+            sub_stat3_position: my_get_rect((1118, 462, 1377, 490)),
+            sub_stat4_position: my_get_rect((1118, 496, 1377, 522)),
 
             equip_position: my_get_rect((1143, 759, 1390, 791)),
             art_count_position: my_get_rect((1315, 26, 1503, 51)),

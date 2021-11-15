@@ -26,6 +26,7 @@ pub struct YasScannerConfig {
     scroll_stop: u32,
     number: u32,
     verbose: bool,
+    dump_mode: bool,
 
     // offset_x: i32,
     // offset_y: i32,
@@ -36,6 +37,7 @@ impl YasScannerConfig {
         YasScannerConfig {
             max_row: matches.value_of("max-row").unwrap_or("1000").parse::<u32>().unwrap(),
             capture_only: matches.is_present("capture-only"),
+            dump_mode: matches.is_present("dump"),
             min_star: matches.value_of("min-star").unwrap_or("4").parse::<u32>().unwrap(),
             max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("500").parse::<u32>().unwrap(),
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
@@ -377,24 +379,24 @@ impl YasScanner {
         };
 
         let panel = self.capture_panel().unwrap();
-        let im_title = panel.crop_and_preprocess(&convert_rect(&info.title_position));
-        im_title.to_gray_image().save("captures/title.png");
-        let im_main_stat_name = panel.crop_and_preprocess(&convert_rect(&info.main_stat_name_position));
-        im_main_stat_name.to_gray_image().save("captures/main_stat_name.png");
-        let im_main_stat_value = panel.crop_and_preprocess(&convert_rect(&info.main_stat_value_position));
-        im_main_stat_value.to_gray_image().save("captures/main_stat_value.png");
-        let im_sub_stat_1 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat1_position));
-        im_sub_stat_1.to_gray_image().save("captures/sub_stat_1.png");
-        let im_sub_stat_2 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat2_position));
-        im_sub_stat_2.to_gray_image().save("captures/sub_stat_2.png");
-        let im_sub_stat_3 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat3_position));
-        im_sub_stat_3.to_gray_image().save("captures/sub_stat_3.png");
-        let im_sub_stat_4 = panel.crop_and_preprocess(&convert_rect(&info.sub_stat4_position));
-        im_sub_stat_4.to_gray_image().save("captures/sub_stat_4.png");
-        let im_level = panel.crop_and_preprocess(&convert_rect(&info.level_position));
-        im_level.to_gray_image().save("captures/level.png");
-        let im_equip = panel.crop_and_preprocess(&convert_rect(&info.equip_position));
-        im_equip.to_gray_image().save("captures/equip.png");
+        let im_title = pre_process(panel.crop_to_raw_img(&convert_rect(&info.title_position)));
+        im_title.to_gray_image().save("captures/title.png").expect("Err");
+        let im_main_stat_name = pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_name_position)));
+        im_main_stat_name.to_gray_image().save("captures/main_stat_name.png").expect("Err");
+        let im_main_stat_value = pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_value_position)));
+        im_main_stat_value.to_gray_image().save("captures/main_stat_value.png").expect("Err");
+        let im_sub_stat_1 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat1_position)));
+        im_sub_stat_1.to_gray_image().save("captures/sub_stat_1.png").expect("Err");
+        let im_sub_stat_2 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat2_position)));
+        im_sub_stat_2.to_gray_image().save("captures/sub_stat_2.png").expect("Err");
+        let im_sub_stat_3 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat3_position)));
+        im_sub_stat_3.to_gray_image().save("captures/sub_stat_3.png").expect("Err");
+        let im_sub_stat_4 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat4_position)));
+        im_sub_stat_4.to_gray_image().save("captures/sub_stat_4.png").expect("Err");
+        let im_level = pre_process(panel.crop_to_raw_img(&convert_rect(&info.level_position)));
+        im_level.to_gray_image().save("captures/level.png").expect("Err");
+        let im_equip = pre_process(panel.crop_to_raw_img(&convert_rect(&info.equip_position)));
+        im_equip.to_gray_image().save("captures/equip.png").expect("Err");
     }
 
     pub fn start(&mut self) -> Vec<InternalArtifact> {
@@ -430,6 +432,7 @@ impl YasScanner {
         let info_2 = self.info.clone();
         // v bvvmnvbm
         let is_verbose = self.config.verbose;
+        let is_dump_mode = self.config.dump_mode;
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
             let mut model = CRNNModel::new(
@@ -441,6 +444,11 @@ impl YasScanner {
             let mut hash = HashSet::new();
             let mut consecutive_dup_count = 0;
             let info = info_2;
+
+            let mut cnt = 0;
+            if is_dump_mode {
+                fs::create_dir("dumps").expect("Err");
+            }
 
             let convert_rect = |rect: &PixelRectBound| {
                 PixelRect {
@@ -456,18 +464,43 @@ impl YasScanner {
                     Some(v) => v,
                     None => break,
                 };
-                let now = SystemTime::now();
-                let str_title = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.title_position)));
-                let str_main_stat_name = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.main_stat_name_position)));
-                let str_main_stat_value = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.main_stat_value_position)));
-                let str_sub_stat_1 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat1_position)));
-                let str_sub_stat_2 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat2_position)));
-                let str_sub_stat_3 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat3_position)));
-                let str_sub_stat_4 = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.sub_stat4_position)));
-                let str_level = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.level_position)));
-                let str_equip = model.inference_string(&capture.crop_and_preprocess(&convert_rect(&info.equip_position)));
-                let predict_time = now.elapsed().unwrap().as_millis();
-                // println!("predict time: {}ms", predict_time);
+                // let now = SystemTime::now();
+
+                let model_inference = |pos: &PixelRectBound, name: &str, cnt: i32| {
+                    let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
+                    if is_dump_mode {
+                        raw_img.grayscale_to_gray_image().save(format!("dumps/{}_{}.png", name, cnt)).expect("Err");
+                    }
+
+                    let processed_img = pre_process(raw_img);
+                    if is_dump_mode {
+                        processed_img.to_gray_image().save(format!("dumps/p_{}_{}.png", name, cnt)).expect("Err");
+                    }
+                    
+                    let inference_result = model.inference_string(&processed_img);
+                    if is_dump_mode {
+                        fs::write(format!("dumps/{}_{}.txt", name, cnt), &inference_result).expect("Err");
+                    }
+
+                    inference_result
+                };
+
+                let str_title = model_inference(&info.title_position, "title", cnt);
+                let str_main_stat_name = model_inference(&info.main_stat_name_position, "main_stat_name", cnt);
+                let str_main_stat_value = model_inference(&info.main_stat_value_position, "main_stat_value", cnt);
+
+                let str_sub_stat_1 = model_inference(&info.sub_stat1_position, "sub_stat_1", cnt);
+                let str_sub_stat_2 = model_inference(&info.sub_stat2_position, "sub_stat_2", cnt);
+                let str_sub_stat_3 = model_inference(&info.sub_stat3_position, "sub_stat_3", cnt);
+                let str_sub_stat_4 = model_inference(&info.sub_stat4_position, "sub_stat_4", cnt);
+
+                let str_level = model_inference(&info.level_position, "level", cnt);
+                let str_equip = model_inference(&info.equip_position, "equip", cnt);
+
+                cnt += 1;
+
+                // let predict_time = now.elapsed().unwrap().as_millis();
+                // println!("predict time: {}ms", predict_time);                
 
                 let result = YasScanResult {
                     name: str_title,

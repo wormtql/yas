@@ -77,9 +77,9 @@ fn main() {
 
     let version = get_version();
 
-    let matches = App::new("YAS TeyvatWikiEdit")
+    let matches = App::new("YAS - 原神导出器")
         .version(version.as_str())
-        .author("wormtql <584130248@qq.com>(origin author) | Lounode <lounode@gmail.com>(editor)")
+        .author("wormtql <584130248@qq.com>")
         .about("Genshin Impact Artifact Exporter")
         .arg(Arg::with_name("max-row").long("max-row").takes_value(true).help("最大扫描行数"))
         .arg(Arg::with_name("capture-only").long("capture-only").required(false).takes_value(false).help("只保存截图，不进行扫描，debug专用"))
@@ -150,7 +150,7 @@ fn main() {
     }
     //OutPut
     fn outputArtifact (matches: clap::ArgMatches, results: Vec<InternalArtifact>) {
-        info!("start ouput data, mod = {}","Artifact".green() );
+        info!("start ouput artifact, mod = {}","Mona".green() );
         let now = SystemTime::now();
         let mona = MonaFormat::new(&results);
         let output_dir = Path::new(matches.value_of("output-dir").unwrap());

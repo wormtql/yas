@@ -82,6 +82,7 @@ fn main() {
         .author("wormtql <584130248@qq.com>")
         .about("Genshin Impact Artifact Exporter")
         .arg(Arg::with_name("max-row").long("max-row").takes_value(true).help("最大扫描行数"))
+        .arg(Arg::with_name("dump").long("dump").required(false).takes_value(false).help("输出模型预测结果、二值化图像和灰度图像，debug专用"))
         .arg(Arg::with_name("capture-only").long("capture-only").required(false).takes_value(false).help("只保存截图，不进行扫描，debug专用"))
         .arg(Arg::with_name("min-star").long("min-star").takes_value(true).help("最小星级").min_values(1).max_values(5))
         .arg(Arg::with_name("max-wait-switch-artifact").long("max-wait-switch-artifact").takes_value(true).min_values(10).help("切换圣遗物最大等待时间(ms)"))

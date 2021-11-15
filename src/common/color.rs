@@ -16,11 +16,10 @@ impl Color {
         let sel2 = Wrapping(self.2 as u32);
         let oth2 = Wrapping(other.2 as u32);
 
-        let dis_before = ((sel0 - oth0) * (sel0 - oth0)
+        let dis = ((sel0 - oth0) * (sel0 - oth0)
                 + (sel1 - oth1) * (sel1 - oth1)
                 + (sel2 - oth2) * (sel2 - oth2)).0
                 ;
-        let dis = dis_before;
         dis
             
         /*

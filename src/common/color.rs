@@ -9,11 +9,11 @@ impl Color {
     }
 
     pub fn dis_2(&self, other: &Color) -> u32 {
-        let dis = (self.0 as u32 - other.0 as u32) * (self.0 as u32 - other.0 as u32)
-            + (self.1 as u32 - other.1 as u32) * (self.1 as u32 - other.1 as u32)
-            + (self.2 as u32 - other.2 as u32) * (self.2 as u32 - other.2 as u32)
+        let dis = (self.0 as i32 - other.0 as i32) * (self.0 as i32 - other.0 as i32)
+            + (self.1 as i32 - other.1 as i32) * (self.1 as i32 - other.1 as i32)
+            + (self.2 as i32 - other.2 as i32) * (self.2 as i32 - other.2 as i32)
             ;
-        dis
+        dis as u32
     }
 
     pub fn new() -> Color {

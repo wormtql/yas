@@ -10,6 +10,7 @@ use yas::common::{RawImage, PixelRect};
 use yas::scanner::yas_scanner::{YasScanner, YasScannerConfig};
 use yas::inference::inference::CRNNModel;
 use yas::expo::mona_uranai::MonaFormat;
+use yas::expo::mingyu_lab::MingyuLabFormat;
 
 use winapi::um::winuser::{SetForegroundWindow, GetDpiForSystem, SetThreadDpiAwarenessContext, ShowWindow, SW_SHOW, SW_RESTORE, GetSystemMetrics, SetProcessDPIAware};
 use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
@@ -88,6 +89,7 @@ fn main() {
         .arg(Arg::with_name("verbose").long("verbose").help("显示详细信息"))
         .arg(Arg::with_name("offset-x").long("offset-x").takes_value(true).help("人为指定横坐标偏移（截图有偏移时可用该选项校正）"))
         .arg(Arg::with_name("offset-y").long("offset-y").takes_value(true).help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"))
+        .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式。mona：莫纳占卜铺（默认）；mingyulab：原魔计算器。").possible_values(&["mona", "mingyulab"]).default_value("mona"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
@@ -135,13 +137,23 @@ fn main() {
 
     let now = SystemTime::now();
     let results = scanner.start();
-    let mona = MonaFormat::new(&results);
     let t = now.elapsed().unwrap().as_secs_f64();
     info!("time: {}s", t);
 
     let output_dir = Path::new(matches.value_of("output-dir").unwrap());
-    let output_filename = output_dir.join("mona.json");
-    mona.save(String::from(output_filename.to_str().unwrap()));
+    match matches.value_of("output-format") {
+        Some("mona") => {
+            let output_filename = output_dir.join("mona.json");
+            let mona = MonaFormat::new(&results);
+            mona.save(String::from(output_filename.to_str().unwrap()));
+        }
+        Some("mingyulab") => {
+            let output_filename = output_dir.join("mingyulab.json");
+            let mingyulab = MingyuLabFormat::new(&results);
+            mingyulab.save(String::from(output_filename.to_str().unwrap()));
+        }
+        _ => unreachable!()
+    }
     // let info = info;
     // let img = info.art_count_position.capture_relative(&info).unwrap();
 

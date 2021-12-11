@@ -363,11 +363,11 @@ impl YasScanner {
     }
 
     fn start_capture_only(&mut self) {
-        fs::create_dir("captures");
+        fs::create_dir("captures").expect("couldn't create directory: captures");
         let info = &self.info.clone();
 
         let count = self.info.art_count_position.capture_relative(info).unwrap();
-        count.to_gray_image().save("captures/count.png");
+        count.to_gray_image().save("captures/count.png").expect("couldn't create file: captures/count.png");
 
         let convert_rect = |rect: &PixelRectBound| {
             PixelRect {

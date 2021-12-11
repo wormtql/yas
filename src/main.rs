@@ -65,7 +65,7 @@ fn get_version() -> String {
     String::from("unknown_version")
 }
 
-fn main() {
+fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     Builder::new().filter_level(LevelFilter::Info).init();
 
     if !utils::is_admin() {
@@ -107,7 +107,7 @@ fn main() {
     unsafe { SetForegroundWindow(hwnd); }
     utils::sleep(1000);
 
-    let mut rect = utils::get_client_rect(hwnd).unwrap();
+    let mut rect = utils::get_client_rect(hwnd)?;
 
     // rect.scale(1.25);
     info!("detected left: {}", rect.left);
@@ -115,7 +115,7 @@ fn main() {
     info!("detected width: {}", rect.width);
     info!("detected height: {}", rect.height);
 
-    let temp = capture_absolute_image(&rect).unwrap().save("test.png");
+    capture_absolute_image(&rect)?.save("test.png")?;
 
     let mut info: info::ScanInfo;
     if rect.height * 16 == rect.width * 9 {
@@ -128,8 +128,8 @@ fn main() {
         utils::error_and_quit("不支持的分辨率");
     }
 
-    let offset_x = matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap();
-    let offset_y = matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap();
+    let offset_x = matches.value_of("offset-x").unwrap_or("0").parse::<i32>()?;
+    let offset_y = matches.value_of("offset-y").unwrap_or("0").parse::<i32>()?;
     info.left += offset_x;
     info.top += offset_y;
 
@@ -137,7 +137,7 @@ fn main() {
 
     let now = SystemTime::now();
     let results = scanner.start();
-    let t = now.elapsed().unwrap().as_secs_f64();
+    let t = now.elapsed()?.as_secs_f64();
     info!("time: {}s", t);
 
     let output_dir = Path::new(matches.value_of("output-dir").unwrap());
@@ -145,12 +145,12 @@ fn main() {
         Some("mona") => {
             let output_filename = output_dir.join("mona.json");
             let mona = MonaFormat::new(&results);
-            mona.save(String::from(output_filename.to_str().unwrap()));
+            mona.save(String::from(output_filename.to_str().ok_or("输出路径无效")?));
         }
         Some("mingyulab") => {
             let output_filename = output_dir.join("mingyulab.json");
             let mingyulab = MingyuLabFormat::new(&results);
-            mingyulab.save(String::from(output_filename.to_str().unwrap()));
+            mingyulab.save(String::from(output_filename.to_str().ok_or("输出路径无效")?));
         }
         _ => unreachable!()
     }
@@ -162,5 +162,6 @@ fn main() {
     // println!("{}", s);
     info!("识别结束，请按Enter退出");
     let mut s = String::new();
-    stdin().read_line(&mut s);
+    stdin().read_line(&mut s)?;
+    Ok(())
 }

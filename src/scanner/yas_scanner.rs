@@ -19,17 +19,18 @@ use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSet
 use crate::inference::pre_process::pre_process;
 
 pub struct YasScannerConfig {
-    max_row: u32,
+    pub max_row: u32,
     capture_only: bool,
-    min_star: u32,
+    pub min_star: u32,
     max_wait_switch_artifact: u32,
     scroll_stop: u32,
     number: u32,
     verbose: bool,
     dump_mode: bool,
-
-    // offset_x: i32,
-    // offset_y: i32,
+    pub offset_x: i32,
+    pub offset_y: i32,
+    pub output_dir: Option<String>,
+    pub format: Option<String>,
 }
 
 impl YasScannerConfig {
@@ -43,9 +44,29 @@ impl YasScannerConfig {
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
             number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap(),
             verbose: matches.is_present("verbose"),
+            output_dir: Some(matches.value_of("output-dir").unwrap_or(".").to_string()),
+            format:Some(matches.value_of("output-format").unwrap_or("mona").to_string()),
+            offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
+            offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
+        }
+    }
+}
 
-            // offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
-            // offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
+impl Default for YasScannerConfig {
+    fn default() -> YasScannerConfig {
+        YasScannerConfig {
+            max_row: 1000,
+            min_star: 5,
+            capture_only:false,
+            max_wait_switch_artifact: 500,
+            scroll_stop: 80,
+            number: 0,
+            verbose: false,
+            dump_mode: false,
+            offset_x:0,
+            offset_y:0,
+            output_dir:Some(".".to_string()),
+            format:Some("mona".to_string()),
         }
     }
 }

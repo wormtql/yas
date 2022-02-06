@@ -1,20 +1,31 @@
-use std::ffi::{OsStr};
-use std::os::windows::ffi::OsStrExt;
-use std::iter::once;
-use std::ptr::null_mut;
-use std::{thread, time};
+use std::ffi::OsStr;
 use std::fs;
 use std::io::stdin;
+use std::iter::once;
+use std::os::windows::ffi::OsStrExt;
 use std::process;
-
-use log::{error, info};
-use winapi::um::winuser::{FindWindowW, GetClientRect, ClientToScreen, GetAsyncKeyState, VK_RBUTTON};
-use winapi::shared::windef::{HWND, RECT as WinRect, POINT as WinPoint};
+use std::ptr::null_mut;
+use std::{thread, time};
+use std::env::{current_exe, args};
+use log::error;
+use winapi::shared::windef::{HWND, POINT as WinPoint, RECT as WinRect};
+use winapi::um::winuser::{
+    ClientToScreen, FindWindowW, GetAsyncKeyState, GetClientRect, VK_RBUTTON,
+};
 
 use crate::common::PixelRect;
-use winapi::um::winnt::{SID_IDENTIFIER_AUTHORITY, SECURITY_NT_AUTHORITY, PSID, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS};
-use winapi::um::securitybaseapi::{AllocateAndInitializeSid, CheckTokenMembership, FreeSid};
 use winapi::shared::minwindef::BOOL;
+// use winapi::um::processenv::GetCommandLineW;
+use winapi::um::processthreadsapi::{ExitProcess, GetCurrentProcessId};
+use winapi::um::securitybaseapi::{AllocateAndInitializeSid, CheckTokenMembership, FreeSid};
+use winapi::um::shellapi::{ShellExecuteW};
+use winapi::um::wincon::GetConsoleWindow;
+use winapi::um::winnt::{
+    DOMAIN_ALIAS_RID_ADMINS, PSID, SECURITY_BUILTIN_DOMAIN_RID, SECURITY_NT_AUTHORITY,
+    SID_IDENTIFIER_AUTHORITY,
+};
+use winapi::um::winuser::GetWindowThreadProcessId;
+// use winapi::um::winuser::MessageBoxW;
 
 pub fn encode_wide(s: String) -> Vec<u16> {
     let wide: Vec<u16> = OsStr::new(&s).encode_wide().chain(once(0)).collect();
@@ -23,9 +34,7 @@ pub fn encode_wide(s: String) -> Vec<u16> {
 
 pub fn find_window(title: String) -> Result<HWND, String> {
     let wide = encode_wide(title);
-    let result: HWND = unsafe {
-        FindWindowW(null_mut(), wide.as_ptr())
-    };
+    let result: HWND = unsafe { FindWindowW(null_mut(), wide.as_ptr()) };
     if result.is_null() {
         Err(String::from("cannot find window"))
     } else {
@@ -44,24 +53,21 @@ unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<PixelRect, String> {
     let width: i32 = rect.right;
     let height: i32 = rect.bottom;
 
-    let mut point: WinPoint = WinPoint {
-        x: 0,
-        y: 0,
-    };
+    let mut point: WinPoint = WinPoint { x: 0, y: 0 };
     ClientToScreen(hwnd, &mut point as *mut WinPoint);
     let left: i32 = point.x;
     let top: i32 = point.y;
 
     Ok(PixelRect {
-        left, top,
-        width, height
+        left,
+        top,
+        width,
+        height,
     })
 }
 
 pub fn get_client_rect(hwnd: HWND) -> Result<PixelRect, String> {
-    unsafe {
-        get_client_rect_unsafe(hwnd)
-    }
+    unsafe { get_client_rect_unsafe(hwnd) }
 }
 
 pub fn sleep(ms: u32) {
@@ -77,7 +83,7 @@ pub fn read_file_to_string(path: String) -> String {
 pub fn error_and_quit(msg: &str) -> ! {
     error!("{}, 按Enter退出", msg);
     let mut s: String = String::new();
-    stdin().read_line(&mut s);
+    stdin().read_line(&mut s).unwrap();
     process::exit(0);
 }
 
@@ -91,7 +97,12 @@ unsafe fn is_admin_unsafe() -> bool {
         2,
         SECURITY_BUILTIN_DOMAIN_RID,
         DOMAIN_ALIAS_RID_ADMINS,
-        0, 0, 0, 0, 0, 0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         &mut group as *mut PSID,
     );
     if b != 0 {
@@ -106,9 +117,7 @@ unsafe fn is_admin_unsafe() -> bool {
 }
 
 pub fn is_admin() -> bool {
-    unsafe {
-        is_admin_unsafe()
-    }
+    unsafe { is_admin_unsafe() }
 }
 
 pub fn is_rmb_down() -> bool {
@@ -119,5 +128,36 @@ pub fn is_rmb_down() -> bool {
         }
 
         state & 1 > 0
+    }
+}
+
+pub fn is_console() -> bool {
+    unsafe {
+        let h = GetConsoleWindow();
+        let mut processid: u32 = 0;
+        GetWindowThreadProcessId(h, &mut processid);
+        if GetCurrentProcessId() == processid {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+pub fn run_as_admin_exit() {
+    let mut argv: Vec<String> = args().collect();
+    argv.remove(0);
+
+    unsafe {
+
+        ShellExecuteW(
+            null_mut(),
+            encode_wide("runas".to_string()).as_ptr(),
+            encode_wide(current_exe().unwrap().to_str().unwrap().to_string()).as_ptr(),
+            encode_wide(argv.join(" ")).as_ptr(),
+            null_mut(),
+            5,
+        );
+        ExitProcess(1)
     }
 }

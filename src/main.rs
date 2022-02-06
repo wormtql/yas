@@ -28,7 +28,7 @@ use os_info;
 
 #[derive(Default, NwgUi)]
 pub struct YasApp {
-    #[nwg_control(size: (300, 180), position: (300, 300), title: "Yas Artifact Scanner", flags: "WINDOW|VISIBLE")]
+    #[nwg_control(size: (300, 210), position: (300, 300), title: "Yas Artifact Scanner", flags: "WINDOW|VISIBLE")]
     #[nwg_events(OnWindowClose: [YasApp::exit], OnInit: [YasApp::init])]
     window: nwg::Window,
 
@@ -42,12 +42,17 @@ pub struct YasApp {
     #[nwg_control(text: "1000", flags: "VISIBLE", size: (130, 22), position: (160, 50))]
     max_row: nwg::TextInput,
 
-    #[nwg_control(text: "最低扫描圣遗物等级", flags: "VISIBLE", size: (150, 22), position: (10, 77))]
+    #[nwg_control(text: "最低扫描圣遗物星级", flags: "VISIBLE", size: (150, 22), position: (10, 77))]
     min_level_label: nwg::Label,
     #[nwg_control(text: "5", flags: "VISIBLE", size: (130, 22), position: (160, 77))]
     min_level: nwg::TextInput,
 
-    #[nwg_control(text: "开始扫描", size: (280, 70), position: (10, 104))]
+    // #[nwg_control(text: "只扫描20级圣遗物", flags: "VISIBLE", size: (150, 22), position: (10, 77))]
+    // level20_only_label: nwg::Label,
+    #[nwg_control(text: "只扫描20级圣遗物", flags: "VISIBLE", size: (150, 22), position: (10, 104))]
+    level20_only: nwg::CheckBox,
+
+    #[nwg_control(text: "开始扫描", size: (280, 70), position: (10, 131))]
     #[nwg_events( OnButtonClick: [YasApp::scan] )]
     scan_button: nwg::Button,
 }
@@ -68,6 +73,7 @@ impl YasApp {
         self.max_row_label.set_font(Some(&font));
         self.min_level.set_font(Some(&font));
         self.min_level_label.set_font(Some(&font));
+        self.level20_only.set_font(Some(&font));
         nwg::Font::builder()
             .size(24)
             .family("Microsoft YaHei")
@@ -100,6 +106,10 @@ impl YasApp {
             }
             _ => 5,
         };
+
+        if self.level20_only.check_state() == nwg::CheckBoxState::Checked {
+            config.only_level_20 = true;
+        }
 
         if self.ymlab.check_state() == nwg::RadioButtonState::Checked {
             config.format = Some(String::from("mingyulab"));
@@ -266,6 +276,12 @@ fn main() {
                 .required(false)
                 .takes_value(false)
                 .help("只保存截图，不进行扫描，debug专用"),
+        ).arg(
+            Arg::with_name("only20")
+                .long("only20")
+                .required(false)
+                .takes_value(false)
+                .help("仅扫描20级圣遗物"),
         )
         .arg(
             Arg::with_name("min-star")

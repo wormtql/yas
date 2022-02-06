@@ -3,9 +3,10 @@ use std::thread;
 use std::sync::mpsc;
 use std::convert::From;
 use std::collections::HashSet;
-use std::io::stdin;
+// use std::io::stdin;
 use std::fs;
-
+use rsevents;
+use rsevents::Awaitable;
 use enigo::*;
 use log::{info, warn, error, debug};
 use clap::{ArgMatches};
@@ -31,6 +32,7 @@ pub struct YasScannerConfig {
     pub offset_y: i32,
     pub output_dir: Option<String>,
     pub format: Option<String>,
+    pub only_level_20:bool
 }
 
 impl YasScannerConfig {
@@ -48,6 +50,7 @@ impl YasScannerConfig {
             format:Some(matches.value_of("output-format").unwrap_or("mona").to_string()),
             offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
             offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
+            only_level_20: matches.is_present("only20"),
         }
     }
 }
@@ -67,6 +70,7 @@ impl Default for YasScannerConfig {
             offset_y:0,
             output_dir:Some(".".to_string()),
             format:Some("mona".to_string()),
+            only_level_20:false
         }
     }
 }
@@ -454,6 +458,9 @@ impl YasScanner {
         // v bvvmnvbm
         let is_verbose = self.config.verbose;
         let is_dump_mode = self.config.dump_mode;
+        let only_level_20 = self.config.only_level_20;
+        let level20_signal = std::sync::Arc::new(rsevents::ManualResetEvent::new(rsevents::State::Unset));
+        let shared_event = level20_signal.clone();
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
             let mut model = CRNNModel::new(
@@ -545,7 +552,12 @@ impl YasScanner {
                         dup_count += 1;
                         consecutive_dup_count += 1;
                         warn!("dup artifact detected: {:?}", result);
-                    } else {
+                    } else if a.level<20 && only_level_20 {
+                        warn!("low level artifact detected: {:?}", result);
+                        shared_event.set();
+                        break;
+                    }
+                    else {
                         consecutive_dup_count = 0;
                         hash.insert(a.clone());
                         results.push(a);
@@ -591,6 +603,10 @@ impl YasScanner {
                         break 'outer;
                     }
 
+                    if only_level_20 && level20_signal.wait0() {
+                        break 'outer;
+                    }
+
                     self.move_to(row, col);
                     self.enigo.mouse_click(MouseButton::Left);
 
@@ -601,7 +617,10 @@ impl YasScanner {
                     if star < self.config.min_star {
                         break 'outer;
                     }
-                    tx.send(Some((capture, star))).unwrap();
+                    match tx.send(Some((capture, star))) {
+                        Ok(_) => (),
+                        Err(_) => ()
+                    };
 
                     scanned_count += 1;
                 } // end 'col
@@ -630,7 +649,11 @@ impl YasScanner {
             utils::sleep(100);
         }
 
-        tx.send(None).unwrap();
+        // error when user specify level 20 only because process thread exited early.
+        match tx.send(None) {
+            Ok(_) => (),
+            Err(_) => ()
+        };
 
         info!("扫描结束，等待识别线程结束，请勿关闭程序");
         let results: Vec<InternalArtifact> = handle.join().unwrap();

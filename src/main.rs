@@ -81,15 +81,15 @@ fn main() {
         .arg(Arg::with_name("max-row").long("max-row").takes_value(true).help("最大扫描行数"))
         .arg(Arg::with_name("dump").long("dump").required(false).takes_value(false).help("输出模型预测结果、二值化图像和灰度图像，debug专用"))
         .arg(Arg::with_name("capture-only").long("capture-only").required(false).takes_value(false).help("只保存截图，不进行扫描，debug专用"))
-        .arg(Arg::with_name("min-star").long("min-star").takes_value(true).help("最小星级").min_values(1).max_values(5))
-        .arg(Arg::with_name("max-wait-switch-artifact").long("max-wait-switch-artifact").takes_value(true).min_values(10).help("切换圣遗物最大等待时间(ms)"))
+        .arg(Arg::with_name("min-star").long("min-star").takes_value(true).help("最小星级"))
+        .arg(Arg::with_name("max-wait-switch-artifact").long("max-wait-switch-artifact").takes_value(true).help("切换圣遗物最大等待时间(ms)"))
         .arg(Arg::with_name("output-dir").long("output-dir").short("o").takes_value(true).help("输出目录").default_value("."))
         .arg(Arg::with_name("scroll-stop").long("scroll-stop").takes_value(true).help("翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）"))
-        .arg(Arg::with_name("number").long("number").takes_value(true).help("指定圣遗物数量（在自动识别数量不准确时使用）").min_values(1).max_values(1500))
+        .arg(Arg::with_name("number").long("number").takes_value(true).help("指定圣遗物数量（在自动识别数量不准确时使用）"))
         .arg(Arg::with_name("verbose").long("verbose").help("显示详细信息"))
         .arg(Arg::with_name("offset-x").long("offset-x").takes_value(true).help("人为指定横坐标偏移（截图有偏移时可用该选项校正）"))
         .arg(Arg::with_name("offset-y").long("offset-y").takes_value(true).help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"))
-        .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式。mona：莫纳占卜铺（默认）；mingyulab：原魔计算器。").possible_values(&["mona", "mingyulab"]).default_value("mona"))
+        .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式").possible_values(&["mona", "mingyulab"]).default_value("mona"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 

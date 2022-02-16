@@ -39,7 +39,7 @@ impl YasScannerConfig {
             capture_only: matches.is_present("capture-only"),
             dump_mode: matches.is_present("dump"),
             min_star: matches.value_of("min-star").unwrap_or("4").parse::<u32>().unwrap(),
-            max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("500").parse::<u32>().unwrap(),
+            max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("800").parse::<u32>().unwrap(),
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
             number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap(),
             verbose: matches.is_present("verbose"),
@@ -139,7 +139,7 @@ fn calc_pool(row: &Vec<u8>) -> f64 {
     for i in 0..len {
         pool += row[i * 4] as f64;
     }
-    pool /= len as f64;
+    // pool /= len as f64;
     pool
 }
 
@@ -554,6 +554,7 @@ impl YasScanner {
         self.move_to(0, 0);
         self.enigo.mouse_click(MouseButton::Left);
         utils::sleep(1000);
+        // self.wait_until_switched();
         self.sample_initial_color();
 
         'outer: while scanned_count < count {

@@ -407,7 +407,7 @@ impl YasScanner {
 
         let mut count = match self.get_art_count() {
             Ok(v) => v,
-            Err(_) => 1000,
+            Err(_) => 1500,
         };
 
         let total_row = (count + self.col - 1) / self.col;

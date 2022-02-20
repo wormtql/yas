@@ -22,6 +22,7 @@ pub struct YasScannerConfig {
     max_row: u32,
     capture_only: bool,
     min_star: u32,
+    min_level: u32,
     max_wait_switch_artifact: u32,
     scroll_stop: u32,
     number: u32,
@@ -39,6 +40,7 @@ impl YasScannerConfig {
             capture_only: matches.is_present("capture-only"),
             dump_mode: matches.is_present("dump"),
             min_star: matches.value_of("min-star").unwrap_or("4").parse::<u32>().unwrap(),
+            min_level: matches.value_of("min-level").unwrap_or("0").parse::<u32>().unwrap(),
             max_wait_switch_artifact: matches.value_of("max-wait-switch-artifact").unwrap_or("800").parse::<u32>().unwrap(),
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
             number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap(),
@@ -433,6 +435,7 @@ impl YasScanner {
         // v bvvmnvbm
         let is_verbose = self.config.verbose;
         let is_dump_mode = self.config.dump_mode;
+        let min_level = self.config.min_level;
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
             let mut model = CRNNModel::new(
@@ -543,7 +546,14 @@ impl YasScanner {
             info!("error count: {}", error_count);
             info!("dup count: {}", dup_count);
 
-            results
+            if min_level > 0 {
+                results
+                    .into_iter()
+                    .filter(|result| result.level >= min_level)
+                    .collect::<Vec<_>>()
+            } else {
+                results
+            }
         });
 
 

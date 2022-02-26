@@ -66,7 +66,7 @@ impl ArtifactStatName {
             ArtifactStatName::ElectroBonus => "electroDamage",
             ArtifactStatName::PyroBonus => "pyroDamage",
             ArtifactStatName::HydroBonus => "hydroDamage",
-            ArtifactStatName::CryoBonus => "pyroDamage",
+            ArtifactStatName::CryoBonus => "cryoDamage",
             ArtifactStatName::AnemoBonus => "anemoDamage",
             ArtifactStatName::GeoBonus => "geoDamage",
             ArtifactStatName::PhysicalBonus => "physicalDamage",

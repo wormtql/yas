@@ -77,7 +77,7 @@ pub fn read_file_to_string(path: String) -> String {
 pub fn error_and_quit(msg: &str) -> ! {
     error!("{}, 按Enter退出", msg);
     let mut s: String = String::new();
-    stdin().read_line(&mut s);
+    let _ = stdin().read_line(&mut s);
     process::exit(0);
 }
 

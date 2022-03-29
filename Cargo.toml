@@ -1,6 +1,6 @@
 [package]
 name = "yas"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -20,6 +20,8 @@ os_info = "3.0.7"
 strum = "0.24"
 strum_macros = "0.24"
 rand = "0.8.5"
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+semver = "1.0.7"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winuser", "winbase", "wingdi", "winnt", "securitybaseapi", "shellscalingapi"] }

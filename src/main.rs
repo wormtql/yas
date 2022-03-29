@@ -21,7 +21,7 @@ use clap::{Arg, App};
 use image::{ImageBuffer, Pixel};
 use image::imageops::grayscale;
 use env_logger::{Env, Builder, Target};
-use log::{info, LevelFilter};
+use log::{info, LevelFilter, warn};
 use os_info;
 
 
@@ -53,26 +53,17 @@ fn set_dpi_awareness() {
     }
 }
 
-fn get_version() -> String {
-    let s = include_str!("../Cargo.toml");
-    for line in s.lines() {
-        if line.starts_with("version = ") {
-            let temp = line.split("\"").collect::<Vec<_>>();
-            return String::from(temp[temp.len() - 2]);
-        }
-    }
-
-    String::from("unknown_version")
-}
-
 fn main() {
     Builder::new().filter_level(LevelFilter::Info).init();
 
     if !utils::is_admin() {
         utils::error_and_quit("请以管理员身份运行该程序")
     }
+    if let Some(v) = utils::check_update() {
+        warn!("检测到新版本，请手动更新：{}", v);
+    }
 
-    let version = get_version();
+    let version = utils::get_version();
 
     let matches = App::new("YAS - 原神圣遗物导出器")
         .version(version.as_str())

@@ -37,6 +37,7 @@ impl ArtifactStatName {
 
 impl ArtifactSetName {
     pub fn to_mona(&self) -> String {
+        let same = self.to_string();
         let temp = match self {
             ArtifactSetName::ArchaicPetra => "archaicPetra",
             ArtifactSetName::HeartOfDepth => "heartOfDepth",
@@ -75,6 +76,7 @@ impl ArtifactSetName {
             ArtifactSetName::ShimenawaReminiscence => "shimenawaReminiscence",
             ArtifactSetName::HuskOfOpulentDreams => "huskOfOpulentDreams",
             ArtifactSetName::OceanHuedClam => "oceanHuedClam",
+            _ => same.as_str()
         };
         String::from(temp)
     }

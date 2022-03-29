@@ -123,6 +123,8 @@ impl ArtifactSetName {
             ArtifactSetName::ShimenawaReminiscence => "reminiscence_of_shime",
             ArtifactSetName::HuskOfOpulentDreams => "husk_of_opulent_dreams",
             ArtifactSetName::OceanHuedClam => "divine_chorus",
+            ArtifactSetName::VermillionHereafter => "vermillion_hereafter",
+            ArtifactSetName::EchoesOfAnOffering => "echoes_of_an_offering",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

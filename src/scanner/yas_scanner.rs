@@ -9,6 +9,7 @@ use std::fs;
 use enigo::*;
 use log::{info, warn, error, debug};
 use clap::{ArgMatches};
+use rand::Rng;
 
 use crate::info::info::ScanInfo;
 use crate::inference::inference::CRNNModel;
@@ -285,6 +286,9 @@ impl YasScanner {
 
     fn wait_until_switched(&mut self) -> bool {
         let now = SystemTime::now();
+
+        let mut consecutive_time = 0;
+        let mut diff_flag= false;
         while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_artifact as u128 {
             // let pool_start = SystemTime::now();
             let rect = PixelRect {
@@ -299,16 +303,29 @@ impl YasScanner {
             // println!("pool time: {}ms", pool_start.elapsed().unwrap().as_millis());
 
             if (pool - self.pool).abs() > 0.000001 {
-                // if pool != pool1 {
-                //     pool1 = pool;
-                // } else {
-                self.pool = pool;
-                // }
+                // info!("pool: {}", pool);
+                // let raw = RawCaptureImage {
+                //     data: im,
+                //     w: rect.width as u32,
+                //     h: rect.height as u32,
+                // };
+                // let raw = raw.to_raw_image();
+                // println!("{:?}", &raw.data[..10]);
+                // raw.save(&format!("captures/{}.png", rand::thread_rng().gen::<u32>()));
 
-                self.avg_switch_time = (self.avg_switch_time * self.scanned_count as f64 + now.elapsed().unwrap().as_millis() as f64) / (self.scanned_count as f64 + 1.0);
-                self.scanned_count += 1;
+                self.pool = pool;
+                diff_flag = true;
+                consecutive_time = 0;
                 // info!("avg switch time: {}ms", self.avg_switch_time);
-                return true;
+            } else {
+                if diff_flag {
+                    consecutive_time += 1;
+                    if consecutive_time == 5 {
+                        self.avg_switch_time = (self.avg_switch_time * self.scanned_count as f64 + now.elapsed().unwrap().as_millis() as f64) / (self.scanned_count as f64 + 1.0);
+                        self.scanned_count += 1;
+                        return true;
+                    }
+                }
             }
         }
 

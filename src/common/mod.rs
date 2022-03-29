@@ -1,7 +1,7 @@
 use crate::capture;
 use crate::inference::pre_process::{pre_process, to_gray, raw_to_img, uint8_raw_to_img};
 use crate::info::info::ScanInfo;
-use image::{GrayImage, RgbImage};
+use image::{GrayImage, ImageBuffer, RgbImage};
 use crate::capture::capture_absolute;
 use std::time::SystemTime;
 use log::{info};
@@ -106,6 +106,25 @@ impl RawImage {
 }
 
 impl RawCaptureImage {
+    pub fn save(&self, path: &str) {
+        let width = self.w;
+        let height = self.h;
+        let data = &self.data;
+
+        let img = ImageBuffer::from_fn(width, height, |x, y| {
+            let index = (y * self.w + x) as usize;
+
+            let b = data[index * 4];
+            let g = data[index * 4 + 1];
+            let r = data[index * 4 + 2];
+
+            image::Rgb([r, g, b])
+            // image::Luma([pixel])
+        });
+
+        img.save(path);
+    }
+
     pub fn crop_to_raw_img(&self, rect: &PixelRect) -> RawImage {
         // let now = SystemTime::now();
         let vol = rect.width * rect.height;

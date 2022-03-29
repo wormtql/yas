@@ -1,6 +1,7 @@
 use regex::Regex;
 use std::hash::{Hash, Hasher};
 use edit_distance;
+use strum_macros::Display;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum ArtifactStatName {
@@ -34,6 +35,7 @@ pub enum ArtifactSlot {
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
+#[derive(Display)]
 pub enum ArtifactSetName {
     ArchaicPetra,
     HeartOfDepth,
@@ -72,6 +74,8 @@ pub enum ArtifactSetName {
     ShimenawaReminiscence,
     HuskOfOpulentDreams,
     OceanHuedClam,
+    VermillionHereafter,
+    EchoesOfAnOffering,
 }
 
 #[derive(Debug, Clone)]
@@ -203,6 +207,8 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         "羁缠之花", "思忆之矢", "朝露之时", "祈望之心", "无常之面",
         "荣花之期", "华馆之羽", "众生之谣", "梦醒之瓢", "形骸之笠",
         "海染之花", "渊宫之羽", "离别之贝", "真珠之笼", "海祇之冠",
+        "生灵之华", "阳辔之遗", "潜光片羽", "结契之刻", "虺雷之姿",
+        "魂香之花", "祝祀之凭", "垂玉之叶", "涌泉之盏", "浮溯之珏",
     ];
 
     let mut min_index = 0;
@@ -406,6 +412,8 @@ impl ArtifactSetName {
             "离别之贝" => Some(ArtifactSetName::OceanHuedClam),
             "真珠之笼" => Some(ArtifactSetName::OceanHuedClam),
             "海祇之冠" => Some(ArtifactSetName::OceanHuedClam),
+            "生灵之华" | "阳辔之遗" | "潜光片羽" | "结契之刻" | "虺雷之姿" => Some(ArtifactSetName::VermillionHereafter),
+            "魂香之花" | "祝祀之凭" | "垂玉之叶" | "涌泉之盏" | "浮溯之珏" => Some(ArtifactSetName::EchoesOfAnOffering),
             _ => None,
         }
     }
@@ -589,6 +597,16 @@ impl ArtifactSlot {
             "离别之贝" => Some(ArtifactSlot::Sand),
             "真珠之笼" => Some(ArtifactSlot::Goblet),
             "海祇之冠" => Some(ArtifactSlot::Head),
+            "生灵之华" => Some(ArtifactSlot::Flower),
+            "阳辔之遗" => Some(ArtifactSlot::Sand),
+            "潜光片羽" => Some(ArtifactSlot::Feather),
+            "结契之刻" => Some(ArtifactSlot::Goblet),
+            "虺雷之姿" => Some(ArtifactSlot::Head),
+            "魂香之花" => Some(ArtifactSlot::Flower),
+            "祝祀之凭" => Some(ArtifactSlot::Sand),
+            "垂玉之叶" => Some(ArtifactSlot::Feather),
+            "涌泉之盏" => Some(ArtifactSlot::Goblet),
+            "浮溯之珏" => Some(ArtifactSlot::Head),
             _ => None,
         }
     }

@@ -100,6 +100,44 @@ impl WindowInfo {
     }
 }
 
+pub const WINDOW_43_18: WindowInfo = WindowInfo {
+    width: 3440.0,
+    height: 1440.0,
+
+    title_pos: Rect(170.0, 3140.0, 220.0, 2560.0),
+    main_stat_name_pos: Rect(360.0, 2850.0, 400.0, 2560.0),
+    main_stat_value_pos: Rect(400.0, 2850.0, 460.0, 2560.0),
+    level_pos: Rect(575.0, 2640.0, 605.0, 2568.0),
+    panel_pos: Rect(160.0, 3185.0, 1280.0, 2528.0),
+
+    sub_stat1_pos: Rect(640.0, 3080.0, 680.0, 2590.0),
+    sub_stat2_pos: Rect(690.0, 3080.0, 730.0, 2590.0),
+    sub_stat3_pos: Rect(742.0, 3080.0, 782.0, 2590.0),
+    sub_stat4_pos: Rect(795.0, 3080.0, 835.0, 2590.0),
+
+    equip_pos: Rect(1220.0, 5630.0, 1260.0, 3140.0),
+    art_count_pos: Rect(50.0, 3185.0, 85.0, 2750.0),
+
+    art_width: 2421.0 - 2257.0,
+    art_height: 598.0 - 394.0,
+    art_gap_x: 2257.0 - 2225.0,
+    art_gap_y: 394.0 - 363.0,
+
+    art_row: 5,
+    art_col: 11,
+
+    left_margin: 305.0,
+    top_margin: 161.0,
+
+    flag_x: 580.0,
+    flag_y: 145.0,
+
+    star_x: 3130.0,
+    star_y: 200.0,
+    
+    pool_pos: Rect(170.0, 2610.0 + 30.0, 900.0, 2610.0)
+};
+
 pub const WINDOW_16_9: WindowInfo = WindowInfo {
     width: 1600.0,
     height: 900.0,
@@ -134,7 +172,7 @@ pub const WINDOW_16_9: WindowInfo = WindowInfo {
 
     star_x: 1469.4,
     star_y: 123.9,
-
+    
     pool_pos: Rect(118.2, 1144.7 + 15.0, 510.3, 1144.7)
 };
 

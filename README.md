@@ -38,6 +38,15 @@ yas --min-star=5
 yas --max-row=1
 ```
 
+## 编译
+
+```shell
+# Linux下需要首先安装rustup以及mingw-w64，然后再安装对应的rust target，
+rustup default stable
+rustup target add x86_64-pc-windows-gnu
+cargo build --release --locked --target=x86_64-pc-windows-gnu
+```
+
 ## 反馈
 - Issue
 - QQ群：801106595

@@ -110,7 +110,9 @@ fn main() {
     let temp = capture_absolute_image(&rect).unwrap().save("test.png");
 
     let mut info: info::ScanInfo;
-    if rect.height * 16 == rect.width * 9 {
+    if rect.height * 43 == rect.width * 18 {
+        info = info::ScanInfo::from_43_18(rect.width as u32, rect.height as u32, rect.left, rect.top);
+    } else if rect.height * 16 == rect.width * 9 {
         info = info::ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else if rect.height * 8 == rect.width * 5 {
         info = info::ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);

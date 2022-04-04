@@ -1,5 +1,5 @@
 use crate::common::{PixelRect, PixelRectBound};
-use crate::info::window_info::{WINDOW_16_9, WINDOW_4_3, WINDOW_8_5};
+use crate::info::window_info::{WINDOW_43_18, WINDOW_16_9, WINDOW_4_3, WINDOW_8_5};
 
 #[derive(Clone, Debug)]
 pub struct ScanInfo {
@@ -47,6 +47,10 @@ pub struct ScanInfo {
 }
 
 impl ScanInfo {
+    pub fn from_43_18(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
+        WINDOW_43_18.to_scan_info(height as f64, width as f64, left, top)
+    }
+
     pub fn from_16_9(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
         WINDOW_16_9.to_scan_info(height as f64, width as f64, left, top)
     }

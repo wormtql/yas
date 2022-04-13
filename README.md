@@ -47,6 +47,9 @@ rustup target add x86_64-pc-windows-gnu
 cargo build --release --locked --target=x86_64-pc-windows-gnu
 ```
 
+## 训练
+[yas-train](https://github.com/wormtql/yas-train)
+
 ## 反馈
 - Issue
 - QQ群：801106595

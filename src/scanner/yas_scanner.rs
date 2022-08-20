@@ -17,6 +17,7 @@ use crate::common::{utils, RawImage, PixelRect, RawCaptureImage, PixelRectBound}
 use crate::capture;
 use crate::common::color::Color;
 use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
+use crate::common::utils::{find_window, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
 use crate::inference::pre_process::pre_process;
 
 pub struct YasScannerConfig {
@@ -320,7 +321,7 @@ impl YasScanner {
             } else {
                 if diff_flag {
                     consecutive_time += 1;
-                    if consecutive_time == 5 {
+                    if consecutive_time == 1 {
                         self.avg_switch_time = (self.avg_switch_time * self.scanned_count as f64 + now.elapsed().unwrap().as_millis() as f64) / (self.scanned_count as f64 + 1.0);
                         self.scanned_count += 1;
                         return true;
@@ -643,5 +644,34 @@ impl YasScanner {
         let results: Vec<InternalArtifact> = handle.join().unwrap();
         info!("count: {}", results.len());
         results
+    }
+}
+
+
+impl YasScanner {
+    pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
+        set_dpi_awareness();
+        let hwnd = match find_window("原神") {
+            Ok(v) => v,
+            Err(s) => return Err(String::from("未找到原神窗口"))
+        };
+
+        show_window_and_set_foreground(hwnd);
+        sleep(1000);
+
+        let mut rect = match get_client_rect(hwnd) {
+            Ok(v) => v,
+            Err(_) => return Err(String::from("未能获取窗口大小"))
+        };
+
+        let info = match ScanInfo::from_rect(&rect) {
+            Ok(v) => v,
+            Err(e) => return Err(e)
+        };
+
+        let mut scanner = YasScanner::new(info, config);
+        let result = scanner.start();
+
+        Ok(result)
     }
 }

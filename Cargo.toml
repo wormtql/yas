@@ -24,4 +24,9 @@ reqwest = { version = "0.11", features = ["blocking", "json"] }
 semver = "1.0.7"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser", "winbase", "wingdi", "winnt", "securitybaseapi", "shellscalingapi"] }
+winapi = { version = "0.3", features = ["winuser", "winbase", "wingdi", "winnt", "securitybaseapi", "libloaderapi"] }
+
+[profile.release]
+lto = true
+panic = "abort"
+strip = true

@@ -158,3 +158,20 @@ impl ScanInfo {
         // info
     }
 }
+
+impl ScanInfo {
+    pub fn from_rect(rect: &PixelRect) -> Result<ScanInfo, String> {
+        let mut info: ScanInfo;
+        if rect.height * 16 == rect.width * 9 {
+            info = ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
+        } else if rect.height * 8 == rect.width * 5 {
+            info = ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
+        } else if rect.height * 4 == rect.width * 3 {
+            info = ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
+        } else {
+            return Err(String::from("不支持的分辨率"));
+        }
+
+        Ok(info)
+    }
+}

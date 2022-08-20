@@ -15,7 +15,7 @@ use yas::expo::mingyu_lab::MingyuLabFormat;
 use winapi::um::winuser::{SetForegroundWindow, GetDpiForSystem, SetThreadDpiAwarenessContext, ShowWindow, SW_SHOW, SW_RESTORE, GetSystemMetrics, SetProcessDPIAware};
 use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
 use winapi::um::wingdi::{HORZRES, GetDeviceCaps};
-use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
+// use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
 
 use clap::{Arg, App};
 use image::{ImageBuffer, Pixel};
@@ -24,33 +24,12 @@ use env_logger::{Env, Builder, Target};
 use log::{info, LevelFilter, warn};
 use os_info;
 
-
-
 fn open_local(path: String) -> RawImage {
     let img = image::open(path).unwrap();
     let img = grayscale(&img);
     let raw_img = image_to_raw(img);
 
     raw_img
-}
-
-fn set_dpi_awareness() {
-    let os = os_info::get();
-
-    // unsafe  {
-    //     SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
-    // }
-    if os.version() >= &os_info::Version::from_string("8.1") {
-        info!("Windows version >= 8.1");
-        unsafe  {
-            SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
-        }
-    } else {
-        info!("Windows version < 8.1");
-        unsafe {
-            SetProcessDPIAware();
-        }
-    }
 }
 
 fn main() {
@@ -85,9 +64,9 @@ fn main() {
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
-    set_dpi_awareness();
+    crate::utils::set_dpi_awareness();
 
-    let hwnd = match utils::find_window(String::from("原神")) {
+    let hwnd = match utils::find_window("原神") {
         Err(s) => {
             utils::error_and_quit("未找到原神窗口，请确认原神已经开启");
         },

@@ -70,6 +70,7 @@ impl ArtifactStatName {
             ArtifactStatName::AnemoBonus => "anemoDamage",
             ArtifactStatName::GeoBonus => "geoDamage",
             ArtifactStatName::PhysicalBonus => "physicalDamage",
+            ArtifactStatName::DendroBonus => "dendroDamage",
         }
     }
 }
@@ -125,6 +126,8 @@ impl ArtifactSetName {
             ArtifactSetName::OceanHuedClam => "divine_chorus",
             ArtifactSetName::VermillionHereafter => "vermillion_hereafter",
             ArtifactSetName::EchoesOfAnOffering => "echoes_of_an_offering",
+            ArtifactSetName::DeepwoodMemories => "deepwood_memories",
+            ArtifactSetName::GildedDreams => "gilded_dreams",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

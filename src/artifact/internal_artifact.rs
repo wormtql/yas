@@ -23,6 +23,7 @@ pub enum ArtifactStatName {
     AnemoBonus,
     GeoBonus,
     PhysicalBonus,
+    DendroBonus,
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
@@ -76,6 +77,8 @@ pub enum ArtifactSetName {
     OceanHuedClam,
     VermillionHereafter,
     EchoesOfAnOffering,
+    DeepwoodMemories,
+    GildedDreams,
 }
 
 #[derive(Debug, Clone)]
@@ -138,6 +141,7 @@ impl ArtifactStatName {
             "冰元素伤害加成" => Some(ArtifactStatName::CryoBonus),
             "风元素伤害加成" => Some(ArtifactStatName::AnemoBonus),
             "岩元素伤害加成" => Some(ArtifactStatName::GeoBonus),
+            "草元素伤害加成" => Some(ArtifactStatName::DendroBonus),
             "物理伤害加成" => Some(ArtifactStatName::PhysicalBonus),
             _ => None,
         }
@@ -209,6 +213,8 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         "海染之花", "渊宫之羽", "离别之贝", "真珠之笼", "海祇之冠",
         "生灵之华", "阳辔之遗", "潜光片羽", "结契之刻", "虺雷之姿",
         "魂香之花", "祝祀之凭", "垂玉之叶", "涌泉之盏", "浮溯之珏",
+        "迷宫的游人", "翠蔓的智者", "贤智的定期", "迷误者之灯", "月桂的宝冠",
+        "梦中的铁花", "裁断的翎羽", "沉金的岁月", "如蜜的终宴", "沙王的投影",
     ];
 
     let mut min_index = 0;
@@ -414,6 +420,8 @@ impl ArtifactSetName {
             "海祇之冠" => Some(ArtifactSetName::OceanHuedClam),
             "生灵之华" | "阳辔之遗" | "潜光片羽" | "结契之刻" | "虺雷之姿" => Some(ArtifactSetName::VermillionHereafter),
             "魂香之花" | "祝祀之凭" | "垂玉之叶" | "涌泉之盏" | "浮溯之珏" => Some(ArtifactSetName::EchoesOfAnOffering),
+            "迷宫的游人" | "翠蔓的智者" | "贤智的定期" | "迷误者之灯" | "月桂的宝冠" => Some(ArtifactSetName::DeepwoodMemories),
+            "梦中的铁花" | "裁断的翎羽" | "沉金的岁月" | "如蜜的终宴" | "沙王的投影" => Some(ArtifactSetName::GildedDreams),
             _ => None,
         }
     }
@@ -607,6 +615,16 @@ impl ArtifactSlot {
             "垂玉之叶" => Some(ArtifactSlot::Feather),
             "涌泉之盏" => Some(ArtifactSlot::Goblet),
             "浮溯之珏" => Some(ArtifactSlot::Head),
+            "迷宫的游人" => Some(ArtifactSlot::Flower),
+            "翠蔓的智者" => Some(ArtifactSlot::Feather),
+            "贤智的定期" => Some(ArtifactSlot::Sand),
+            "迷误者之灯" => Some(ArtifactSlot::Goblet),
+            "月桂的宝冠" => Some(ArtifactSlot::Head),
+            "梦中的铁花" => Some(ArtifactSlot::Flower),
+            "裁断的翎羽" => Some(ArtifactSlot::Feather),
+            "沉金的岁月" => Some(ArtifactSlot::Sand),
+            "如蜜的终宴" => Some(ArtifactSlot::Goblet),
+            "沙王的投影" => Some(ArtifactSlot::Head),
             _ => None,
         }
     }

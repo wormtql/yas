@@ -30,6 +30,7 @@ impl ArtifactStatName {
             ArtifactStatName::AnemoBonus => "windBonus",
             ArtifactStatName::GeoBonus => "rockBonus",
             ArtifactStatName::PhysicalBonus => "physicalBonus",
+            ArtifactStatName::DendroBonus => "dendroBonus",
         };
         String::from(temp)
     }

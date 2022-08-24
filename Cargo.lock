@@ -2255,7 +2255,7 @@ dependencies = [
 
 [[package]]
 name = "yas"
-version = "0.1.8"
+version = "0.1.9"
 dependencies = [
  "clap",
  "edit-distance",

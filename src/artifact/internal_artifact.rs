@@ -1,6 +1,7 @@
 use regex::Regex;
 use std::hash::{Hash, Hasher};
 use edit_distance;
+use log::error;
 use strum_macros::Display;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
@@ -163,7 +164,13 @@ impl ArtifactStat {
         };
 
         let re = Regex::new("[%,]").unwrap();
-        let mut value = re.replace_all(temp[1], "").parse::<f64>().unwrap();
+        let mut value = match re.replace_all(temp[1], "").parse::<f64>() {
+            Ok(v) => v,
+            Err(_) => {
+                error!("stat `{}` parse error", s);
+                return None;
+            },
+        };
         if is_percentage {
             value /= 100.0;
         }

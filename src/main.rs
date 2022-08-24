@@ -81,10 +81,7 @@ fn main() {
     let mut rect = utils::get_client_rect(hwnd).unwrap();
 
     // rect.scale(1.25);
-    info!("detected left: {}", rect.left);
-    info!("detected top: {}", rect.top);
-    info!("detected width: {}", rect.width);
-    info!("detected height: {}", rect.height);
+    info!("left = {}, top = {}, width = {}, height = {}", rect.left, rect.top, rect.width, rect.height);
 
     let temp = capture_absolute_image(&rect).unwrap().save("test.png");
 

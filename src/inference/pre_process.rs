@@ -1,6 +1,7 @@
 use image::imageops::colorops::grayscale;
 use image::{RgbImage, GrayImage, ImageBuffer};
 use image::imageops::resize;
+use log::info;
 
 use crate::common::RawImage;
 
@@ -39,7 +40,13 @@ pub fn to_gray(raw: Vec<u8>, width: u32, height: u32) -> RawImage {
 pub fn normalize(im: &mut RawImage, auto_inverse: bool) {
     let width = im.w;
     let height = im.h;
+
+    if width == 0 || height == 0 {
+        return;
+    }
+
     let data = &mut im.data;
+    // info!("in normalize: width = {}, height = {}", width, height);
 
     let mut max: f32 = 0.0;
     let mut min: f32 = 256.0;
@@ -47,6 +54,7 @@ pub fn normalize(im: &mut RawImage, auto_inverse: bool) {
     for i in 0..width {
         for j in 0..height {
             let index = get_index(width, i, j);
+            // info!("i = {}, j = {}, width = {}, index = {}", i, j, width, index);
             let p = data[index];
             if p > max {
                 max = p;

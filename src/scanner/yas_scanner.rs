@@ -485,10 +485,15 @@ impl YasScanner {
                     Some(v) => v,
                     None => break,
                 };
+                // info!("raw capture image: width = {}, height = {}", capture.w, capture.h);
+                // capture.save("raw0.png");
                 // let now = SystemTime::now();
 
                 let model_inference = |pos: &PixelRectBound, name: &str, cnt: i32| {
                     let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
+                    // raw_img.to_gray_image().save("raw.png");
+                    // info!("raw_img: width = {}, height = {}", raw_img.w, raw_img.h);
+
                     if is_dump_mode {
                         raw_img.grayscale_to_gray_image().save(format!("dumps/{}_{}.png", name, cnt)).expect("Err");
                     }
@@ -516,7 +521,8 @@ impl YasScanner {
                 let str_sub_stat_4 = model_inference(&info.sub_stat4_position, "sub_stat_4", cnt);
 
                 let str_level = model_inference(&info.level_position, "level", cnt);
-                let str_equip = model_inference(&info.equip_position, "equip", cnt);
+                // let str_equip = model_inference(&info.equip_position, "equip", cnt);
+                let str_equip = String::new();
 
                 cnt += 1;
 

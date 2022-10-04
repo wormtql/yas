@@ -400,23 +400,49 @@ impl YasScanner {
 
         let panel = self.capture_panel().unwrap();
         let im_title = pre_process(panel.crop_to_raw_img(&convert_rect(&info.title_position)));
-        im_title.to_gray_image().save("captures/title.png").expect("Err");
+        if let Some(im) = im_title {
+            im.to_gray_image().save("captures/title.png").expect("Err");
+        }
+
         let im_main_stat_name = pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_name_position)));
-        im_main_stat_name.to_gray_image().save("captures/main_stat_name.png").expect("Err");
+        if let Some(im) = im_main_stat_name {
+            im.to_gray_image().save("captures/main_stat_name.png").expect("Err");
+        }
+
         let im_main_stat_value = pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_value_position)));
-        im_main_stat_value.to_gray_image().save("captures/main_stat_value.png").expect("Err");
+        if let Some(im) = im_main_stat_value {
+            im.to_gray_image().save("captures/main_stat_value.png").expect("Err");
+        }
+
         let im_sub_stat_1 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat1_position)));
-        im_sub_stat_1.to_gray_image().save("captures/sub_stat_1.png").expect("Err");
+        if let Some(im) = im_sub_stat_1 {
+            im.to_gray_image().save("captures/sub_stat_1.png").expect("Err");
+        }
+
         let im_sub_stat_2 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat2_position)));
-        im_sub_stat_2.to_gray_image().save("captures/sub_stat_2.png").expect("Err");
+        if let Some(im) = im_sub_stat_2 {
+            im.to_gray_image().save("captures/sub_stat_2.png").expect("Err");
+        }
+
         let im_sub_stat_3 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat3_position)));
-        im_sub_stat_3.to_gray_image().save("captures/sub_stat_3.png").expect("Err");
+        if let Some(im) = im_sub_stat_3 {
+            im.to_gray_image().save("captures/sub_stat_3.png").expect("Err");
+        }
+
         let im_sub_stat_4 = pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat4_position)));
-        im_sub_stat_4.to_gray_image().save("captures/sub_stat_4.png").expect("Err");
+        if let Some(im) = im_sub_stat_4 {
+            im.to_gray_image().save("captures/sub_stat_4.png").expect("Err");
+        }
+
         let im_level = pre_process(panel.crop_to_raw_img(&convert_rect(&info.level_position)));
-        im_level.to_gray_image().save("captures/level.png").expect("Err");
+        if let Some(im) = im_level {
+            im.to_gray_image().save("captures/level.png").expect("Err");
+        }
+
         let im_equip = pre_process(panel.crop_to_raw_img(&convert_rect(&info.equip_position)));
-        im_equip.to_gray_image().save("captures/equip.png").expect("Err");
+        if let Some(im) = im_equip {
+            im.to_gray_image().save("captures/equip.png").expect("Err");
+        }
     }
 
     pub fn start(&mut self) -> Vec<InternalArtifact> {
@@ -489,7 +515,7 @@ impl YasScanner {
                 // capture.save("raw0.png");
                 // let now = SystemTime::now();
 
-                let model_inference = |pos: &PixelRectBound, name: &str, cnt: i32| {
+                let model_inference = |pos: &PixelRectBound, name: &str, cnt: i32| -> String {
                     let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
                     // raw_img.to_gray_image().save("raw.png");
                     // info!("raw_img: width = {}, height = {}", raw_img.w, raw_img.h);
@@ -498,7 +524,12 @@ impl YasScanner {
                         raw_img.grayscale_to_gray_image().save(format!("dumps/{}_{}.png", name, cnt)).expect("Err");
                     }
 
-                    let processed_img = pre_process(raw_img);
+                    let processed_img = match pre_process(raw_img) {
+                        Some(im) => im,
+                        None => {
+                            return String::new();
+                        }
+                    };
                     if is_dump_mode {
                         processed_img.to_gray_image().save(format!("dumps/p_{}_{}.png", name, cnt)).expect("Err");
                     }
@@ -521,8 +552,8 @@ impl YasScanner {
                 let str_sub_stat_4 = model_inference(&info.sub_stat4_position, "sub_stat_4", cnt);
 
                 let str_level = model_inference(&info.level_position, "level", cnt);
-                // let str_equip = model_inference(&info.equip_position, "equip", cnt);
-                let str_equip = String::new();
+                let str_equip = model_inference(&info.equip_position, "equip", cnt);
+                // let str_equip = String::new();
 
                 cnt += 1;
 

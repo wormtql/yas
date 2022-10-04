@@ -48,7 +48,11 @@ impl PixelRectBound {
         let raw_u8 = capture::capture_absolute(&rect).unwrap();
         let raw_gray = to_gray(raw_u8, w as u32, h as u32);
         let raw_after_pp = pre_process(raw_gray);
-        Ok(raw_after_pp)
+
+        match raw_after_pp {
+            Some(im) => Ok(im),
+            None => Err(String::from("capture error"))
+        }
     }
 
     pub fn capture_relative(&self, info: &ScanInfo) -> Result<RawImage, String> {
@@ -66,7 +70,11 @@ impl PixelRectBound {
         let raw_gray = to_gray(raw_u8, w as u32, h as u32);
         let raw_after_pp = pre_process(raw_gray);
         info!("preprocess time: {}ms", now.elapsed().unwrap().as_millis());
-        Ok(raw_after_pp)
+
+        match raw_after_pp {
+            Some(im) => Ok(im),
+            None => Err(String::from("capture error"))
+        }
     }
 
     pub fn capture_relative_image(&self, info: &ScanInfo) -> Result<RgbImage, String> {

@@ -37,12 +37,12 @@ pub fn to_gray(raw: Vec<u8>, width: u32, height: u32) -> RawImage {
     }
 }
 
-pub fn normalize(im: &mut RawImage, auto_inverse: bool) {
+pub fn normalize(im: &mut RawImage, auto_inverse: bool) -> bool {
     let width = im.w;
     let height = im.h;
 
     if width == 0 || height == 0 {
-        return;
+        return false;
     }
 
     let data = &mut im.data;
@@ -65,6 +65,10 @@ pub fn normalize(im: &mut RawImage, auto_inverse: bool) {
         }
     }
 
+    if max == min {
+        return false;
+    }
+
     let flag_pixel = data[get_index(width, width - 1, height - 1)];
     let flag_pixel = (flag_pixel - min) / (max - min);
 
@@ -82,6 +86,8 @@ pub fn normalize(im: &mut RawImage, auto_inverse: bool) {
             // }
         }
     }
+
+    true
 }
 
 pub fn crop(im: &RawImage) -> RawImage {
@@ -212,9 +218,11 @@ pub fn resize_and_pad(im: &RawImage) -> RawImage {
     }
 }
 
-pub fn pre_process(im: RawImage) -> RawImage {
+pub fn pre_process(im: RawImage) -> Option<RawImage> {
     let mut im = im;
-    normalize(&mut im, true);
+    if !normalize(&mut im, true) {
+        return None;
+    }
     let mut im = crop(&im);
     normalize(&mut im, false);
 
@@ -231,7 +239,7 @@ pub fn pre_process(im: RawImage) -> RawImage {
         }
     }
 
-    im
+    Some(im)
 }
 
 pub fn image_to_raw(im: GrayImage) -> RawImage {

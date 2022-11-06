@@ -11,6 +11,7 @@ use yas::scanner::yas_scanner::{YasScanner, YasScannerConfig};
 use yas::inference::inference::CRNNModel;
 use yas::expo::mona_uranai::MonaFormat;
 use yas::expo::mingyu_lab::MingyuLabFormat;
+use yas::expo::good::GOODFormat;
 
 use winapi::um::winuser::{SetForegroundWindow, GetDpiForSystem, SetThreadDpiAwarenessContext, ShowWindow, SW_SHOW, SW_RESTORE, GetSystemMetrics, SetProcessDPIAware};
 use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
@@ -60,7 +61,7 @@ fn main() {
         .arg(Arg::with_name("verbose").long("verbose").help("显示详细信息"))
         .arg(Arg::with_name("offset-x").long("offset-x").takes_value(true).help("人为指定横坐标偏移（截图有偏移时可用该选项校正）"))
         .arg(Arg::with_name("offset-y").long("offset-y").takes_value(true).help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"))
-        .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式").possible_values(&["mona", "mingyulab"]).default_value("mona"))
+        .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式").possible_values(&["mona", "mingyulab", "good"]).default_value("mona"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
@@ -121,6 +122,11 @@ fn main() {
             let output_filename = output_dir.join("mingyulab.json");
             let mingyulab = MingyuLabFormat::new(&results);
             mingyulab.save(String::from(output_filename.to_str().unwrap()));
+        }
+        Some("good") => {
+            let output_filename = output_dir.join("good.json");
+            let good = GOODFormat::new(&results);
+            good.save(String::from(output_filename.to_str().unwrap()));
         }
         _ => unreachable!()
     }

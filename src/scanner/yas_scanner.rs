@@ -17,7 +17,7 @@ use crate::common::{utils, RawImage, PixelRect, RawCaptureImage, PixelRectBound}
 use crate::capture;
 use crate::common::color::Color;
 use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
-use crate::common::utils::{find_window, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
+use crate::common::utils::{find_window_cls, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
 use crate::inference::pre_process::pre_process;
 
 pub struct YasScannerConfig {
@@ -688,7 +688,7 @@ impl YasScanner {
 impl YasScanner {
     pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
         set_dpi_awareness();
-        let hwnd = match find_window("原神") {
+        let hwnd = match find_window_cls("UnityWndClass", "原神") {
             Ok(v) => v,
             Err(s) => return Err(String::from("未找到原神窗口"))
         };

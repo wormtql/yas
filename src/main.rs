@@ -44,6 +44,7 @@ fn main() {
     }
 
     let version = utils::get_version();
+    info!("version {}", version);
 
     let matches = App::new("YAS - 原神圣遗物导出器")
         .version(version.as_str())
@@ -67,7 +68,7 @@ fn main() {
 
     crate::utils::set_dpi_awareness();
 
-    let hwnd = match utils::find_window("原神") {
+    let hwnd = match utils::find_window_cls("UnityWndClass", "原神") {
         Err(s) => {
             utils::error_and_quit("未找到原神窗口，请确认原神已经开启");
         },
@@ -84,7 +85,7 @@ fn main() {
     // rect.scale(1.25);
     info!("left = {}, top = {}, width = {}, height = {}", rect.left, rect.top, rect.width, rect.height);
 
-    let temp = capture_absolute_image(&rect).unwrap().save("test.png");
+    //let temp = capture_absolute_image(&rect).unwrap().save("test.png");
 
     let mut info: info::ScanInfo;
     if rect.height * 43 == rect.width * 18 {

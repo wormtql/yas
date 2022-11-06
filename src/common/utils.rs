@@ -29,10 +29,25 @@ pub fn encode_wide(s: String) -> Vec<u16> {
     wide
 }
 
+/*
 pub fn find_window(title: &str) -> Result<HWND, String> {
     let wide = encode_wide(String::from(title));
     let result: HWND = unsafe {
         FindWindowW(null_mut(), wide.as_ptr())
+    };
+    if result.is_null() {
+        Err(String::from("cannot find window"))
+    } else {
+        Ok(result)
+    }
+}
+*/
+
+pub fn find_window_cls(cls: &str, title: &str) -> Result<HWND, String> {
+    let wide_cls = encode_wide(String::from(cls));
+    let wide_tit = encode_wide(String::from(title));
+    let result: HWND = unsafe {
+        FindWindowW(wide_cls.as_ptr(), wide_tit.as_ptr())
     };
     if result.is_null() {
         Err(String::from("cannot find window"))

@@ -80,6 +80,8 @@ pub enum ArtifactSetName {
     EchoesOfAnOffering,
     DeepwoodMemories,
     GildedDreams,
+    FlowerOfParadiseLost,
+    DesertPavilionChronicle,
 }
 
 #[derive(Debug, Clone)]
@@ -222,6 +224,8 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         "魂香之花", "祝祀之凭", "垂玉之叶", "涌泉之盏", "浮溯之珏",
         "迷宫的游人", "翠蔓的智者", "贤智的定期", "迷误者之灯", "月桂的宝冠",
         "梦中的铁花", "裁断的翎羽", "沉金的岁月", "如蜜的终宴", "沙王的投影",
+        "月女的华彩", "谢落的筵席", "凝结的时刻", "守秘的魔瓶", "紫晶的花冠",
+        "众王之都的开端", "黄金邦国的结末", "失落迷途的机芯", "迷醉长梦的守护", "流沙贵嗣的遗宝",
     ];
 
     let mut min_index = 0;
@@ -429,6 +433,8 @@ impl ArtifactSetName {
             "魂香之花" | "祝祀之凭" | "垂玉之叶" | "涌泉之盏" | "浮溯之珏" => Some(ArtifactSetName::EchoesOfAnOffering),
             "迷宫的游人" | "翠蔓的智者" | "贤智的定期" | "迷误者之灯" | "月桂的宝冠" => Some(ArtifactSetName::DeepwoodMemories),
             "梦中的铁花" | "裁断的翎羽" | "沉金的岁月" | "如蜜的终宴" | "沙王的投影" => Some(ArtifactSetName::GildedDreams),
+            "月女的华彩" | "谢落的筵席" | "凝结的时刻" | "守秘的魔瓶" | "紫晶的花冠" => Some(ArtifactSetName::FlowerOfParadiseLost),
+            "众王之都的开端" | "黄金邦国的结末" | "失落迷途的机芯" | "迷醉长梦的守护" | "流沙贵嗣的遗宝" => Some(ArtifactSetName::DesertPavilionChronicle),
             _ => None,
         }
     }
@@ -632,6 +638,16 @@ impl ArtifactSlot {
             "沉金的岁月" => Some(ArtifactSlot::Sand),
             "如蜜的终宴" => Some(ArtifactSlot::Goblet),
             "沙王的投影" => Some(ArtifactSlot::Head),
+            "月女的华彩" => Some(ArtifactSlot::Flower),
+            "谢落的筵席" => Some(ArtifactSlot::Feather),
+            "凝结的时刻" => Some(ArtifactSlot::Sand),
+            "守秘的魔瓶" => Some(ArtifactSlot::Goblet),
+            "紫晶的花冠" => Some(ArtifactSlot::Head),
+            "众王之都的开端" => Some(ArtifactSlot::Flower),
+            "黄金邦国的结末" => Some(ArtifactSlot::Feather),
+            "失落迷途的机芯" => Some(ArtifactSlot::Sand),
+            "迷醉长梦的守护" => Some(ArtifactSlot::Goblet),
+            "流沙贵嗣的遗宝" => Some(ArtifactSlot::Head),
             _ => None,
         }
     }

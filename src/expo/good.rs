@@ -151,6 +151,8 @@ impl ArtifactSetName {
             ArtifactSetName::EchoesOfAnOffering => "EchoesOfAnOffering",
             ArtifactSetName::DeepwoodMemories => "DeepwoodMemories",
             ArtifactSetName::GildedDreams => "GildedDreams",
+            ArtifactSetName::FlowerOfParadiseLost => "FlowerOfParadiseLost",
+            ArtifactSetName::DesertPavilionChronicle => "DesertPavilionChronicle",
         }
     }
 }

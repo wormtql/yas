@@ -128,6 +128,8 @@ impl ArtifactSetName {
             ArtifactSetName::EchoesOfAnOffering => "echoes_of_an_offering",
             ArtifactSetName::DeepwoodMemories => "deepwood_memories",
             ArtifactSetName::GildedDreams => "gilded_dreams",
+            ArtifactSetName::FlowerOfParadiseLost => "flower_of_paradise_list",
+            ArtifactSetName::DesertPavilionChronicle => "desert_pavilion_chronicle",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

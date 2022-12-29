@@ -690,7 +690,12 @@ impl YasScanner {
         set_dpi_awareness();
         let hwnd = match find_window_cls("UnityWndClass", "原神") {
             Ok(v) => v,
-            Err(s) => return Err(String::from("未找到原神窗口"))
+            Err(s) => {
+                match find_window("云·原神") {
+                    Ok(v) => v,
+                    Err(s) => return Err(String::from("未找到原神窗口"))
+                }
+            }
         };
 
         show_window_and_set_foreground(hwnd);

@@ -69,7 +69,10 @@ fn main() {
 
     let hwnd = match utils::find_window("原神") {
         Err(s) => {
-            utils::error_and_quit("未找到原神窗口，请确认原神已经开启");
+            match utils::find_window("云·原神") {
+                Ok(h) => h,
+                Err(s) => utils::error_and_quit("未找到原神窗口，请确认原神已经开启"),
+            }
         },
         Ok(h) => h,
     };

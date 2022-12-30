@@ -19,6 +19,7 @@ use crate::common::color::Color;
 use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
 use crate::common::utils::{find_window, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
 use crate::inference::pre_process::pre_process;
+use crate::common::character_name::CHARACTER_NAMES;
 
 pub struct YasScannerConfig {
     max_row: u32,
@@ -115,7 +116,12 @@ impl YasScanResult {
         let sub4 = ArtifactStat::from_zh_cn_raw(&self.sub_stat_4);
 
         let equip = if self.equip.contains("已装备") {
-            Some(self.equip.chars().take(self.equip.len() - 3).collect::<String>())
+            let equip_name = self.equip.chars().take(self.equip.len() - 3).collect::<String>();
+            if CHARACTER_NAMES.contains(equip_name.as_str()) {
+                Some(equip_name)
+            } else {
+                None
+            }
         } else {
             None
         };
@@ -553,7 +559,6 @@ impl YasScanner {
 
                 let str_level = model_inference(&info.level_position, "level", cnt);
                 let str_equip = model_inference(&info.equip_position, "equip", cnt);
-                // let str_equip = String::new();
 
                 cnt += 1;
 

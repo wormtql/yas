@@ -9,6 +9,7 @@ use log::{info};
 pub mod utils;
 pub mod buffer;
 pub mod color;
+pub mod character_name;
 
 #[derive(Debug)]
 pub struct PixelRect {

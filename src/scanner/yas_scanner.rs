@@ -17,7 +17,7 @@ use crate::common::{utils, RawImage, PixelRect, RawCaptureImage, PixelRectBound}
 use crate::capture;
 use crate::common::color::Color;
 use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
-use crate::common::utils::{find_window, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
+use crate::common::utils::{get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep, find_window_local, find_window_cloud};
 use crate::inference::pre_process::pre_process;
 
 pub struct YasScannerConfig {
@@ -30,6 +30,7 @@ pub struct YasScannerConfig {
     number: u32,
     verbose: bool,
     dump_mode: bool,
+    cloud_wait_switch_artifact: u32,
 
     // offset_x: i32,
     // offset_y: i32,
@@ -47,6 +48,7 @@ impl YasScannerConfig {
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
             number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap(),
             verbose: matches.is_present("verbose"),
+            cloud_wait_switch_artifact: matches.value_of("cloud-wait-switch-artifact").unwrap_or("300").parse::<u32>().unwrap(),
 
             // offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
             // offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
@@ -74,6 +76,8 @@ pub struct YasScanner {
 
     avg_switch_time: f64,
     scanned_count: u32,
+
+    is_cloud: bool,
 }
 
 enum ScrollResult {
@@ -148,7 +152,7 @@ fn calc_pool(row: &Vec<u8>) -> f64 {
 }
 
 impl YasScanner {
-    pub fn new(info: ScanInfo, config: YasScannerConfig) -> YasScanner {
+    pub fn new(info: ScanInfo, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
         let row = info.art_row;
         let col = info.art_col;
 
@@ -171,6 +175,8 @@ impl YasScanner {
 
             avg_switch_time: 0.0,
             scanned_count: 0,
+
+            is_cloud
         }
     }
 }
@@ -303,6 +309,10 @@ impl YasScanner {
     }
 
     fn wait_until_switched(&mut self) -> bool {
+        if self.is_cloud {
+            utils::sleep(self.config.cloud_wait_switch_artifact);
+           return  true;
+        }
         let now = SystemTime::now();
 
         let mut consecutive_time = 0;
@@ -706,10 +716,11 @@ impl YasScanner {
 impl YasScanner {
     pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
         set_dpi_awareness();
-        let hwnd = match find_window("原神") {
-            Ok(v) => v,
+        let mut is_cloud = false;
+        let hwnd = match find_window_local() {
+            Ok(v) => {is_cloud = true; v},
             Err(s) => {
-                match find_window("云·原神") {
+                match find_window_cloud() {
                     Ok(v) => v,
                     Err(s) => return Err(String::from("未找到原神窗口"))
                 }
@@ -729,7 +740,7 @@ impl YasScanner {
             Err(e) => return Err(e)
         };
 
-        let mut scanner = YasScanner::new(info, config);
+        let mut scanner = YasScanner::new(info, config, is_cloud);
         let result = scanner.start();
 
         Ok(result)

@@ -62,15 +62,17 @@ fn main() {
         .arg(Arg::with_name("offset-x").long("offset-x").takes_value(true).help("人为指定横坐标偏移（截图有偏移时可用该选项校正）"))
         .arg(Arg::with_name("offset-y").long("offset-y").takes_value(true).help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"))
         .arg(Arg::with_name("output-format").long("output-format").short("f").takes_value(true).help("输出格式").possible_values(&["mona", "mingyulab", "good"]).default_value("mona"))
+        .arg(Arg::with_name("cloud-wait-switch-artifact").long("cloud-wait-switch-artifact").takes_value(true).help("指定云·原神切换圣遗物等待时间(ms)"))
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
     crate::utils::set_dpi_awareness();
 
-    let hwnd = match utils::find_window("原神") {
+    let mut is_cloud = false;
+    let hwnd = match utils::find_window_local() {
         Err(s) => {
-            match utils::find_window("云·原神") {
-                Ok(h) => h,
+            match utils::find_window_cloud() {
+                Ok(h) => {is_cloud = true; h},
                 Err(s) => utils::error_and_quit("未找到原神窗口，请确认原神已经开启"),
             }
         },
@@ -98,6 +100,8 @@ fn main() {
         info = info::ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else if rect.height * 4 == rect.width * 3 {
         info = info::ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
+    } else if rect.height * 7 == rect.width * 3 {
+        info = info::ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else {
         utils::error_and_quit("不支持的分辨率");
     }
@@ -107,7 +111,7 @@ fn main() {
     info.left += offset_x;
     info.top += offset_y;
 
-    let mut scanner = YasScanner::new(info.clone(), config);
+    let mut scanner = YasScanner::new(info.clone(), config, is_cloud);
 
     let now = SystemTime::now();
     let results = scanner.start();

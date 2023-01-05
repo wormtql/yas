@@ -138,6 +138,44 @@ pub const WINDOW_43_18: WindowInfo = WindowInfo {
     pool_pos: Rect(170.0, 2610.0 + 30.0, 900.0, 2610.0)
 };
 
+pub const WINDOW_7_3: WindowInfo = WindowInfo {
+    width: 2100.0,
+    height: 900.0,
+
+    title_pos: Rect(106.6, 1800.0, 139.6, 1550.0),
+    main_stat_name_pos: Rect(224.3, 1690.0, 248.0, 1550.0),
+    main_stat_value_pos: Rect(248.4, 1690.0, 286.8, 1550.0),
+    level_pos: Rect(360.0, 1600.0, 378.0, 1557.0),
+    panel_pos: Rect(100.0, 1941.0, 800.0, 1531.0),
+
+    sub_stat1_pos: Rect(398.1, 1780.0, 427.3, 1570.0),
+    sub_stat2_pos: Rect(427.3, 1780.0, 458.2, 1570.0),
+    sub_stat3_pos: Rect(458.2, 1780.0, 490.9, 1570.0),
+    sub_stat4_pos: Rect(490.9, 1780.0, 523.0, 1570.0),
+
+    equip_pos: Rect(762.6, 1850.0, 787.8, 1598.0),
+    art_count_pos: Rect(27.1, 1945.0, 52.9, 1785.0),
+
+    art_width: 1055.0 - 953.0,
+    art_height: 373.0 - 247.0,
+    art_gap_x: 953.0 - 933.0,
+    art_gap_y: 247.0 - 227.0,
+
+    art_row: 5,
+    art_col: 11,
+
+    left_margin: 166.0,
+    top_margin: 101.0,
+
+    flag_x: 340.0,
+    flag_y: 89.8,
+
+    star_x: 1900.0,
+    star_y: 123.9,
+    
+    pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0)
+};
+
 pub const WINDOW_16_9: WindowInfo = WindowInfo {
     width: 1600.0,
     height: 900.0,

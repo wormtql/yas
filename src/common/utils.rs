@@ -13,7 +13,7 @@ use log::{error, info, warn};
 use reqwest::blocking::Client;
 use reqwest::ClientBuilder;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
-use winapi::um::winuser::{FindWindowW, GetClientRect, ClientToScreen, GetAsyncKeyState, VK_RBUTTON, SetProcessDPIAware, ShowWindow, SW_RESTORE, SetForegroundWindow};
+use winapi::um::winuser::{FindWindowW, GetClientRect, ClientToScreen, GetAsyncKeyState, VK_RBUTTON, SetProcessDPIAware, ShowWindow, SW_RESTORE, SetForegroundWindow, FindWindowExW, GetWindowLongPtrW, GWL_EXSTYLE, GWL_STYLE};
 use winapi::shared::windef::{HWND, RECT as WinRect, POINT as WinPoint};
 use crate::common::PixelRect;
 use winapi::um::winnt::{SID_IDENTIFIER_AUTHORITY, SECURITY_NT_AUTHORITY, PSID, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, CHAR};
@@ -29,6 +29,7 @@ pub fn encode_wide(s: String) -> Vec<u16> {
     wide
 }
 
+/*
 pub fn find_window(title: &str) -> Result<HWND, String> {
     let wide = encode_wide(String::from(title));
     let result: HWND = unsafe {
@@ -39,6 +40,39 @@ pub fn find_window(title: &str) -> Result<HWND, String> {
     } else {
         Ok(result)
     }
+}
+*/
+
+pub fn find_window_local() -> Result<HWND, String> {
+    let title = encode_wide(String::from("原神"));
+    let class = encode_wide(String::from("UnityWndClass"));
+    let result: HWND = unsafe {
+        FindWindowW(class.as_ptr(), title.as_ptr())
+    };
+    if result.is_null() {
+        Err(String::from("cannot find window"))
+    } else {
+        Ok(result)
+    }
+}
+
+pub fn find_window_cloud() -> Result<HWND, String> {
+    let title = encode_wide(String::from("云·原神"));
+    //let class = encode_wide(String::from("Qt5152QWindowIcon"));
+    unsafe {
+        let mut result: HWND = null_mut();
+        for i in 0..3 {
+            result = FindWindowExW(null_mut(), result, null_mut(), title.as_ptr());
+            let exstyle = GetWindowLongPtrW(result, GWL_EXSTYLE);
+            let style = GetWindowLongPtrW(result, GWL_STYLE);
+            if exstyle == 0x0 && style == 0x96080000 {
+                return Ok(result);//全屏
+            } else if exstyle == 0x100 && style == 0x96CE0000 {
+                return  Ok(result);//窗口
+            }
+        }
+    }
+    Err(String::from("cannot find window"))
 }
 
 unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<PixelRect, String> {

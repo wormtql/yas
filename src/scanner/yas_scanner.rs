@@ -17,7 +17,7 @@ use crate::common::{utils, RawImage, PixelRect, RawCaptureImage, PixelRectBound}
 use crate::capture;
 use crate::common::color::Color;
 use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
-use crate::common::utils::{find_window, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
+use crate::common::utils::{get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep, find_window_local, find_window_cloud};
 use crate::inference::pre_process::pre_process;
 use crate::common::character_name::CHARACTER_NAMES;
 
@@ -31,6 +31,7 @@ pub struct YasScannerConfig {
     number: u32,
     verbose: bool,
     dump_mode: bool,
+    cloud_wait_switch_artifact: u32,
 
     // offset_x: i32,
     // offset_y: i32,
@@ -48,6 +49,7 @@ impl YasScannerConfig {
             scroll_stop: matches.value_of("scroll-stop").unwrap_or("80").parse::<u32>().unwrap(),
             number: matches.value_of("number").unwrap_or("0").parse::<u32>().unwrap(),
             verbose: matches.is_present("verbose"),
+            cloud_wait_switch_artifact: matches.value_of("cloud-wait-switch-artifact").unwrap_or("300").parse::<u32>().unwrap(),
 
             // offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
             // offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
@@ -75,6 +77,8 @@ pub struct YasScanner {
 
     avg_switch_time: f64,
     scanned_count: u32,
+
+    is_cloud: bool,
 }
 
 enum ScrollResult {
@@ -154,7 +158,7 @@ fn calc_pool(row: &Vec<u8>) -> f64 {
 }
 
 impl YasScanner {
-    pub fn new(info: ScanInfo, config: YasScannerConfig) -> YasScanner {
+    pub fn new(info: ScanInfo, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
         let row = info.art_row;
         let col = info.art_col;
 
@@ -177,6 +181,8 @@ impl YasScanner {
 
             avg_switch_time: 0.0,
             scanned_count: 0,
+
+            is_cloud
         }
     }
 }
@@ -187,6 +193,21 @@ impl YasScanner {
         let left = info.left + (info.left_margin + (info.art_width + info.art_gap_x) * col + info.art_width / 2) as i32;
         let top = info.top + (info.top_margin + (info.art_height + info.art_gap_y) * row + info.art_height / 4) as i32;
         self.enigo.mouse_move_to(left as i32, top as i32);
+    }
+
+    pub fn panel_down(&mut self) {
+        let info = &self.info;
+        let max_scroll = 20;
+        let mut count = 0;
+        self.enigo.mouse_move_to(info.left + info.star_x as i32, info.top + info.star_y as i32);
+        let level_color = Color::from(57, 67, 79);
+        let mut color = capture::get_color(info.level_position.left as u32, info.level_position.bottom as u32);
+        while !level_color.is_same(&color) && count < max_scroll {
+            self.enigo.mouse_scroll_y(5);
+            utils::sleep(self.config.scroll_stop);
+            color = capture::get_color(info.level_position.left as u32, info.level_position.bottom as u32);
+            count += 1;
+        }
     }
 
     fn sample_initial_color(&mut self) {
@@ -292,6 +313,10 @@ impl YasScanner {
     }
 
     fn wait_until_switched(&mut self) -> bool {
+        if self.is_cloud {
+            utils::sleep(self.config.cloud_wait_switch_artifact);
+           return  true;
+        }
         let now = SystemTime::now();
 
         let mut consecutive_time = 0;
@@ -452,6 +477,7 @@ impl YasScanner {
     }
 
     pub fn start(&mut self) -> Vec<InternalArtifact> {
+        self.panel_down();
         if self.config.capture_only {
             self.start_capture_only();
             return Vec::new();
@@ -693,10 +719,11 @@ impl YasScanner {
 impl YasScanner {
     pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
         set_dpi_awareness();
-        let hwnd = match find_window("原神") {
-            Ok(v) => v,
+        let mut is_cloud = false;
+        let hwnd = match find_window_local() {
+            Ok(v) => {is_cloud = true; v},
             Err(s) => {
-                match find_window("云·原神") {
+                match find_window_cloud() {
                     Ok(v) => v,
                     Err(s) => return Err(String::from("未找到原神窗口"))
                 }
@@ -716,7 +743,7 @@ impl YasScanner {
             Err(e) => return Err(e)
         };
 
-        let mut scanner = YasScanner::new(info, config);
+        let mut scanner = YasScanner::new(info, config, is_cloud);
         let result = scanner.start();
 
         Ok(result)

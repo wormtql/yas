@@ -195,15 +195,13 @@ impl YasScanner {
         let mut count = 0;
         self.enigo.mouse_move_to(info.left + info.star_x as i32, info.top + info.star_y as i32);
         let level_color = Color::from(57, 67, 79);
-        let mut color = capture::get_color(info.level_position.left as u32, info.level_position.top as u32);
+        let mut color = capture::get_color(info.level_position.left as u32, info.level_position.bottom as u32);
         while !level_color.is_same(&color) && count < max_scroll {
             self.enigo.mouse_scroll_y(5);
             utils::sleep(self.config.scroll_stop);
-            color = capture::get_color(info.level_position.left as u32, info.level_position.top as u32);
+            color = capture::get_color(info.level_position.left as u32, info.level_position.bottom as u32);
             count += 1;
         }
-        self.enigo.mouse_scroll_y(5);
-        utils::sleep(self.config.scroll_stop);
     }
 
     fn sample_initial_color(&mut self) {

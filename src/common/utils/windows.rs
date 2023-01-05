@@ -133,7 +133,7 @@ pub fn is_rmb_down() -> bool {
 static mut VERSION: String = String::new();
 unsafe fn get_version_unsafe() -> String {
     if VERSION.len() == 0 {
-        let s = include_str!("../../Cargo.toml");
+        let s = include_str!("../../../Cargo.toml");
         for line in s.lines() {
             if line.starts_with("version = ") {
                 let temp = line.split("\"").collect::<Vec<_>>();

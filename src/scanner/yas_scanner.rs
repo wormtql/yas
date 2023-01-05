@@ -1,25 +1,25 @@
-use std::time::{SystemTime};
-use std::thread;
-use std::sync::mpsc;
-use std::convert::From;
 use std::collections::HashSet;
-use std::io::stdin;
+use std::convert::From;
 use std::fs;
+use std::io::stdin;
+use std::sync::mpsc;
+use std::thread;
+use std::time::SystemTime;
 
+use clap::ArgMatches;
 use enigo::*;
-use log::{info, warn, error, debug};
-use clap::{ArgMatches};
+use log::{debug, error, info, warn};
 use rand::Rng;
 
-use crate::info::info::ScanInfo;
-use crate::inference::inference::CRNNModel;
-use crate::common::{utils, RawImage, PixelRect, RawCaptureImage, PixelRectBound};
+use crate::artifact::internal_artifact::{ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact};
 use crate::capture;
-use crate::common::color::Color;
-use crate::artifact::internal_artifact::{ArtifactSlot, ArtifactStat, ArtifactSetName, InternalArtifact};
-use crate::common::utils::{get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep, find_window_local, find_window_cloud};
-use crate::inference::pre_process::pre_process;
+use crate::common::{PixelRect, PixelRectBound, RawCaptureImage, RawImage, utils};
 use crate::common::character_name::CHARACTER_NAMES;
+use crate::common::color::Color;
+use crate::common::utils::{find_window_cloud, find_window_local, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
+use crate::inference::inference::CRNNModel;
+use crate::inference::pre_process::pre_process;
+use crate::info::info::ScanInfo;
 
 pub struct YasScannerConfig {
     max_row: u32,
@@ -82,7 +82,8 @@ pub struct YasScanner {
 }
 
 enum ScrollResult {
-    TLE,            // time limit exceeded
+    TLE,
+    // time limit exceeded
     Interrupt,
     Success,
     Skip,
@@ -165,7 +166,7 @@ impl YasScanner {
         YasScanner {
             model: CRNNModel::new(
                 String::from("model_training.onnx"),
-                String::from("index_2_word.json")
+                String::from("index_2_word.json"),
             ),
             enigo: Enigo::new(),
             info,
@@ -182,7 +183,7 @@ impl YasScanner {
             avg_switch_time: 0.0,
             scanned_count: 0,
 
-            is_cloud
+            is_cloud,
         }
     }
 }
@@ -315,12 +316,12 @@ impl YasScanner {
     fn wait_until_switched(&mut self) -> bool {
         if self.is_cloud {
             utils::sleep(self.config.cloud_wait_switch_artifact);
-           return  true;
+            return true;
         }
         let now = SystemTime::now();
 
         let mut consecutive_time = 0;
-        let mut diff_flag= false;
+        let mut diff_flag = false;
         while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_artifact as u128 {
             // let pool_start = SystemTime::now();
             let rect = PixelRect {
@@ -386,7 +387,7 @@ impl YasScanner {
     fn get_star(&self) -> u32 {
         let color = capture::get_color(
             (self.info.star_x as i32 + self.info.left) as u32,
-            (self.info.star_y as i32 + self.info.top) as u32
+            (self.info.star_y as i32 + self.info.top) as u32,
         );
 
         let color_1 = Color::from(113, 119, 139);
@@ -516,7 +517,7 @@ impl YasScanner {
             let mut results: Vec<InternalArtifact> = Vec::new();
             let mut model = CRNNModel::new(
                 String::from("model_training.onnx"),
-                String::from("index_2_word.json")
+                String::from("index_2_word.json"),
             );
             let mut error_count = 0;
             let mut dup_count = 0;
@@ -565,7 +566,7 @@ impl YasScanner {
                     if is_dump_mode {
                         processed_img.to_gray_image().save(format!("dumps/p_{}_{}.png", name, cnt)).expect("Err");
                     }
-                    
+
                     let inference_result = model.inference_string(&processed_img);
                     if is_dump_mode {
                         fs::write(format!("dumps/{}_{}.txt", name, cnt), &inference_result).expect("Err");
@@ -698,7 +699,7 @@ impl YasScanner {
                 ScrollResult::TLE => {
                     error!("翻页出现问题");
                     break 'outer;
-                },
+                }
                 ScrollResult::Interrupt => break 'outer,
                 _ => (),
             }
@@ -717,35 +718,35 @@ impl YasScanner {
 
 
 impl YasScanner {
-    pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
-        set_dpi_awareness();
-        let mut is_cloud = false;
-        let hwnd = match find_window_local() {
-            Ok(v) => {is_cloud = true; v},
-            Err(s) => {
-                match find_window_cloud() {
-                    Ok(v) => v,
-                    Err(s) => return Err(String::from("未找到原神窗口"))
-                }
-            }
-        };
-
-        show_window_and_set_foreground(hwnd);
-        sleep(1000);
-
-        let mut rect = match get_client_rect(hwnd) {
-            Ok(v) => v,
-            Err(_) => return Err(String::from("未能获取窗口大小"))
-        };
-
-        let info = match ScanInfo::from_rect(&rect) {
-            Ok(v) => v,
-            Err(e) => return Err(e)
-        };
-
-        let mut scanner = YasScanner::new(info, config, is_cloud);
-        let result = scanner.start();
-
-        Ok(result)
-    }
+    // pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
+    //     set_dpi_awareness();
+    //     let mut is_cloud = false;
+    //     let hwnd = match find_window_local() {
+    //         Ok(v) => {is_cloud = true; v},
+    //         Err(s) => {
+    //             match find_window_cloud() {
+    //                 Ok(v) => v,
+    //                 Err(s) => return Err(String::from("未找到原神窗口"))
+    //             }
+    //         }
+    //     };
+    //
+    //     show_window_and_set_foreground(hwnd);
+    //     sleep(1000);
+    //
+    //     let mut rect = match get_client_rect(hwnd) {
+    //         Ok(v) => v,
+    //         Err(_) => return Err(String::from("未能获取窗口大小"))
+    //     };
+    //
+    //     let info = match ScanInfo::from_rect(&rect) {
+    //         Ok(v) => v,
+    //         Err(e) => return Err(e)
+    //     };
+    //
+    //     let mut scanner = YasScanner::new(info, config, is_cloud);
+    //     let result = scanner.start();
+    //
+    //     Ok(result)
+    // }
 }

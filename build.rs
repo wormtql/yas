@@ -7,3 +7,6 @@ fn main() {
     res.set_manifest_file("manifest.xml");
     res.compile().unwrap();
 }
+
+#[cfg(not(windows))]
+fn main() {}

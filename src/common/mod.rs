@@ -1,8 +1,7 @@
-use crate::capture;
 use crate::inference::pre_process::{pre_process, to_gray, raw_to_img, uint8_raw_to_img};
 use crate::info::info::ScanInfo;
 use image::{GrayImage, ImageBuffer, RgbImage};
-use crate::capture::capture_absolute;
+use crate::capture::{Capture, CaptureImpl};
 use std::time::SystemTime;
 use log::{info};
 
@@ -46,7 +45,7 @@ impl PixelRectBound {
             width: w,
             height: h,
         };
-        let raw_u8 = capture::capture_absolute(&rect).unwrap();
+        let raw_u8 = Capture::capture_absolute(&rect).unwrap();
         let raw_gray = to_gray(raw_u8, w as u32, h as u32);
         let raw_after_pp = pre_process(raw_gray);
 
@@ -66,7 +65,7 @@ impl PixelRectBound {
             height: h,
         };
         let now = SystemTime::now();
-        let raw_u8 = capture::capture_absolute(&rect).unwrap();
+        let raw_u8 = Capture::capture_absolute(&rect).unwrap();
         info!("capture raw time: {}ms", now.elapsed().unwrap().as_millis());
         let raw_gray = to_gray(raw_u8, w as u32, h as u32);
         let raw_after_pp = pre_process(raw_gray);
@@ -88,7 +87,7 @@ impl PixelRectBound {
             height: h,
         };
 
-        capture::capture_absolute_image(&rect)
+        Capture::capture_absolute_image(&rect)
     }
 }
 

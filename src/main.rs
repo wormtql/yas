@@ -3,7 +3,7 @@ use std::path::Path;
 use std::io::stdin;
 
 use yas::common::utils;
-use yas::capture::{capture_absolute, capture_absolute_image};
+use yas::capture::{Capture, CaptureImpl};
 use yas::inference::pre_process::{to_gray, raw_to_img, normalize, crop, pre_process, image_to_raw};
 use yas::info::info;
 use yas::common::{RawImage, PixelRect};
@@ -87,7 +87,7 @@ fn main() {
     // rect.scale(1.25);
     info!("left = {}, top = {}, width = {}, height = {}", rect.left, rect.top, rect.width, rect.height);
 
-    let temp = capture_absolute_image(&rect).unwrap().save("test.png");
+    let temp = Capture::capture_absolute_image(&rect).unwrap().save("test.png");
 
     let mut info: info::ScanInfo;
     if rect.height * 43 == rect.width * 18 {

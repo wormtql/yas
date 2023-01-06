@@ -28,7 +28,7 @@ lazy_static = "1.4.0"
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winuser", "winbase", "wingdi", "winnt", "securitybaseapi", "libloaderapi"] }
 
-[target.'cfg(windows)'.build-dependencies]
+[build-dependencies]
 winres = "0.1"
 
 [profile.release]

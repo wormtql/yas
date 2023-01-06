@@ -164,26 +164,10 @@ pub fn is_rmb_down() -> bool {
     }
 }
 
-static mut VERSION: String = String::new();
-unsafe fn get_version_unsafe() -> String {
-    if VERSION.len() == 0 {
-        let s = include_str!("../../Cargo.toml");
-        for line in s.lines() {
-            if line.starts_with("version = ") {
-                let temp = line.split("\"").collect::<Vec<_>>();
-                let version = String::from(temp[temp.len() - 2]);
-                VERSION = version;
-            }
-        }
-    }
-
-    VERSION.clone()
-}
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn get_version() -> String {
-    unsafe {
-        get_version_unsafe()
-    }
+    VERSION.into()
 }
 
 pub fn check_update() -> Option<String> {

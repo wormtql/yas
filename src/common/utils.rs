@@ -1,4 +1,5 @@
 use std::ffi::{OsStr, OsString};
+#[cfg(windows)]
 use std::os::windows::ffi::OsStrExt;
 use std::iter::once;
 use std::ptr::null_mut;
@@ -13,14 +14,14 @@ use log::{error, info, warn};
 use reqwest::blocking::Client;
 use reqwest::ClientBuilder;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
+use crate::common::PixelRect;
+use crate::dto::GithubTag;
+
 use winapi::um::winuser::{FindWindowW, GetClientRect, ClientToScreen, GetAsyncKeyState, VK_RBUTTON, SetProcessDPIAware, ShowWindow, SW_RESTORE, SetForegroundWindow, FindWindowExW, GetWindowLongPtrW, GWL_EXSTYLE, GWL_STYLE};
 use winapi::shared::windef::{HWND, RECT as WinRect, POINT as WinPoint};
-use crate::common::PixelRect;
 use winapi::um::winnt::{SID_IDENTIFIER_AUTHORITY, SECURITY_NT_AUTHORITY, PSID, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, CHAR};
 use winapi::um::securitybaseapi::{AllocateAndInitializeSid, CheckTokenMembership, FreeSid};
 use winapi::shared::minwindef::{BOOL, HINSTANCE};
-use crate::dto::GithubTag;
-use os_info;
 use winapi::um::libloaderapi::{FreeLibrary, GetProcAddress, LoadLibraryA, LoadLibraryW};
 // use winapi::um::shellscalingapi::{PROCESS_PER_MONITOR_DPI_AWARE, SetProcessDpiAwareness};
 

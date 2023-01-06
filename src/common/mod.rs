@@ -2,7 +2,6 @@ use crate::capture;
 use crate::inference::pre_process::{pre_process, to_gray, raw_to_img, uint8_raw_to_img};
 use crate::info::info::ScanInfo;
 use image::{GrayImage, ImageBuffer, RgbImage};
-use crate::capture::capture_absolute;
 use std::time::SystemTime;
 use log::{info};
 

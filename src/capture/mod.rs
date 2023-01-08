@@ -17,6 +17,7 @@ pub fn capture_absolute(rect: &PixelRect) -> Result<Vec<u8>, String> {
     }
     Ok(re)
 }
+
 pub fn capture_absolute_image(
     PixelRect {
         left,

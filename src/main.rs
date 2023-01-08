@@ -15,14 +15,6 @@ use yas::inference::pre_process::{
 use yas::info::info;
 use yas::scanner::yas_scanner::{YasScanner, YasScannerConfig};
 
-use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
-use winapi::um::wingdi::{GetDeviceCaps, HORZRES};
-use winapi::um::winuser::{
-    GetDpiForSystem, GetSystemMetrics, SetForegroundWindow, SetProcessDPIAware,
-    SetThreadDpiAwarenessContext, ShowWindow, SW_RESTORE, SW_SHOW,
-};
-// use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
-
 use clap::{App, Arg};
 use env_logger::{Builder, Env, Target};
 use image::imageops::grayscale;
@@ -41,13 +33,14 @@ fn open_local(path: String) -> RawImage {
 fn main() {
     Builder::new().filter_level(LevelFilter::Info).init();
 
+    #[cfg(windows)]
     if !utils::is_admin() {
         utils::error_and_quit("请以管理员身份运行该程序")
     }
+
     if let Some(v) = utils::check_update() {
         warn!("检测到新版本，请手动更新：{}", v);
     }
-
 
     let matches = App::new("YAS - 原神圣遗物导出器")
         .version(utils::VERSION)
@@ -146,11 +139,19 @@ fn main() {
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
-    let rect;
-    let is_cloud;
+    let rect: PixelRect;
+    let is_cloud: bool;
 
     #[cfg(windows)]
     {
+        use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
+        use winapi::um::wingdi::{GetDeviceCaps, HORZRES};
+        use winapi::um::winuser::{
+            GetDpiForSystem, GetSystemMetrics, SetForegroundWindow, SetProcessDPIAware,
+            SetThreadDpiAwarenessContext, ShowWindow, SW_RESTORE, SW_SHOW,
+        };
+        // use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
+
         crate::utils::set_dpi_awareness();
 
         let hwnd = match utils::find_window_local() {
@@ -181,7 +182,16 @@ fn main() {
 
     #[cfg(all(target_os = "linux"))]
     {
-        
+        let xwininfo_output = std::process::Command::new("xwininfo").output().unwrap();
+        info!("{}", unsafe {
+            String::from_utf8_unchecked(xwininfo_output.stdout)
+        });
+
+        println!("前面的蛆，以后再来探索吧！");
+        std::process::exit(1);
+
+        rect = todo!("xwininfo");
+        is_cloud = todo!("xwininfo");
     }
 
     // rect.scale(1.25);

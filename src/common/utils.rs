@@ -168,6 +168,11 @@ pub fn is_rmb_down() -> bool {
     }
 }
 
+#[cfg(not(windows))]
+pub fn is_rmb_down() -> bool {
+    todo!("use xcb")
+}
+
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn check_update() -> Option<String> {

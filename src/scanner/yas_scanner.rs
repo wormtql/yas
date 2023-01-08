@@ -16,10 +16,12 @@ use crate::capture;
 use crate::common::{PixelRect, PixelRectBound, RawCaptureImage, RawImage, utils};
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
-use crate::common::utils::{find_window_cloud, find_window_local, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::pre_process;
 use crate::info::info::ScanInfo;
+
+#[cfg(windows)]
+use crate::common::utils::{find_window_cloud, find_window_local, get_client_rect, set_dpi_awareness, show_window_and_set_foreground, sleep};
 
 pub struct YasScannerConfig {
     max_row: u32,

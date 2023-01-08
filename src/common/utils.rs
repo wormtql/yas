@@ -170,7 +170,7 @@ pub fn is_rmb_down() -> bool {
 
 #[cfg(not(windows))]
 pub fn is_rmb_down() -> bool {
-    todo!("use xcb")
+    false
 }
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

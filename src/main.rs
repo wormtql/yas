@@ -227,8 +227,6 @@ fn main() {
         rect.left, rect.top, rect.width, rect.height
     );
 
-    let temp = capture_absolute_image(&rect).unwrap().save("test.png");
-
     let mut info: info::ScanInfo;
     if rect.height * 43 == rect.width * 18 {
         info =

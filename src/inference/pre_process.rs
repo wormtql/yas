@@ -15,7 +15,7 @@ pub fn to_gray(raw: Vec<u8>, width: u32, height: u32) -> RawImage {
     for i in 0..width {
         for j in 0..height {
             let x = i;
-            let y = height - j - 1;
+            let y = j;
             let b = raw[((y * width + x) * 4 + 0) as usize];
             let g = raw[((y * width + x) * 4 + 1) as usize];
             let r = raw[((y * width + x) * 4 + 2) as usize];

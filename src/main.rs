@@ -43,10 +43,9 @@ fn main() {
         warn!("检测到新版本，请手动更新：{}", v);
     }
 
-    let version = utils::get_version();
 
     let matches = App::new("YAS - 原神圣遗物导出器")
-        .version(version.as_str())
+        .version(utils::VERSION)
         .author("wormtql <584130248@qq.com>")
         .about("Genshin Impact Artifact Exporter")
         .arg(Arg::with_name("max-row").long("max-row").takes_value(true).help("最大扫描行数"))

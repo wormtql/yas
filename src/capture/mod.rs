@@ -14,11 +14,11 @@ pub fn capture_absolute(
     }: &PixelRect,
 ) -> Result<Vec<u8>, String> {
     let screen = screenshots::Screen::all().ok_or("cannot get DisplayInfo")?[0];
-    let (mut buffer, is_rgba) = screen
+    let (mut buffer, is_bgra) = screen
         .capture_area(*left, *top, *width as u32, *height as u32)
         .ok_or("capture failed")?;
 
-    if is_rgba {
+    if !is_bgra {
         for chunk in buffer.chunks_mut(4) {
             let temp = chunk[0];
             chunk[0] = chunk[2];
@@ -40,15 +40,15 @@ pub fn capture_absolute_image(
     // simply use the first screen.
     // todo: multi-screen support
     let screen = screenshots::Screen::all().ok_or("cannot get DisplayInfo")?[0];
-    let (buffer, is_rgba) = screen
+    let (buffer, is_bgra) = screen
         .capture_area(*left, *top, *width as u32, *height as u32)
         .ok_or("capture failed")?;
     Ok(RgbImage::from_fn(*width as u32, *height as u32, |x, y| {
         let offset = (y * (*width as u32) + x) as usize;
-        if is_rgba {
-            Rgb([buffer[offset], buffer[offset + 1], buffer[offset + 2]])
-        } else {
+        if is_bgra {
             Rgb([buffer[offset + 2], buffer[offset + 1], buffer[offset]])
+        } else {
+            Rgb([buffer[offset], buffer[offset + 1], buffer[offset + 2]])
         }
     }))
 }

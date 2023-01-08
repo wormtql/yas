@@ -24,17 +24,10 @@ rand = "0.8.5"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 semver = "1.0.7"
 lazy_static = "1.4.0"
-screenshots = { git = "https://github.com/poly000/screenshots-rs", commit = "775f39161b5344faa839c31661d6b85c9f742c6d" }
+screenshots = {git = "https://github.com/poly000/screenshots-rs", commit = "a8abe4dd55051fb3d0bc827e4e9d5eab9a0ce68b"}
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = [
-    "winuser",
-    "winbase",
-    "wingdi",
-    "winnt",
-    "securitybaseapi",
-    "libloaderapi",
-] }
+winapi = { version = "0.3", features = ["winuser", "winbase", "wingdi", "winnt", "securitybaseapi", "libloaderapi"] }
 
 [build-dependencies]
 winres = "0.1"

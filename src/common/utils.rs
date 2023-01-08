@@ -1,4 +1,5 @@
 use std::ffi::{OsStr, OsString};
+#[cfg(windows)]
 use std::os::windows::ffi::OsStrExt;
 use std::iter::once;
 use std::ptr::null_mut;

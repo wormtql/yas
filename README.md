@@ -56,6 +56,7 @@ yas --max-row=1
 
 ```shell
 # Linux下需要首先安装rustup以及mingw-w64，然后再安装对应的rust target，
+# 构建到Linux需要 `libxdo` 和 `libxcb`
 rustup default stable
 rustup target add x86_64-pc-windows-gnu
 cargo build --release --locked --target=x86_64-pc-windows-gnu

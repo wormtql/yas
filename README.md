@@ -21,9 +21,16 @@ SVTR原文使用了多个Local/Global Mixing，其中Global Mixing就是Transfor
 *Yas*同样采用PaddleOCR的做法，即MobileNetV3_Small + Global Mixing，相当于将原RNN替换为Transformer。
 
 ## 使用
+### Windows
 - 打开原神，并切换到背包页面，将背包拉到最上面
 - 下载单exe可执行文件，右键管理员运行
 - 扫描过程中，鼠标右键终止
+### Linux
+- 首先请确保自己在x11下（wayland下截图性能很坏）
+- 用wine窗口化运行原神，打开圣遗物界面，拉到最顶
+- 启动yas
+- Alt+Tab切换到原神窗口，并且在鼠标变为十字后点击一下（还没做窗口聚焦），注意保证原神窗口整体在屏幕内
+- 等待扫描结束。右键中止还没做
 ### 注意
 - 默认4星以下圣遗物不扫描
 - 不是所有窗口比例都支持，推荐16:9的分辨率（如1600x900, 1920x1080, 3840x2160)

@@ -260,7 +260,7 @@ impl YasScanner {
             #[cfg(windows)]
             self.enigo.mouse_scroll_y(5);
             #[cfg(target_os = "linux")]
-            self.enigo.mouse_scroll_y(-5);
+            self.enigo.mouse_scroll_y(-1);
 
             utils::sleep(self.config.scroll_stop);
             color = capture::get_color(
@@ -320,7 +320,7 @@ impl YasScanner {
             #[cfg(windows)]
             self.enigo.mouse_scroll_y(-5);
             #[cfg(target_os = "linux")]
-            self.enigo.mouse_scroll_y(5);
+            self.enigo.mouse_scroll_y(1);
 
             utils::sleep(self.config.scroll_stop);
             count += 1;

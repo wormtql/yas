@@ -27,7 +27,7 @@ SVTR原文使用了多个Local/Global Mixing，其中Global Mixing就是Transfor
 - 扫描过程中，鼠标右键终止
 ### Linux
 - 首先请确保自己在x11下（wayland下截图性能很坏）
-- 用wine窗口化运行原神，打开圣遗物界面，拉到最顶
+- 用wine窗口化运行原神（或者全屏+虚拟桌面），打开圣遗物界面，拉到最顶
 - 启动yas
 - Alt+Tab切换到原神窗口，并且在鼠标变为十字后点击一下（还没做窗口聚焦），注意保证原神窗口整体在屏幕内
 - 等待扫描结束。右键中止还没做
@@ -54,8 +54,11 @@ yas --max-row=1
 
 ## 编译
 
+在构建前，请确保安装`Git LFS`，并运行`git lfs pull`。否则[yas在运行时会使用错误的模型](https://github.com/wormtql/yas/pull/102#issuecomment-1375503803)。
+
 ```shell
 # Linux下需要首先安装rustup以及mingw-w64，然后再安装对应的rust target，
+# 构建到Linux需要 `libxdo` 和 `libxcb`
 rustup default stable
 rustup target add x86_64-pc-windows-gnu
 cargo build --release --locked --target=x86_64-pc-windows-gnu

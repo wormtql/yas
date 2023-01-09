@@ -54,6 +54,8 @@ yas --max-row=1
 
 ## 编译
 
+在构建前，请确保安装`Git LFS`，并运行`git lfs pull`。否则[yas在运行时会使用错误的模型](https://github.com/wormtql/yas/pull/102#issuecomment-1375503803)。
+
 ```shell
 # Linux下需要首先安装rustup以及mingw-w64，然后再安装对应的rust target，
 # 构建到Linux需要 `libxdo` 和 `libxcb`

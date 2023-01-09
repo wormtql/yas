@@ -854,7 +854,7 @@ dependencies = [
  "num-iter",
  "num-rational",
  "num-traits",
- "png 0.16.8",
+ "png",
  "scoped_threadpool",
  "tiff",
 ]
@@ -945,6 +945,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2264f9d90a9b4e60a2dc722ad899ea0374f03c2e96e755fe22a8f551d4d5fb3c"
 dependencies = [
  "pkg-config",
+]
+
+[[package]]
+name = "libz-sys"
+version = "1.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9702761c3935f8cc2f101793272e202c72b99da8f4224a19ddcf1279a6450bbf"
+dependencies = [
+ "cc",
+ "libc",
+ "pkg-config",
+ "vcpkg",
 ]
 
 [[package]]
@@ -1410,18 +1422,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "png"
-version = "0.17.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d708eaf860a19b19ce538740d2b4bdeeb8337fa53f7738455e706623ad5c638"
-dependencies = [
- "bitflags",
- "crc32fast",
- "flate2",
- "miniz_oxide 0.6.2",
-]
-
-[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1728,13 +1728,13 @@ checksum = "ddccb15bcce173023b3fedd9436f882a0739b8dfb45e4f6b6002bee5929f61b2"
 [[package]]
 name = "screenshots"
 version = "0.4.5"
-source = "git+https://github.com/poly000/screenshots-rs#a8abe4dd55051fb3d0bc827e4e9d5eab9a0ce68b"
+source = "git+https://github.com/poly000/screenshots-rs?rev=dc524203614101d85a45f067d894f7f0edbc9477#dc524203614101d85a45f067d894f7f0edbc9477"
 dependencies = [
  "core-graphics 0.22.3",
  "dbus",
  "display-info",
- "png 0.17.7",
  "sfhash",
+ "spng",
  "widestring 0.5.1",
  "windows 0.33.0",
  "xcb",
@@ -1852,6 +1852,28 @@ checksum = "02e2d2db9033d13a1567121ddd7a095ee144db4e1ca1b1bda3419bc0da294ebd"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "spng"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c0da5f94532b18dae90294fae1e30c592c0bcc9be972e40f65e680f5b0b6fdb"
+dependencies = [
+ "bitflags",
+ "libc",
+ "spng-sys",
+]
+
+[[package]]
+name = "spng-sys"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ff5b45827d43bfe613c96fdffd015da649d6b5266c9001d2b647394cc6b8155"
+dependencies = [
+ "cc",
+ "libc",
+ "libz-sys",
 ]
 
 [[package]]

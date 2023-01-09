@@ -272,10 +272,10 @@ impl YasScanner {
     }
 
     fn sample_initial_color(&mut self) {
-        self.initial_color = self.get_color();
+        self.initial_color = self.get_flag_color();
     }
 
-    fn get_color(&self) -> Color {
+    fn get_flag_color(&self) -> Color {
         let flag_x = self.info.flag_x as i32 + self.info.left;
         let flag_y = self.info.flag_y as i32 + self.info.top;
         let color = capture::get_color(flag_x as u32, flag_y as u32);
@@ -324,7 +324,7 @@ impl YasScanner {
 
             utils::sleep(self.config.scroll_stop);
             count += 1;
-            let color: Color = self.get_color();
+            let color: Color = self.get_flag_color();
             // println!("{:?}", color);
             if state == 0 && !color.is_same(&self.initial_color) {
                 state = 1;
@@ -369,7 +369,7 @@ impl YasScanner {
     fn align_row(&mut self) -> bool {
         let mut count = 0;
         while count < 10 {
-            let color = self.get_color();
+            let color = self.get_flag_color();
             if color.is_same(&self.initial_color) {
                 return true;
             }

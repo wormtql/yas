@@ -24,7 +24,7 @@ rand = "0.8.5"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 semver = "1.0.7"
 lazy_static = "1.4.0"
-screenshots = { git = "https://github.com/poly000/screenshots-rs", rev = "a8abe4dd55051fb3d0bc827e4e9d5eab9a0ce68b" }
+screenshots = { git = "https://github.com/poly000/screenshots-rs", rev = "d96dff76c5f5cbd849d80451f0df8f415f8e5f4b" }
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = [

@@ -3,7 +3,7 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    fn new(width: usize, height: usize) -> Buffer {
+    fn new_zeroed(width: usize, height: usize) -> Buffer {
         Buffer {
             data: vec![vec![0.0; width]; height]
         }

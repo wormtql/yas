@@ -41,5 +41,4 @@ winres = "0.1"
 [profile.release]
 lto = true
 panic = "abort"
-strip = false
-debug = true
+strip = true

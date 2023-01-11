@@ -26,7 +26,7 @@ SVTR原文使用了多个Local/Global Mixing，其中Global Mixing就是Transfor
 - 下载单exe可执行文件，右键管理员运行
 - 扫描过程中，鼠标右键终止
 ### Linux
-- 首先请确保自己在x11下（wayland下截图性能很坏）
+- 首先请确保自己在x11下或者GNOME/Wayland下（其他wayland de下[会有很坏的性能](https://github.com/poly000/screenshots-rs/blob/d96dff76c5f5cbd849d80451f0df8f415f8e5f4b/src/linux/wayland_screenshot.rs#L109)）
 - 用wine窗口化运行原神（或者全屏+虚拟桌面），打开圣遗物界面，拉到最顶
 - 启动yas
 - Alt+Tab切换到原神窗口，并且在鼠标变为十字后点击一下（还没做窗口聚焦），注意保证原神窗口整体在屏幕内

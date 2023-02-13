@@ -141,7 +141,7 @@ impl RawCaptureImage {
         for i in rect.left..rect.left + rect.width {
             for j in rect.top..rect.top + rect.height {
                 let x = i;
-                let y = self.h as i32 - j - 1;
+                let y = j;
                 let b: u8 = self.data[((y * self.w as i32 + x) * 4) as usize];
                 let g: u8 = self.data[((y * self.w as i32 + x) * 4 + 1) as usize];
                 let r: u8 = self.data[((y * self.w as i32 + x) * 4 + 2) as usize];

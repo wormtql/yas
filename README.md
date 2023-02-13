@@ -21,9 +21,16 @@ SVTR原文使用了多个Local/Global Mixing，其中Global Mixing就是Transfor
 *Yas*同样采用PaddleOCR的做法，即MobileNetV3_Small + Global Mixing，相当于将原RNN替换为Transformer。
 
 ## 使用
+### Windows
 - 打开原神，并切换到背包页面，将背包拉到最上面
 - 下载单exe可执行文件，右键管理员运行
 - 扫描过程中，鼠标右键终止
+### Linux
+- 首先请确保自己在x11下或者GNOME/Wayland下（其他wayland de下[会有很坏的性能](https://github.com/poly000/screenshots-rs/blob/d96dff76c5f5cbd849d80451f0df8f415f8e5f4b/src/linux/wayland_screenshot.rs#L109)）
+- 用wine窗口化运行原神（或者全屏+虚拟桌面），打开圣遗物界面，拉到最顶
+- 启动yas
+- Alt+Tab切换到原神窗口，并且在鼠标变为十字后点击一下（还没做窗口聚焦），注意保证原神窗口整体在屏幕内
+- 等待扫描结束。右键中止还没做
 ### 注意
 - 默认4星以下圣遗物不扫描
 - 不是所有窗口比例都支持，推荐16:9的分辨率（如1600x900, 1920x1080, 3840x2160)
@@ -47,8 +54,11 @@ yas --max-row=1
 
 ## 编译
 
+在构建前，请确保安装`Git LFS`，并运行`git lfs pull`。否则[yas在运行时会使用错误的模型](https://github.com/wormtql/yas/pull/102#issuecomment-1375503803)。
+
 ```shell
 # Linux下需要首先安装rustup以及mingw-w64，然后再安装对应的rust target，
+# 构建到Linux需要 `libxdo` 和 `libxcb`
 rustup default stable
 rustup target add x86_64-pc-windows-gnu
 cargo build --release --locked --target=x86_64-pc-windows-gnu

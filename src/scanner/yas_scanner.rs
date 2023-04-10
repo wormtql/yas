@@ -243,6 +243,7 @@ impl YasScanner {
         self.enigo.mouse_move_to(left as i32, top as i32);
     }
 
+    /*
     pub fn panel_down(&mut self) {
         let info = &self.info;
         let max_scroll = 20;
@@ -270,6 +271,7 @@ impl YasScanner {
             count += 1;
         }
     }
+    */
 
     fn sample_initial_color(&mut self) {
         self.initial_color = self.get_flag_color();
@@ -569,7 +571,7 @@ impl YasScanner {
     }
 
     pub fn start(&mut self) -> Vec<InternalArtifact> {
-        self.panel_down();
+        //self.panel_down();
         if self.config.capture_only {
             self.start_capture_only();
             return Vec::new();

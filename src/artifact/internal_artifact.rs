@@ -82,6 +82,8 @@ pub enum ArtifactSetName {
     GildedDreams,
     FlowerOfParadiseLost,
     DesertPavilionChronicle,
+    NymphsDream,
+    VourukashasGlow,
 }
 
 #[derive(Debug, Clone)]
@@ -226,6 +228,8 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         "梦中的铁花", "裁断的翎羽", "沉金的岁月", "如蜜的终宴", "沙王的投影",
         "月女的华彩", "谢落的筵席", "凝结的时刻", "守秘的魔瓶", "紫晶的花冠",
         "众王之都的开端", "黄金邦国的结末", "失落迷途的机芯", "迷醉长梦的守护", "流沙贵嗣的遗宝",
+        "恶龙的单片镜", "坏巫师的羽杖", "旅途中的鲜花", "水仙的时时刻刻", "勇者们的茶会",
+        "灵光明烁之心", "琦色灵彩之羽", "灵光源起之蕊", "久远花落之时", "无边酣乐之筵",
     ];
 
     let mut min_index = 0;
@@ -435,6 +439,8 @@ impl ArtifactSetName {
             "梦中的铁花" | "裁断的翎羽" | "沉金的岁月" | "如蜜的终宴" | "沙王的投影" => Some(ArtifactSetName::GildedDreams),
             "月女的华彩" | "谢落的筵席" | "凝结的时刻" | "守秘的魔瓶" | "紫晶的花冠" => Some(ArtifactSetName::FlowerOfParadiseLost),
             "众王之都的开端" | "黄金邦国的结末" | "失落迷途的机芯" | "迷醉长梦的守护" | "流沙贵嗣的遗宝" => Some(ArtifactSetName::DesertPavilionChronicle),
+            "恶龙的单片镜" | "坏巫师的羽杖" | "旅途中的鲜花" | "水仙的时时刻刻" | "勇者们的茶会" => Some(ArtifactSetName::NymphsDream),
+            "灵光明烁之心" | "琦色灵彩之羽" | "灵光源起之蕊" | "久远花落之时" | "无边酣乐之筵" => Some(ArtifactSetName::VourukashasGlow),
             _ => None,
         }
     }
@@ -648,6 +654,16 @@ impl ArtifactSlot {
             "失落迷途的机芯" => Some(ArtifactSlot::Sand),
             "迷醉长梦的守护" => Some(ArtifactSlot::Goblet),
             "流沙贵嗣的遗宝" => Some(ArtifactSlot::Head),
+            "旅途中的鲜花" => Some(ArtifactSlot::Flower),
+            "坏巫师的羽杖" => Some(ArtifactSlot::Feather),
+            "水仙的时时刻刻" => Some(ArtifactSlot::Sand),
+            "勇者们的茶会" => Some(ArtifactSlot::Goblet),
+            "恶龙的单片镜" => Some(ArtifactSlot::Head),
+            "灵光源起之蕊" => Some(ArtifactSlot::Flower),
+            "琦色灵彩之羽" => Some(ArtifactSlot::Feather),
+            "久远花落之时" => Some(ArtifactSlot::Sand),
+            "无边酣乐之筵" => Some(ArtifactSlot::Goblet),
+            "灵光明烁之心" => Some(ArtifactSlot::Head),
             _ => None,
         }
     }

@@ -130,6 +130,8 @@ impl ArtifactSetName {
             ArtifactSetName::GildedDreams => "gilded_dreams",
             ArtifactSetName::FlowerOfParadiseLost => "flower_of_paradise_list",
             ArtifactSetName::DesertPavilionChronicle => "desert_pavilion_chronicle",
+            ArtifactSetName::NymphsDream => "nymphs_dream",
+            ArtifactSetName::VourukashasGlow => "vourukashas_glow",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

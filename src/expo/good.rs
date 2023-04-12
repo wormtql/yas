@@ -153,6 +153,8 @@ impl ArtifactSetName {
             ArtifactSetName::GildedDreams => "GildedDreams",
             ArtifactSetName::FlowerOfParadiseLost => "FlowerOfParadiseLost",
             ArtifactSetName::DesertPavilionChronicle => "DesertPavilionChronicle",
+            ArtifactSetName::NymphsDream => "NymphsDream",
+            ArtifactSetName::VourukashasGlow => "VourukashasGlow",
         }
     }
 }

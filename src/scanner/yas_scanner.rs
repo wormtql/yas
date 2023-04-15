@@ -291,7 +291,6 @@ impl YasScanner {
         if let 0 = count {
             let info = &self.info;
             let raw_after_pp = self.info.art_count_position.capture_relative(info, true).unwrap();
-            raw_after_pp.to_common_grayscale().save("dumps/count.png");
             let s = self.model.inference_string(&raw_after_pp);
             info!("raw count string: {}", s);
             if s.starts_with("圣遗物") {
@@ -455,7 +454,6 @@ impl YasScanner {
         };
         let u8_arr = capture::capture_absolute(&rect)?;
         // info!("capture time: {}ms", now.elapsed().unwrap().as_millis());
-        println!("requested width:{}, {}; received width:{}, {}", w, h, u8_arr.width(), u8_arr.height());
         Ok(u8_arr)
     }
 
@@ -488,7 +486,7 @@ impl YasScanner {
 
         star
     }
-/* 
+/*
     fn start_capture_only(&mut self) {
         fs::create_dir("captures");
         let info = &self.info.clone();
@@ -617,9 +615,6 @@ impl YasScanner {
             width:self.info.width as i32,
             height:self.info.height as i32,
         };
-
-        let full_im = capture_absolute(&full_rect).unwrap();
-        full_im.save("dumps/full_im.png");
         
 
 
@@ -628,7 +623,6 @@ impl YasScanner {
         // v bvvmnvbm
         let is_verbose = self.config.verbose;
         let is_dump_mode = self.config.dump_mode;
-        println!("is dumping;{}", is_dump_mode);
         let min_level = self.config.min_level;
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
@@ -661,7 +655,6 @@ impl YasScanner {
                     None => break,
                 };
                 info!("raw capture image: width = {}, height = {}", capture.width(), capture.height());
-                capture.save("dumps/raw0.png");
                 let now = SystemTime::now();
 
                 let model_inference = |pos: &PixelRectBound, name: &str, captured_img: &RgbImage, cnt: i32| -> String {
@@ -670,13 +663,11 @@ impl YasScanner {
                     //let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
                     info!("raw_img: width = {}, height = {}", raw_img.width(), raw_img.height());
 
-                    if is_dump_mode && name == "main_stat_value" {
+                    if is_dump_mode {
                         raw_img
                             .to_common_grayscale()
                             .save(format!("dumps/{}_{}.png", name, cnt))
                             .expect("Err");
-                        println!("main stat value size:{}, {}, relative to panel:{}, {}", rect.width, rect.height, rect.left, rect.top);
-                        println!("captured image size:{}, {}", captured_img.width(), captured_img.height());
                     }
 
                     let processed_img = match pre_process(raw_img) {
@@ -685,7 +676,7 @@ impl YasScanner {
                             return String::new();
                         }
                     };
-                    if is_dump_mode && name == "main_stat_value" {
+                    if is_dump_mode {
                         processed_img
                             .to_common_grayscale()
                             .save(format!("dumps/p_{}_{}.png", name, cnt))
@@ -693,7 +684,7 @@ impl YasScanner {
                     }
 
                     let inference_result = model.inference_string(&processed_img);
-                    if is_dump_mode && name == "main_stat_value" {
+                    if is_dump_mode {
                         fs::write(format!("dumps/{}_{}.txt", name, cnt), &inference_result)
                             .expect("Err");
                     }
@@ -804,7 +795,6 @@ impl YasScanner {
                     //self.wait_until_switched();
                     utils::sleep(500);
                     let capture = self.capture_panel().unwrap();
-                    capture.save("dumps/captured_panel.png");
                     let star = self.get_star();
                     if star < self.config.min_star {
                         break 'outer;

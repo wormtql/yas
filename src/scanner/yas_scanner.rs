@@ -192,12 +192,12 @@ impl YasScanResult {
 }
 
 fn calc_pool(row: &Vec<u8>) -> f32 {
-    let len = row.len() / 3;//像素数
+    let len = row.len() / 3;
     let mut pool: f32 = 0.0;
 
     for i in 0..len {
         pool += row[i * 3] as f32;
-    }//alpha像素值？？？
+    }
     // pool /= len as f64;
     pool
 }
@@ -608,15 +608,7 @@ impl YasScanner {
         info!("detected count: {}", count);
         info!("total row: {}", total_row);
         info!("last column: {}", last_row_col);
-
-        let full_rect = PixelRect {
-            left:self.info.left,
-            top:self.info.top,
-            width:self.info.width as i32,
-            height:self.info.height as i32,
-        };
         
-
 
         let (tx, rx) = mpsc::channel::<Option<(RgbImage, u32)>>();
         let info_2 = self.info.clone();
@@ -791,8 +783,7 @@ impl YasScanner {
                     self.move_to(row, col);
                     self.enigo.mouse_click(MouseButton::Left);
 
-                    //self.wait_until_switched();
-                    utils::sleep(500);
+                    self.wait_until_switched();
                     let capture = self.capture_panel().unwrap();
                     let star = self.get_star();
                     if star < self.config.min_star {

@@ -660,8 +660,7 @@ impl YasScanner {
                 let model_inference = |pos: &PixelRectBound, name: &str, captured_img: &RgbImage, cnt: i32| -> String {
                     let rect = convert_rect(pos);
                     let raw_img = to_gray(captured_img).view(rect.left as u32, rect.top as u32, rect.width as u32, rect.height as u32).to_image();
-                    //let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
-                    info!("raw_img: width = {}, height = {}", raw_img.width(), raw_img.height());
+                    //info!("raw_img: width = {}, height = {}", raw_img.width(), raw_img.height());
 
                     if is_dump_mode {
                         raw_img

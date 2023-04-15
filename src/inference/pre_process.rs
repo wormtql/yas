@@ -227,11 +227,8 @@ pub fn pre_process(im: GrayImageFloat) -> Option<GrayImageFloat> {
     if !normalize(&mut im, true) {
         return None;
     }
-    /*
-    println!("Before crop, im size:{}, {}", im.width(), im.height());
     let mut im = crop(&im);
-    println!("After crop, im size:{}, {}", im.width(), im.height());
-    */
+    
     normalize(&mut im, false);
 
     let mut im = resize_and_pad(&im);

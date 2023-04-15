@@ -267,7 +267,6 @@ fn main() {
                     let mut cg_title_ref: *const c_void = std::ptr::null_mut();
                     CFDictionaryGetValueIfPresent(win_info_ref, kCGWindowOwnerName as *const c_void, &mut cg_title_ref);
                     let cg_title = CFString::wrap_under_get_rule(cg_title_ref as CFStringRef);
-                    println!("title:{}", cg_title);
                     if cg_rect.origin.x > 0.0 {
                         mrect = PixelRect {
                             left:cg_rect.origin.x as i32,
@@ -279,7 +278,6 @@ fn main() {
                     }
                 }
             }
-            println!("Window count:{}", window_count);
             assert!(window_count>0, "Genshin Window not found");
             rect = mrect;
         }
@@ -308,7 +306,6 @@ fn main() {
     } else if rect.height * 7 == rect.width * 3 {
         info = info::ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else if cfg!(target_os = "macos") {
-        println!("mac running");
         info = info::ScanInfo::from_MAC_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else {
         utils::error_and_quit("不支持的分辨率");

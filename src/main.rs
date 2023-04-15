@@ -22,6 +22,7 @@ use image::{ImageBuffer, Pixel};
 use log::{info, warn, LevelFilter};
 use os_info;
 
+
 fn open_local(path: String) -> RawImage {
     let img = image::open(path).unwrap();
     let img = grayscale(&img);
@@ -220,6 +221,72 @@ fn main() {
         };
         is_cloud = false; // todo: detect cloud genshin by title
     }
+
+    #[cfg(all(target_os = "macos"))]
+    {        
+        unsafe {
+            use core_foundation::string::*;
+            use core_foundation::number::*;
+            use core_foundation::base::*;
+            use core_foundation::dictionary::*;
+            use core_foundation::array::*;
+            use std::ffi::{ CStr, c_void };
+            use core_graphics::display::{CGRect, CFDictionary};
+            use core_graphics::window::{copy_window_info, CGWindowListCopyWindowInfo, kCGWindowListOptionExcludeDesktopElements, kCGNullWindowID, kCGWindowOwnerPID, kCGWindowBounds, kCGWindowOwnerName};
+            let cf_win_array = CGWindowListCopyWindowInfo(kCGWindowListOptionExcludeDesktopElements, kCGNullWindowID);
+            let count = CFArrayGetCount(cf_win_array);
+            assert!(count > 0, "No genshin window found");
+
+            let pid_str = 
+                String::from_utf8_unchecked(
+                    std::process::Command::new("sh")
+                        .arg("-c")
+                        .arg(&format!(r#"ps -Aj | grep [Y]uanshen | cut -f 2 -w"#))
+                        .output()
+                        .unwrap()
+                        .stdout,
+                );
+            let pid:i32 = pid_str.trim().parse().unwrap();
+            let mut found_window = false;
+            let mut mrect = PixelRect{left:0, top:0, width:0, height:0};
+            let mut window_count = 0;
+
+            for i in 0..count {
+                let win_info_ref:CFDictionaryRef = CFArrayGetValueAtIndex(cf_win_array, i) as CFDictionaryRef;
+                let mut test_pid_ref: *const c_void = std::ptr::null_mut();
+                assert!(CFDictionaryGetValueIfPresent(win_info_ref, kCGWindowOwnerPID as *const c_void, &mut test_pid_ref)!=0);
+                let test_pid = CFNumber::wrap_under_get_rule(test_pid_ref as CFNumberRef);
+
+
+                if pid == test_pid.to_i32().unwrap() {
+                    let mut cg_bounds_dict_ref: *const c_void = std::ptr::null_mut();
+                    CFDictionaryGetValueIfPresent(win_info_ref, kCGWindowBounds as *const c_void, &mut cg_bounds_dict_ref);
+                    let cg_bounds_dict = CFDictionary::wrap_under_get_rule(cg_bounds_dict_ref as CFDictionaryRef);
+                    let cg_rect = CGRect::from_dict_representation(&cg_bounds_dict).unwrap();
+
+                    let mut cg_title_ref: *const c_void = std::ptr::null_mut();
+                    CFDictionaryGetValueIfPresent(win_info_ref, kCGWindowOwnerName as *const c_void, &mut cg_title_ref);
+                    let cg_title = CFString::wrap_under_get_rule(cg_title_ref as CFStringRef);
+                    println!("title:{}", cg_title);
+                    if cg_rect.origin.x > 0.0 {
+                        mrect = PixelRect {
+                            left:cg_rect.origin.x as i32,
+                            top:cg_rect.origin.y as i32,
+                            width:cg_rect.size.width as i32,
+                            height:cg_rect.size.height as i32,
+                        };
+                        window_count+=1
+                    }
+                }
+            }
+            println!("Window count:{}", window_count);
+            assert!(window_count>0, "Genshin Window not found");
+            rect = mrect;
+        }
+        is_cloud = false; // todo: detect cloud genshin by title
+    }
+
+
 
     // rect.scale(1.25);
     info!(

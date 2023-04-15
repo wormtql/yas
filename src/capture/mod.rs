@@ -1,6 +1,6 @@
 use std::{os::macos::raw, fs::File};
 
-use image::{Rgb, RgbImage, ImageBuffer, RgbaImage, buffer::ConvertBuffer};
+use image::{Rgb, RgbImage, ImageBuffer, RgbaImage, buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle};
 
 use crate::common::color::Color;
 use crate::common::PixelRect;
@@ -21,7 +21,11 @@ pub fn capture_absolute(
     let png_img = screen
         .capture_area(*left, *top, *width as u32, *height as u32)
         .expect("capture failed");
-    png_decode(png_img)
+    let mut rgb_img = png_decode(png_img).unwrap();
+    if rgb_img.width() as i32> *width && rgb_img.height() as i32> *height {
+        rgb_img = resize(&rgb_img, (*width) as u32, (*height) as u32, Triangle);
+    }
+    Ok(rgb_img)
 }
 
 fn png_decode(png_img:screenshots::Image) -> Result<RgbImage, String>  {
@@ -38,7 +42,6 @@ fn png_decode(png_img:screenshots::Image) -> Result<RgbImage, String>  {
 
     let rgba_img = RgbaImage::from_raw(png_img.width(), png_img.height(), png_data_buf).unwrap();
     let rgb_img: RgbImage = rgba_img.convert();
-    rgba_img.save("dumps/rgba1.png");
     Ok(rgb_img)
 }
 
@@ -57,7 +60,11 @@ pub fn capture_absolute_image(
         .capture_area(*left, *top, *width as u32, *height as u32)
         .expect("capture failed");
 
-    let buffer = png_decode(image).unwrap();
+    let mut buffer = png_decode(image).unwrap();
+
+    if buffer.width() as i32> *width && buffer.height() as i32> *height {
+        buffer = resize(&buffer, (*width) as u32, (*height) as u32, Triangle);
+    }
     Ok(buffer)
 }
 

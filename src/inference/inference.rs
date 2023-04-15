@@ -59,7 +59,6 @@ impl CRNNModel {
     }
 
     pub fn inference_string(&self, img: &GrayImageFloat) -> String {
-        print!("image shape:{}, {}", img.width(), img.height());
         let tensor: Tensor = tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
             img.get_pixel(x as u32, y as u32)[0]
         }).into();

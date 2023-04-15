@@ -8,14 +8,14 @@ use std::time::SystemTime;
 
 use clap::ArgMatches;
 use enigo::*;
-use image::{RgbImage, GenericImage};
+use image::{RgbImage, GenericImage, GenericImageView};
 use log::{debug, error, info, warn};
 use rand::Rng;
 
 use crate::artifact::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact,
 };
-use crate::capture;
+use crate::capture::{self, capture_absolute};
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 use crate::common::{utils, PixelRect, PixelRectBound, RawCaptureImage, RawImage};
@@ -455,6 +455,7 @@ impl YasScanner {
         };
         let u8_arr = capture::capture_absolute(&rect)?;
         // info!("capture time: {}ms", now.elapsed().unwrap().as_millis());
+        println!("requested width:{}, {}; received width:{}, {}", w, h, u8_arr.width(), u8_arr.height());
         Ok(u8_arr)
     }
 
@@ -610,6 +611,18 @@ impl YasScanner {
         info!("total row: {}", total_row);
         info!("last column: {}", last_row_col);
 
+        let full_rect = PixelRect {
+            left:self.info.left,
+            top:self.info.top,
+            width:self.info.width as i32,
+            height:self.info.height as i32,
+        };
+
+        let full_im = capture_absolute(&full_rect).unwrap();
+        full_im.save("dumps/full_im.png");
+        
+
+
         let (tx, rx) = mpsc::channel::<Option<(RgbImage, u32)>>();
         let info_2 = self.info.clone();
         // v bvvmnvbm
@@ -641,6 +654,7 @@ impl YasScanner {
                 height: rect.bottom - rect.top,
             };
 
+
             for i in rx {
                 let (capture, star) = match i {
                     Some(v) => v,
@@ -652,18 +666,17 @@ impl YasScanner {
 
                 let model_inference = |pos: &PixelRectBound, name: &str, captured_img: &RgbImage, cnt: i32| -> String {
                     let rect = convert_rect(pos);
-                    let raw_img = to_gray(captured_img).sub_image(rect.left as u32, rect.top as u32, rect.width as u32, rect.height as u32).to_image();
+                    let raw_img = to_gray(captured_img).view(rect.left as u32, rect.top as u32, rect.width as u32, rect.height as u32).to_image();
                     //let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
-
                     info!("raw_img: width = {}, height = {}", raw_img.width(), raw_img.height());
 
-                    captured_img.save(format!("dumps/captured_{}_{}.png", name, cnt));
-
-                    if is_dump_mode {
+                    if is_dump_mode && name == "main_stat_value" {
                         raw_img
                             .to_common_grayscale()
                             .save(format!("dumps/{}_{}.png", name, cnt))
                             .expect("Err");
+                        println!("main stat value size:{}, {}, relative to panel:{}, {}", rect.width, rect.height, rect.left, rect.top);
+                        println!("captured image size:{}, {}", captured_img.width(), captured_img.height());
                     }
 
                     let processed_img = match pre_process(raw_img) {
@@ -672,7 +685,7 @@ impl YasScanner {
                             return String::new();
                         }
                     };
-                    if is_dump_mode {
+                    if is_dump_mode && name == "main_stat_value" {
                         processed_img
                             .to_common_grayscale()
                             .save(format!("dumps/p_{}_{}.png", name, cnt))
@@ -680,7 +693,7 @@ impl YasScanner {
                     }
 
                     let inference_result = model.inference_string(&processed_img);
-                    if is_dump_mode {
+                    if is_dump_mode && name == "main_stat_value" {
                         fs::write(format!("dumps/{}_{}.txt", name, cnt), &inference_result)
                             .expect("Err");
                     }

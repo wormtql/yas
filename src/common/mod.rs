@@ -1,8 +1,7 @@
 use crate::capture;
-use crate::inference::pre_process::{pre_process, to_gray, raw_to_img, uint8_raw_to_img};
+use crate::inference::pre_process::{pre_process, to_gray, raw_to_img, uint8_raw_to_img, GrayImageFloat};
 use crate::info::info::ScanInfo;
 use image::{GrayImage, ImageBuffer, RgbImage};
-use crate::capture::capture_absolute;
 use std::time::SystemTime;
 use log::{info};
 
@@ -37,7 +36,7 @@ pub struct PixelRectBound {
 }
 
 impl PixelRectBound {
-    pub fn capture_absolute(&self) -> Result<RawImage, String> {
+    pub fn capture_absolute(&self) -> Result<GrayImageFloat, String> {
         let w = self.right - self.left;
         let h = self.bottom - self.top;
         let rect = PixelRect {
@@ -47,7 +46,7 @@ impl PixelRectBound {
             height: h,
         };
         let raw_u8 = capture::capture_absolute(&rect).unwrap();
-        let raw_gray = to_gray(raw_u8, w as u32, h as u32);
+        let raw_gray = to_gray(&raw_u8);
         let raw_after_pp = pre_process(raw_gray);
 
         match raw_after_pp {
@@ -56,7 +55,7 @@ impl PixelRectBound {
         }
     }
 
-    pub fn capture_relative(&self, info: &ScanInfo) -> Result<RawImage, String> {
+    pub fn capture_relative(&self, info: &ScanInfo, use_pre_process: bool) -> Result<GrayImageFloat, String> {
         let w = self.right - self.left;
         let h = self.bottom - self.top;
         let rect = PixelRect {
@@ -67,9 +66,19 @@ impl PixelRectBound {
         };
         let now = SystemTime::now();
         let raw_u8 = capture::capture_absolute(&rect).unwrap();
+        raw_u8.save("dumps/raw_u81.png");
         info!("capture raw time: {}ms", now.elapsed().unwrap().as_millis());
-        let raw_gray = to_gray(raw_u8, w as u32, h as u32);
-        let raw_after_pp = pre_process(raw_gray);
+        println!("in cpature_relative, w:{}, h:{}, left:{}, right:{}, top:{}, bottom:{}", w, h, self.left, self.right, self.top, self.bottom);
+        let raw_gray = to_gray(&raw_u8);
+        println!("raw image shape before preprocess:{}, {}", raw_gray.width(), raw_gray.height());
+        let raw_after_pp = if use_pre_process {
+                pre_process(raw_gray)
+            }
+            else {
+                Some(raw_gray)
+            };
+
+        println!("raw image shape after preprocess:{}, {}", raw_after_pp.as_ref().unwrap().width(), raw_after_pp.as_ref().unwrap().height());
         info!("preprocess time: {}ms", now.elapsed().unwrap().as_millis());
 
         match raw_after_pp {

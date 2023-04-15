@@ -5,9 +5,9 @@ use tract_onnx::prelude::*;
 use tract_onnx::Onnx;
 use serde_json::{Result, Value};
 
-use crate::common::RawImage;
 use crate::common::utils;
 use image::EncodableLayout;
+use crate::inference::pre_process::GrayImageFloat;
 
 
 type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
@@ -58,10 +58,10 @@ impl CRNNModel {
         }
     }
 
-    pub fn inference_string(&self, img: &RawImage) -> String {
+    pub fn inference_string(&self, img: &GrayImageFloat) -> String {
+        print!("image shape:{}, {}", img.width(), img.height());
         let tensor: Tensor = tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
-            let index = img.w * y as u32 + x as u32;
-            img.data[index as usize]
+            img.get_pixel(x as u32, y as u32)[0]
         }).into();
 
         let result = self.model.run(tvec!(tensor)).unwrap();

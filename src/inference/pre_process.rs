@@ -1,51 +1,69 @@
 use image::imageops::colorops::grayscale;
-use image::{RgbImage, GrayImage, ImageBuffer};
-use image::imageops::resize;
+use image::{RgbImage, GrayImage, ImageBuffer, Luma, GenericImage, GenericImageView};
+use image::imageops::{resize, overlay};
 use log::info;
 
 use crate::common::RawImage;
+pub type GrayImageFloat = ImageBuffer::<Luma::<f32>, Vec<f32>>;
+
+pub trait ImageConvExt {
+    fn to_common_grayscale(&self) -> GrayImage;
+}
+
+impl ImageConvExt for GrayImageFloat {
+    fn to_common_grayscale(&self) -> GrayImage {
+        let img = ImageBuffer::from_fn(self.width(), self.height(), |x, y| {
+            let pv = self.get_pixel(x, y)[0];
+            let pixel = (pv * 255.0) as u32;
+            let pixel: u8 = if pixel > 255 {
+                255
+            } else if pixel < 0 {
+                0
+            } else {
+                pixel as u8
+            };
+            image::Luma([pixel])
+        });
+        img
+    }
+}
 
 #[inline]
 fn get_index(width: u32, x: u32, y: u32) -> usize {
     (y * width + x) as usize
 }
 
-pub fn to_gray(raw: Vec<u8>, width: u32, height: u32) -> RawImage {
-    let mut ans: Vec<f32> = vec![0.0; (width * height) as usize];
-    for i in 0..width {
-        for j in 0..height {
+pub fn to_gray(raw:&RgbImage) -> GrayImageFloat {
+    let mut new_gray = GrayImageFloat::new(raw.width(), raw.height());
+    for i in 0..raw.width() {
+        for j in 0..raw.height() {
             let x = i;
             let y = j;
-            let b = raw[((y * width + x) * 4 + 0) as usize];
-            let g = raw[((y * width + x) * 4 + 1) as usize];
-            let r = raw[((y * width + x) * 4 + 2) as usize];
+            let rgb = raw.get_pixel(i as u32, j as u32);
+            let b = rgb[0];
+            let g = rgb[1];
+            let r = rgb[2];
 
             let r = r as f32 / 255.0;
             let g = g as f32 / 255.0;
             let b = b as f32 / 255.0;
 
             let gray = r as f32 * 0.2989 + g as f32 * 0.5870 + b as f32 * 0.1140;
-            let index = get_index(width, i, j);
-            ans[index] = gray;
+            let mut grayp = new_gray.get_pixel_mut(i, j);
+            grayp[0] = gray;
         }
     }
-
-    RawImage {
-        data: ans,
-        h: height,
-        w: width,
-    }
+    new_gray
 }
 
-pub fn normalize(im: &mut RawImage, auto_inverse: bool) -> bool {
-    let width = im.w;
-    let height = im.h;
+pub fn normalize(im: &mut GrayImageFloat, auto_inverse: bool) -> bool {
+    let width = im.width();
+    let height = im.height();
 
     if width == 0 || height == 0 {
+        println!("wrong width or height");
         return false;
     }
-
-    let data = &mut im.data;
     // info!("in normalize: width = {}, height = {}", width, height);
 
     let mut max: f32 = 0.0;
@@ -53,9 +71,8 @@ pub fn normalize(im: &mut RawImage, auto_inverse: bool) -> bool {
 
     for i in 0..width {
         for j in 0..height {
-            let index = get_index(width, i, j);
             // info!("i = {}, j = {}, width = {}, index = {}", i, j, width, index);
-            let p = data[index];
+            let p = im.get_pixel(i, j)[0];
             if p > max {
                 max = p;
             }
@@ -69,18 +86,19 @@ pub fn normalize(im: &mut RawImage, auto_inverse: bool) -> bool {
         return false;
     }
 
-    let flag_pixel = data[get_index(width, width - 1, height - 1)];
+    let flag_pixel = im.get_pixel(width - 2, height - 1)[0];
     let flag_pixel = (flag_pixel - min) / (max - min);
 
     for i in 0..width {
         for j in 0..height {
-            let index = get_index(width, i, j);
-            let p = data[index];
-            data[index] = (p - min) / (max - min);
+            let p = im.get_pixel_mut(i, j);
+            let pv = p[0];
+            let mut new_pv = (pv - min) / (max - min);
             if auto_inverse && flag_pixel > 0.5 {
                 // println!("123");
-                data[index] = 1.0 - data[index];
+                new_pv = 1.0 - new_pv;
             }
+            p[0] = new_pv;
             // if data[index] < 0.6 {
             //     data[index] = 0.0;
             // }
@@ -90,9 +108,9 @@ pub fn normalize(im: &mut RawImage, auto_inverse: bool) -> bool {
     true
 }
 
-pub fn crop(im: &RawImage) -> RawImage {
-    let width = im.w;
-    let height = im.h;
+pub fn crop(im: &GrayImageFloat) -> GrayImageFloat {
+    let width = im.width();
+    let height = im.height();
 
     let mut min_col = width - 1;
     let mut max_col = 0;
@@ -101,8 +119,7 @@ pub fn crop(im: &RawImage) -> RawImage {
 
     for i in 0..width {
         for j in 0..height {
-            let index = get_index(width, i, j);
-            let p = im.data[index];
+            let p = im.get_pixel(i, j)[0];
             if p > 0.7 {
                 if i < min_col {
                     min_col = i;
@@ -117,8 +134,7 @@ pub fn crop(im: &RawImage) -> RawImage {
 
     for j in 0..height {
         for i in 0..width {
-            let index = get_index(width, i, j);
-            let p = im.data[index];
+            let p = im.get_pixel(i, j)[0];
             if p > 0.7 {
                 if j < min_row {
                     min_row = j;
@@ -135,20 +151,9 @@ pub fn crop(im: &RawImage) -> RawImage {
     let new_width = max_col - min_col + 1;
 
     let mut ans: Vec<f32> = vec![0.0; (new_width * new_height) as usize];
+    let cropped_im = im.view(min_col, min_row, new_width, new_height).to_image();
 
-    for i in min_col..=max_col {
-        for j in min_row..=max_row {
-            let index = get_index(width, i, j);
-            let new_index = get_index(new_width, i - min_col, j - min_row);
-            ans[new_index] = im.data[index];
-        }
-    }
-
-    RawImage {
-        data: ans,
-        w: new_width,
-        h: new_height,
-    }
+    cropped_im
 }
 
 pub fn raw_to_img(im: &RawImage) -> GrayImage {
@@ -194,51 +199,55 @@ pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
     img
 }
 
-pub fn resize_and_pad(im: &RawImage) -> RawImage {
-    let w = im.w;
-    let h = im.h;
+pub fn resize_and_pad(im: &GrayImageFloat) -> GrayImageFloat {
+    let w = im.width();
+    let h = im.height();
 
-    let new_width = (32.0 / h as f64 * w as f64) as u32;
+    let new_width = if w as f64 / (h as f64) > 384.0/32.0 {
+        384
+    } else {
+        std::cmp::min((32.0 / h as f64 * w as f64) as u32, 384)
+    };
 
-    let img = raw_to_img(&im);
-    let img = resize(&img, new_width, 32, image::imageops::FilterType::Triangle);
+    let new_height = std::cmp::min((384.0 / w as f64 * h as f64) as u32, 32);
+
+    //let img = raw_to_img(&im);
+    //let img = resize(&img, new_width, 32, image::imageops::FilterType::Triangle);
+
+    let img = resize(im, new_width, new_height, image::imageops::FilterType::Triangle);
 
     let mut data: Vec<f32> = vec![0.0; 32 * 384];
-    for i in 0..new_width.min(384) {
-        for j in 0..32_u32 {
-            let pixel = (img.get_pixel(i, j).0[0] as f32) / 255.0;
-            data[(j * 384 + i) as usize] = pixel;
-        }
-    }
-
-    RawImage {
-        data,
-        w: 384,
-        h: 32,
-    }
+    let mut padded_im = ImageBuffer::from_vec(384, 32, data).unwrap();
+    overlay(&mut padded_im, &img, 0, 0);
+    padded_im
 }
 
-pub fn pre_process(im: RawImage) -> Option<RawImage> {
+pub fn pre_process(im: GrayImageFloat) -> Option<GrayImageFloat> {
     let mut im = im;
     if !normalize(&mut im, true) {
         return None;
     }
+    /*
+    println!("Before crop, im size:{}, {}", im.width(), im.height());
     let mut im = crop(&im);
+    println!("After crop, im size:{}, {}", im.width(), im.height());
+    */
     normalize(&mut im, false);
 
     let mut im = resize_and_pad(&im);
-    for i in 0..im.w {
-        for j in 0..im.h {
-            let index = get_index(im.w, i, j);
-            let p = im.data[index];
-            if p < 0.53 {
-                im.data[index] = 0.0;
+    
+    for i in 0..im.width() {
+        for j in 0..im.height() {
+            let p = im.get_pixel_mut(i, j);
+            let pv = p[0];
+            if pv < 0.53 {
+                p[0] = 0.0;
             } else {
-                im.data[index] = 1.0;
+                p[0] = 1.0;
             }
         }
     }
-
+    
     Some(im)
 }
 

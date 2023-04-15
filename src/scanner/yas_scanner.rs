@@ -8,6 +8,7 @@ use std::time::SystemTime;
 
 use clap::ArgMatches;
 use enigo::*;
+use image::{RgbImage, GenericImage};
 use log::{debug, error, info, warn};
 use rand::Rng;
 
@@ -19,7 +20,7 @@ use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 use crate::common::{utils, PixelRect, PixelRectBound, RawCaptureImage, RawImage};
 use crate::inference::inference::CRNNModel;
-use crate::inference::pre_process::pre_process;
+use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
 use crate::info::info::ScanInfo;
 
 #[cfg(windows)]
@@ -190,13 +191,13 @@ impl YasScanResult {
     }
 }
 
-fn calc_pool(row: &Vec<u8>) -> f64 {
-    let len = row.len() / 4;
-    let mut pool: f64 = 0.0;
+fn calc_pool(row: &Vec<u8>) -> f32 {
+    let len = row.len() / 3;//像素数
+    let mut pool: f32 = 0.0;
 
     for i in 0..len {
-        pool += row[i * 4] as f64;
-    }
+        pool += row[i * 3] as f32;
+    }//alpha像素值？？？
     // pool /= len as f64;
     pool
 }
@@ -289,8 +290,8 @@ impl YasScanner {
         let count = self.config.number;
         if let 0 = count {
             let info = &self.info;
-            let raw_after_pp = self.info.art_count_position.capture_relative(info).unwrap();
-            // raw_after_pp.to_gray_image().save("count.png");
+            let raw_after_pp = self.info.art_count_position.capture_relative(info, true).unwrap();
+            raw_after_pp.to_common_grayscale().save("dumps/count.png");
             let s = self.model.inference_string(&raw_after_pp);
             info!("raw count string: {}", s);
             if s.starts_with("圣遗物") {
@@ -321,7 +322,7 @@ impl YasScanner {
 
             #[cfg(windows)]
             self.enigo.mouse_scroll_y(-5);
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "macos"))]
             self.enigo.mouse_scroll_y(1);
 
             utils::sleep(self.config.scroll_stop);
@@ -406,7 +407,7 @@ impl YasScanner {
                 height: self.info.pool_position.bottom - self.info.pool_position.top,
             };
             let im = capture::capture_absolute(&rect).unwrap();
-            let pool = calc_pool(&im);
+            let pool = calc_pool(im.as_raw()) as f64;
             // info!("pool: {}", pool);
             // println!("pool time: {}ms", pool_start.elapsed().unwrap().as_millis());
 
@@ -442,7 +443,7 @@ impl YasScanner {
         false
     }
 
-    fn capture_panel(&mut self) -> Result<RawCaptureImage, String> {
+    fn capture_panel(&mut self) -> Result<RgbImage, String> {
         let now = SystemTime::now();
         let w = self.info.panel_position.right - self.info.panel_position.left;
         let h = self.info.panel_position.bottom - self.info.panel_position.top;
@@ -454,11 +455,7 @@ impl YasScanner {
         };
         let u8_arr = capture::capture_absolute(&rect)?;
         // info!("capture time: {}ms", now.elapsed().unwrap().as_millis());
-        Ok(RawCaptureImage {
-            data: u8_arr,
-            w: w as u32,
-            h: h as u32,
-        })
+        Ok(u8_arr)
     }
 
     fn get_star(&self) -> u32 {
@@ -490,12 +487,25 @@ impl YasScanner {
 
         star
     }
-
+/* 
     fn start_capture_only(&mut self) {
         fs::create_dir("captures");
         let info = &self.info.clone();
 
-        let count = self.info.art_count_position.capture_relative(info).unwrap();
+        println!("capture l:{}, t:{}, w:{},h:{}", info.left, info.top, info.width, info.height);
+        let raw_im_rect = PixelRectBound {
+            left: info.left as i32,
+            top: info.top as i32,
+            right: info.left + info.width as i32,
+            bottom: info.top + info.height as i32,
+        };
+
+        let raw_im = raw_im_rect.capture_relative(info, false).unwrap();
+        raw_im.grayscale_to_gray_image().save("captures/raw_im.png");
+        println!("Finish capture raw");
+        panic!();
+
+        let count = self.info.art_count_position.capture_relative(info, false).unwrap();
         count.to_gray_image().save("captures/count.png");
 
         let convert_rect = |rect: &PixelRectBound| PixelRect {
@@ -569,13 +579,13 @@ impl YasScanner {
             im.to_gray_image().save("captures/equip.png").expect("Err");
         }
     }
-
+*/
     pub fn start(&mut self) -> Vec<InternalArtifact> {
         //self.panel_down();
-        if self.config.capture_only {
-            self.start_capture_only();
-            return Vec::new();
-        }
+/*         if self.config.capture_only {
+           self.start_capture_only();
+           return Vec::new();
+        } */
 
         let mut count = match self.get_art_count() {
             Ok(v) => v,
@@ -600,11 +610,12 @@ impl YasScanner {
         info!("total row: {}", total_row);
         info!("last column: {}", last_row_col);
 
-        let (tx, rx) = mpsc::channel::<Option<(RawCaptureImage, u32)>>();
+        let (tx, rx) = mpsc::channel::<Option<(RgbImage, u32)>>();
         let info_2 = self.info.clone();
         // v bvvmnvbm
         let is_verbose = self.config.verbose;
         let is_dump_mode = self.config.dump_mode;
+        println!("is dumping;{}", is_dump_mode);
         let min_level = self.config.min_level;
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
@@ -620,7 +631,7 @@ impl YasScanner {
 
             let mut cnt = 0;
             if is_dump_mode {
-                fs::create_dir("dumps").expect("Err");
+                fs::create_dir("dumps");
             }
 
             let convert_rect = |rect: &PixelRectBound| PixelRect {
@@ -635,18 +646,22 @@ impl YasScanner {
                     Some(v) => v,
                     None => break,
                 };
-                // info!("raw capture image: width = {}, height = {}", capture.w, capture.h);
-                // capture.save("raw0.png");
-                // let now = SystemTime::now();
+                info!("raw capture image: width = {}, height = {}", capture.width(), capture.height());
+                capture.save("dumps/raw0.png");
+                let now = SystemTime::now();
 
-                let model_inference = |pos: &PixelRectBound, name: &str, cnt: i32| -> String {
-                    let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
-                    // raw_img.to_gray_image().save("raw.png");
-                    // info!("raw_img: width = {}, height = {}", raw_img.w, raw_img.h);
+                let model_inference = |pos: &PixelRectBound, name: &str, captured_img: &RgbImage, cnt: i32| -> String {
+                    let rect = convert_rect(pos);
+                    let raw_img = to_gray(captured_img).sub_image(rect.left as u32, rect.top as u32, rect.width as u32, rect.height as u32).to_image();
+                    //let raw_img = capture.crop_to_raw_img(&convert_rect(pos));
+
+                    info!("raw_img: width = {}, height = {}", raw_img.width(), raw_img.height());
+
+                    captured_img.save(format!("dumps/captured_{}_{}.png", name, cnt));
 
                     if is_dump_mode {
                         raw_img
-                            .grayscale_to_gray_image()
+                            .to_common_grayscale()
                             .save(format!("dumps/{}_{}.png", name, cnt))
                             .expect("Err");
                     }
@@ -659,7 +674,7 @@ impl YasScanner {
                     };
                     if is_dump_mode {
                         processed_img
-                            .to_gray_image()
+                            .to_common_grayscale()
                             .save(format!("dumps/p_{}_{}.png", name, cnt))
                             .expect("Err");
                     }
@@ -673,19 +688,19 @@ impl YasScanner {
                     inference_result
                 };
 
-                let str_title = model_inference(&info.title_position, "title", cnt);
+                let str_title = model_inference(&info.title_position, "title", &capture, cnt);
                 let str_main_stat_name =
-                    model_inference(&info.main_stat_name_position, "main_stat_name", cnt);
+                    model_inference(&info.main_stat_name_position, "main_stat_name", &capture, cnt);
                 let str_main_stat_value =
-                    model_inference(&info.main_stat_value_position, "main_stat_value", cnt);
+                    model_inference(&info.main_stat_value_position, "main_stat_value", &capture, cnt);
 
-                let str_sub_stat_1 = model_inference(&info.sub_stat1_position, "sub_stat_1", cnt);
-                let str_sub_stat_2 = model_inference(&info.sub_stat2_position, "sub_stat_2", cnt);
-                let str_sub_stat_3 = model_inference(&info.sub_stat3_position, "sub_stat_3", cnt);
-                let str_sub_stat_4 = model_inference(&info.sub_stat4_position, "sub_stat_4", cnt);
+                let str_sub_stat_1 = model_inference(&info.sub_stat1_position, "sub_stat_1", &capture, cnt);
+                let str_sub_stat_2 = model_inference(&info.sub_stat2_position, "sub_stat_2", &capture, cnt);
+                let str_sub_stat_3 = model_inference(&info.sub_stat3_position, "sub_stat_3", &capture, cnt);
+                let str_sub_stat_4 = model_inference(&info.sub_stat4_position, "sub_stat_4", &capture, cnt);
 
-                let str_level = model_inference(&info.level_position, "level", cnt);
-                let str_equip = model_inference(&info.equip_position, "equip", cnt);
+                let str_level = model_inference(&info.level_position, "level", &capture, cnt);
+                let str_equip = model_inference(&info.equip_position, "equip", &capture, cnt);
 
                 cnt += 1;
 
@@ -746,7 +761,6 @@ impl YasScanner {
         let mut scanned_row = 0_u32;
         let mut scanned_count = 0_u32;
         let mut start_row = 0_u32;
-
         self.move_to(0, 0);
         self.enigo.mouse_click(MouseButton::Left);
         utils::sleep(1000);
@@ -774,9 +788,10 @@ impl YasScanner {
                     self.move_to(row, col);
                     self.enigo.mouse_click(MouseButton::Left);
 
-                    self.wait_until_switched();
-
+                    //self.wait_until_switched();
+                    utils::sleep(500);
                     let capture = self.capture_panel().unwrap();
+                    capture.save("dumps/captured_panel.png");
                     let star = self.get_star();
                     if star < self.config.min_star {
                         break 'outer;

@@ -271,3 +271,33 @@ pub const WINDOW_4_3: WindowInfo = WindowInfo {
     star_y: 95.8,
     pool_pos: Rect(93.2, 912.7 + 15.0, 412.4, 912.7)
 };
+
+//top, right, bottom, left
+pub const WINDOW_MAC_8_5: WindowInfo = WindowInfo {
+    width: 1075.0,
+    height: 717.0,
+    title_pos: Rect(115.0, 866.0, 147.0, 712.0),
+    main_stat_name_pos: Rect(211., 765., 234., 714.),
+    main_stat_value_pos: Rect(234., 780., 268., 712.),
+    level_pos: Rect(273., 835., 303., 711.),
+    panel_pos: Rect(115., 1037., 614., 698.),
+    sub_stat1_pos: Rect(361., 952., 384., 732.),
+    sub_stat2_pos: Rect(384., 952., 412., 732.),
+    sub_stat3_pos: Rect(412., 952., 438., 732.),
+    sub_stat4_pos: Rect(438., 952., 465., 732.),
+    equip_pos: Rect(156., 767., 181., 711.),
+    art_count_pos: Rect(46., 948., 69., 858.),
+    art_width: 219. - 143.,
+    art_height: 219. - 110.,
+    art_gap_x: 245. - 232.,
+    art_gap_y: 233. - 219.,
+    art_row: 4,
+    art_col: 5,
+    left_margin: 140.,
+    top_margin: 110.,
+    flag_x: 245.9,
+    flag_y: 82.1,
+    star_x: 917.,
+    star_y: 129.,
+    pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5)
+};

@@ -26,8 +26,6 @@ semver = "1.0.7"
 lazy_static = "1.4.0"
 screenshots = "0.5.3"
 png = "0.17.8"
-core-graphics = "0.22.3"
-core-foundation = "0.9.3"
 #screenshots = { git = "https://github.com/poly000/screenshots-rs", rev = "d96dff76c5f5cbd849d80451f0df8f415f8e5f4b" }
 
 [target.'cfg(windows)'.dependencies]
@@ -39,8 +37,9 @@ winapi = { version = "0.3", features = [
     "libloaderapi",
 ] }
 
-[target.'cfg(macos)'.dependencies]
-core_graphics = {version = '0.22.3', package = 'core-graphics'}
+[target.'cfg(target_os = "macos")'.dependencies]
+core-graphics = "0.22.3"
+core-foundation = "0.9.3"
 
 [build-dependencies]
 winres = "0.1"

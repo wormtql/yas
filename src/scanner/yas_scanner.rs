@@ -10,6 +10,7 @@ use clap::ArgMatches;
 use enigo::*;
 use log::{debug, error, info, warn};
 use rand::Rng;
+use tract_onnx::prelude::tract_itertools::Itertools;
 
 use crate::artifact::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact,
@@ -160,11 +161,12 @@ impl YasScanResult {
         let sub4 = ArtifactStat::from_zh_cn_raw(&self.sub_stat_4);
 
         let equip = if self.equip.contains("已装备") {
-            let equip_name = self
-                .equip
-                .chars()
-                .take(self.equip.len() - 3)
-                .collect::<String>();
+            //let equip_name = self.equip.clone();
+            //equip_name.remove_matches("已装备");
+            //let equip_name = &self.equip[..self.equip.len()-9];
+            let chars = self.equip.chars().collect_vec();
+            let chars2 = &chars[..chars.len() - 3];
+            let equip_name = chars2.iter().collect::<String>();
             if CHARACTER_NAMES.contains(equip_name.as_str()) {
                 Some(equip_name)
             } else {

@@ -5,3 +5,4 @@ target/
 mona.json
 .idea/
 captures/
+.vscode/

@@ -253,7 +253,11 @@ fn main() {
     } else if rect.height * 7 == rect.width * 3 {
         info = info::ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
     } else if cfg!(target_os = "macos") {
-        info = info::ScanInfo::from_MAC_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
+        if rect.height * 8 == rect.width * 5 {
+            info = info::ScanInfo::from_MAC_8_5(rect.width as u32,rect.height as u32,rect.left,rect.top);
+        } else {
+            utils::error_and_quit("不支持的分辨率");
+        }
     } else {
         utils::error_and_quit("不支持的分辨率");
     }

@@ -173,7 +173,7 @@ pub const WINDOW_7_3: WindowInfo = WindowInfo {
     star_x: 1900.0,
     star_y: 123.9,
     
-    pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0)
+    pool_pos: Rect(390., 1010., 504., 792.)
 };
 
 pub const WINDOW_16_9: WindowInfo = WindowInfo {
@@ -277,7 +277,7 @@ pub const WINDOW_MAC_8_5: WindowInfo = WindowInfo {
     width: 1164.0,
     height: 755.0,
     title_pos: Rect(122.0, 1090.0, 157.0, 770.0),
-    main_stat_name_pos: Rect(230., 870., 254., 765.),
+    main_stat_name_pos: Rect(230., 925., 254., 765.),
     main_stat_value_pos: Rect(253., 911., 294., 767.),
     level_pos: Rect(353., 813., 372., 781.),
     panel_pos: Rect(117., 1127., 666., 756.),
@@ -295,9 +295,9 @@ pub const WINDOW_MAC_8_5: WindowInfo = WindowInfo {
     art_col: 5,
     left_margin: 155., 
     top_margin: 118.,
-    flag_x: 170., //检测颜色出现重复，则判定换行完成？
-    flag_y: 224.,
+    flag_x: 170., //检测颜色出现重复，则判定换行完成
+    flag_y: 223.,
     star_x: 1060.,
     star_y: 140.,
-    pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5) //猜测是一次检索的圣遗物数量，之后翻页？所以与art_col有关？
+    pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5) //猜测是一次检索的圣遗物数量，之后翻页？所以与art_col有关
 };

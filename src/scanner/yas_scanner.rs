@@ -310,6 +310,22 @@ impl YasScanner {
         }
     }
 
+    #[cfg(target_os = "macos")]
+    fn mac_scroll(&mut self, count:i32) {
+        self.enigo.mouse_down(MouseButton::Left);
+        utils::sleep(10);
+        for j in 0..count {
+            for i in 0..5 {
+                self.enigo.mouse_move_relative(0, -2);
+                utils::sleep(10);
+            }
+            self.enigo.mouse_up(MouseButton::Left);
+            utils::sleep(10);
+            self.enigo.mouse_move_relative(0, 10);
+            utils::sleep(10);
+        }
+    }
+
     fn scroll_one_row(&mut self) -> ScrollResult {
         let mut state = 0;
         let mut count = 0;
@@ -321,15 +337,13 @@ impl YasScanner {
 
             #[cfg(windows)]
             self.enigo.mouse_scroll_y(-5);
-            #[cfg(any(target_os = "linux", target_os = "macos"))]
+            #[cfg(any(target_os = "linux"))]
             self.enigo.mouse_scroll_y(1);
             #[cfg(target_os = "macos")]
-            utils::sleep(20);
-
+            self.mac_scroll(1);
             utils::sleep(self.config.scroll_stop);
             count += 1;
             let color: Color = self.get_flag_color();
-            // println!("{:?}", color);
             if state == 0 && !color.is_same(&self.initial_color) {
                 state = 1;
             } else if state == 1 && self.initial_color.is_same(&color) {
@@ -351,10 +365,10 @@ impl YasScanner {
             for _ in 0..scroll {
                 #[cfg(windows)]
                 self.enigo.mouse_scroll_y(-1);
-                #[cfg(any(target_os = "linux", target_os = "macos"))]
+                #[cfg(target_os = "linux")]
                 self.enigo.mouse_scroll_y(1);
                 #[cfg(target_os = "macos")]
-                utils::sleep(20)
+                self.mac_scroll(1);
             }
             utils::sleep(400);
             self.align_row();
@@ -382,10 +396,10 @@ impl YasScanner {
 
             #[cfg(windows)]
             self.enigo.mouse_scroll_y(-1);
-            #[cfg(any(target_os = "linux", target_os = "macos"))]
+            #[cfg(any(target_os = "linux"))]
             self.enigo.mouse_scroll_y(1);
             #[cfg(target_os = "macos")]
-            utils::sleep(20);
+            self.mac_scroll(1);
 
             utils::sleep(self.config.scroll_stop);
             count += 1;
@@ -652,7 +666,7 @@ impl YasScanner {
                     Some(v) => v,
                     None => break,
                 };
-                info!("raw capture image: width = {}, height = {}", capture.width(), capture.height());
+                //info!("raw capture image: width = {}, height = {}", capture.width(), capture.height());
                 let now = SystemTime::now();
 
                 let model_inference = |pos: &PixelRectBound, name: &str, captured_img: &RgbImage, cnt: i32| -> String {

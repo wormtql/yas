@@ -29,6 +29,10 @@ use crate::common::utils::{
     show_window_and_set_foreground, sleep,
 };
 
+// Playcover only, wine should not need this.
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+use crate::common::utils::mac_scroll;
+
 pub struct YasScannerConfig {
     max_row: u32,
     capture_only: bool,
@@ -310,22 +314,6 @@ impl YasScanner {
         }
     }
 
-    #[cfg(target_os = "macos")]
-    fn mac_scroll(&mut self, count:i32) {
-        self.enigo.mouse_down(MouseButton::Left);
-        utils::sleep(10);
-        for j in 0..count {
-            for i in 0..5 {
-                self.enigo.mouse_move_relative(0, -2);
-                utils::sleep(10);
-            }
-            self.enigo.mouse_up(MouseButton::Left);
-            utils::sleep(10);
-            self.enigo.mouse_move_relative(0, 10);
-            utils::sleep(10);
-        }
-    }
-
     fn scroll_one_row(&mut self) -> ScrollResult {
         let mut state = 0;
         let mut count = 0;
@@ -340,7 +328,7 @@ impl YasScanner {
             #[cfg(any(target_os = "linux"))]
             self.enigo.mouse_scroll_y(1);
             #[cfg(target_os = "macos")]
-            self.mac_scroll(1);
+            mac_scroll(&mut self.enigo, 1);
             utils::sleep(self.config.scroll_stop);
             count += 1;
             let color: Color = self.get_flag_color();
@@ -368,7 +356,7 @@ impl YasScanner {
                 #[cfg(target_os = "linux")]
                 self.enigo.mouse_scroll_y(1);
                 #[cfg(target_os = "macos")]
-                self.mac_scroll(1);
+                mac_scroll(&mut self.enigo, 1);
             }
             utils::sleep(400);
             self.align_row();
@@ -399,7 +387,7 @@ impl YasScanner {
             #[cfg(any(target_os = "linux"))]
             self.enigo.mouse_scroll_y(1);
             #[cfg(target_os = "macos")]
-            self.mac_scroll(1);
+            mac_scroll(&mut self.enigo, 1);
 
             utils::sleep(self.config.scroll_stop);
             count += 1;

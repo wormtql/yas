@@ -323,6 +323,8 @@ impl YasScanner {
             self.enigo.mouse_scroll_y(-5);
             #[cfg(any(target_os = "linux", target_os = "macos"))]
             self.enigo.mouse_scroll_y(1);
+            #[cfg(target_os = "macos")]
+            utils::sleep(20);
 
             utils::sleep(self.config.scroll_stop);
             count += 1;
@@ -349,8 +351,10 @@ impl YasScanner {
             for _ in 0..scroll {
                 #[cfg(windows)]
                 self.enigo.mouse_scroll_y(-1);
-                #[cfg(target_os = "linux")]
+                #[cfg(any(target_os = "linux", target_os = "macos"))]
                 self.enigo.mouse_scroll_y(1);
+                #[cfg(target_os = "macos")]
+                utils::sleep(20)
             }
             utils::sleep(400);
             self.align_row();
@@ -378,8 +382,10 @@ impl YasScanner {
 
             #[cfg(windows)]
             self.enigo.mouse_scroll_y(-1);
-            #[cfg(target_os = "linux")]
+            #[cfg(any(target_os = "linux", target_os = "macos"))]
             self.enigo.mouse_scroll_y(1);
+            #[cfg(target_os = "macos")]
+            utils::sleep(20);
 
             utils::sleep(self.config.scroll_stop);
             count += 1;
@@ -757,6 +763,8 @@ impl YasScanner {
         let mut scanned_count = 0_u32;
         let mut start_row = 0_u32;
         self.move_to(0, 0);
+        #[cfg(target_os = "macos")]
+        utils::sleep(20);
         self.enigo.mouse_click(MouseButton::Left);
         utils::sleep(1000);
         // self.wait_until_switched();
@@ -782,6 +790,8 @@ impl YasScanner {
 
                     self.move_to(row, col);
                     self.enigo.mouse_click(MouseButton::Left);
+                    #[cfg(target_os = "macos")]
+                    utils::sleep(20);
 
                     self.wait_until_switched();
                     let capture = self.capture_panel().unwrap();

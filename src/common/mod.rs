@@ -66,11 +66,8 @@ impl PixelRectBound {
         };
         let now = SystemTime::now();
         let raw_u8 = capture::capture_absolute(&rect).unwrap();
-        raw_u8.save("dumps/raw_u81.png");
         info!("capture raw time: {}ms", now.elapsed().unwrap().as_millis());
-        println!("in cpature_relative, w:{}, h:{}, left:{}, right:{}, top:{}, bottom:{}", w, h, self.left, self.right, self.top, self.bottom);
         let raw_gray = to_gray(&raw_u8);
-        println!("raw image shape before preprocess:{}, {}", raw_gray.width(), raw_gray.height());
         let raw_after_pp = if use_pre_process {
                 pre_process(raw_gray)
             }
@@ -78,7 +75,6 @@ impl PixelRectBound {
                 Some(raw_gray)
             };
 
-        println!("raw image shape after preprocess:{}, {}", raw_after_pp.as_ref().unwrap().width(), raw_after_pp.as_ref().unwrap().height());
         info!("preprocess time: {}ms", now.elapsed().unwrap().as_millis());
 
         match raw_after_pp {

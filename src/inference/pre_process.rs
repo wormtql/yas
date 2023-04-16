@@ -40,9 +40,9 @@ pub fn to_gray(raw:&RgbImage) -> GrayImageFloat {
             let x = i;
             let y = j;
             let rgb = raw.get_pixel(i as u32, j as u32);
-            let b = rgb[0];
+            let r = rgb[0];
             let g = rgb[1];
-            let r = rgb[2];
+            let b = rgb[2];
 
             let r = r as f32 / 255.0;
             let g = g as f32 / 255.0;

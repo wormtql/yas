@@ -1,7 +1,7 @@
-use std::borrow::Borrow;
-use std::ops::{Div, Mul};
 use crate::common::PixelRectBound;
 use crate::info::info::ScanInfo;
+use std::borrow::Borrow;
+use std::ops::{Div, Mul};
 
 pub struct Rect(f64, f64, f64, f64); // top, right, bottom, left
 
@@ -40,7 +40,7 @@ pub struct WindowInfo {
     pub star_x: f64,
     pub star_y: f64,
 
-    pub pool_pos: Rect
+    pub pool_pos: Rect,
 }
 
 impl WindowInfo {
@@ -59,13 +59,9 @@ impl WindowInfo {
             }
         };
 
-        let convert_x = |x: f64| {
-            x / self.width * w
-        };
+        let convert_x = |x: f64| x / self.width * w;
 
-        let convert_y = |y: f64| {
-            y / self.height * h
-        };
+        let convert_y = |y: f64| y / self.height * h;
 
         ScanInfo {
             title_position: convert_rect(&self.title_pos),
@@ -95,7 +91,7 @@ impl WindowInfo {
             flag_y: convert_y(self.flag_y) as u32,
             star_x: convert_x(self.star_x) as u32,
             star_y: convert_y(self.star_y) as u32,
-            pool_position: convert_rect(&self.pool_pos)
+            pool_position: convert_rect(&self.pool_pos),
         }
     }
 }
@@ -134,8 +130,8 @@ pub const WINDOW_43_18: WindowInfo = WindowInfo {
 
     star_x: 3130.0,
     star_y: 200.0,
-    
-    pool_pos: Rect(170.0, 2610.0 + 30.0, 900.0, 2610.0)
+
+    pool_pos: Rect(170.0, 2610.0 + 30.0, 900.0, 2610.0),
 };
 
 pub const WINDOW_7_3: WindowInfo = WindowInfo {
@@ -172,8 +168,8 @@ pub const WINDOW_7_3: WindowInfo = WindowInfo {
 
     star_x: 1900.0,
     star_y: 123.9,
-    
-    pool_pos: Rect(390., 1010., 504., 792.)
+
+    pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0),
 };
 
 pub const WINDOW_16_9: WindowInfo = WindowInfo {
@@ -210,8 +206,8 @@ pub const WINDOW_16_9: WindowInfo = WindowInfo {
 
     star_x: 1469.4,
     star_y: 123.9,
-    
-    pool_pos: Rect(118.2, 1144.7 + 15.0, 510.3, 1144.7)
+
+    pool_pos: Rect(118.2, 1144.7 + 15.0, 510.3, 1144.7),
 };
 
 pub const WINDOW_8_5: WindowInfo = WindowInfo {
@@ -240,7 +236,7 @@ pub const WINDOW_8_5: WindowInfo = WindowInfo {
     flag_y: 82.1,
     star_x: 1321.3,
     star_y: 111.3,
-    pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5)
+    pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5),
 };
 
 pub const WINDOW_4_3: WindowInfo = WindowInfo {
@@ -269,7 +265,7 @@ pub const WINDOW_4_3: WindowInfo = WindowInfo {
     flag_y: 72.1,
     star_x: 1175.4,
     star_y: 95.8,
-    pool_pos: Rect(93.2, 912.7 + 15.0, 412.4, 912.7)
+    pool_pos: Rect(93.2, 912.7 + 15.0, 412.4, 912.7),
 };
 
 //top, right, bottom, left
@@ -291,13 +287,13 @@ pub const WINDOW_MAC_8_5: WindowInfo = WindowInfo {
     art_height: 234. - 118.,
     art_gap_x: 266. - 250.,
     art_gap_y: 250. - 234.,
-    art_row: 4, 
+    art_row: 4,
     art_col: 5,
-    left_margin: 155., 
+    left_margin: 155.,
     top_margin: 118.,
     flag_x: 170., //检测颜色出现重复，则判定换行完成
     flag_y: 223.,
     star_x: 1060.,
     star_y: 140.,
-    pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5) //猜测是一次检索的圣遗物数量，之后翻页？所以与art_col有关
+    pool_pos: Rect(390., 1010., 504., 792.), //猜测是一次检索的圣遗物数量，之后翻页？所以与art_col有关
 };

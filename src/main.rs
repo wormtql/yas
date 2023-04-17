@@ -3,7 +3,8 @@ use std::path::Path;
 use std::time::{Duration, Instant, SystemTime};
 
 use yas::capture::{capture_absolute, capture_absolute_image};
-use yas::common::utils;
+use yas::common::utils::get_pid_and_ui;
+use yas::common::{utils, UI};
 use yas::common::{PixelRect, RawImage};
 use yas::expo::good::GOODFormat;
 use yas::expo::mingyu_lab::MingyuLabFormat;
@@ -21,7 +22,6 @@ use image::imageops::grayscale;
 use image::{ImageBuffer, Pixel};
 use log::{info, warn, LevelFilter};
 use os_info;
-
 
 fn open_local(path: String) -> RawImage {
     let img = image::open(path).unwrap();
@@ -142,6 +142,7 @@ fn main() {
 
     let rect: PixelRect;
     let is_cloud: bool;
+    let ui: UI;
 
     #[cfg(windows)]
     {
@@ -179,6 +180,7 @@ fn main() {
         utils::sleep(1000);
 
         rect = utils::get_client_rect(hwnd).unwrap();
+        ui = UI::Desktop;
     }
 
     #[cfg(all(target_os = "linux"))]
@@ -220,18 +222,18 @@ fn main() {
             height,
         };
         is_cloud = false; // todo: detect cloud genshin by title
+        ui = UI::Desktop;
     }
 
     #[cfg(target_os = "macos")]
-    {        
-        let pid:i32 = utils::get_pid();
-        let window_title:String;
-        (rect, window_title) = unsafe {utils::find_window_by_pid(pid).unwrap()};
+    {
+        let (pid, ui_) = get_pid_and_ui();
+        let window_title: String;
+        (rect, window_title) = unsafe { utils::find_window_by_pid(pid).unwrap() };
         info!("Found genshin pid:{}, window name:{}", pid, window_title);
         is_cloud = false; // todo: detect cloud genshin by title
+        ui = ui_;
     }
-
-
 
     // rect.scale(1.25);
     info!(
@@ -240,26 +242,64 @@ fn main() {
     );
 
     let mut info: info::ScanInfo;
-    if rect.height * 43 == rect.width * 18 {
-        info =
-            info::ScanInfo::from_43_18(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 16 == rect.width * 9 {
-        info =
-            info::ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 8 == rect.width * 5 {
-        info = info::ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 4 == rect.width * 3 {
-        info = info::ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 7 == rect.width * 3 {
-        info = info::ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if cfg!(target_os = "macos") {
-        if rect.height * 8 == rect.width * 5 {
-            info = info::ScanInfo::from_MAC_8_5(rect.width as u32,rect.height as u32,rect.left,rect.top);
-        } else {
-            utils::error_and_quit("不支持的分辨率");
+
+    // desktop ui or mobile ui
+    match ui {
+        UI::Desktop => {
+            info!("desktop ui");
+            if rect.height * 43 == rect.width * 18 {
+                info = info::ScanInfo::from_43_18(
+                    rect.width as u32,
+                    rect.height as u32,
+                    rect.left,
+                    rect.top,
+                );
+            } else if rect.height * 16 == rect.width * 9 {
+                info = info::ScanInfo::from_16_9(
+                    rect.width as u32,
+                    rect.height as u32,
+                    rect.left,
+                    rect.top,
+                );
+            } else if rect.height * 8 == rect.width * 5 {
+                info = info::ScanInfo::from_8_5(
+                    rect.width as u32,
+                    rect.height as u32,
+                    rect.left,
+                    rect.top,
+                );
+            } else if rect.height * 4 == rect.width * 3 {
+                info = info::ScanInfo::from_4_3(
+                    rect.width as u32,
+                    rect.height as u32,
+                    rect.left,
+                    rect.top,
+                );
+            } else if rect.height * 7 == rect.width * 3 {
+                info = info::ScanInfo::from_7_3(
+                    rect.width as u32,
+                    rect.height as u32,
+                    rect.left,
+                    rect.top,
+                );
+            } else {
+                utils::error_and_quit("不支持的分辨率");
+            }
         }
-    } else {
-        utils::error_and_quit("不支持的分辨率");
+        UI::Mobile => {
+            if (rect.height * 8 - rect.width * 5) < 20 {
+                // 窗口状态下的playcover分辨率长宽无法整除
+                info!("mobile ui 8 / 5");
+                info = info::ScanInfo::from_mobile_8_5(
+                    rect.width as u32,
+                    rect.height as u32,
+                    rect.left,
+                    rect.top,
+                );
+            } else {
+                utils::error_and_quit("不支持的分辨率");
+            }
+        }
     }
 
     let offset_x = matches
@@ -278,6 +318,11 @@ fn main() {
     let mut scanner = YasScanner::new(info.clone(), config, is_cloud);
 
     let now = SystemTime::now();
+    #[cfg(target_os = "macos")]
+    {
+        info!("初始化完成，请切换到原神窗口，yas将在10s后开始扫描圣遗物");
+        utils::sleep(10000);
+    }
     let results = scanner.start();
     let t = now.elapsed().unwrap().as_secs_f64();
     info!("time: {}s", t);

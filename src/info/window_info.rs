@@ -168,7 +168,6 @@ pub const WINDOW_7_3: WindowInfo = WindowInfo {
 
     star_x: 1900.0,
     star_y: 123.9,
-
     pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0),
 };
 

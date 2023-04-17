@@ -22,9 +22,9 @@ pub fn mac_scroll(enigo: &mut Enigo, count: i32) {
     }
 }
 
-#[cfg(target_arch = "x86")]
-pub fn mac_scroll(count: i32) {
-    self.enigo.mouse_scroll_y(count);
+#[cfg(target_arch = "x86_64")]
+pub fn mac_scroll(enigo:&mut Enigo, count:i32) {
+    enigo.mouse_scroll_y(count);
     utils::sleep(20);
 }
 
@@ -153,7 +153,6 @@ pub unsafe fn find_window_by_pid(pid: i32) -> Result<(PixelRect, String), String
             );
             let cg_title = CFString::wrap_under_get_rule(cg_title_ref as CFStringRef);
             title = cg_title.to_string();
-
             // mac app cg_rect.size.x = 0 when full screen
             if cg_rect.size.height > 200. {
                 if cg_rect.origin.y > 0. {

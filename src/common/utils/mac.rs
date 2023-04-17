@@ -75,7 +75,7 @@ pub unsafe fn find_window_by_pid(pid:i32) -> Result<(PixelRect, String), String>
             CFDictionaryGetValueIfPresent(win_info_ref, kCGWindowOwnerName as *const c_void, &mut cg_title_ref);
             let cg_title = CFString::wrap_under_get_rule(cg_title_ref as CFStringRef);
             title = cg_title.to_string();
-            if cg_rect.origin.x > 0.0 {
+            if 3.0 > cg_rect.size.width as f32/cg_rect.size.height as f32 {
                 mrect = PixelRect {
                     left:cg_rect.origin.x as i32,
                     top:cg_rect.origin.y as i32,

@@ -18,8 +18,8 @@ pub fn mac_scroll(enigo:&mut Enigo, count:i32) {
 }
 
 #[cfg(target_arch = "x86")]
-pub fn mac_scroll(count:i32) {
-    self.enigo.mouse_scroll_y(count);
+pub fn mac_scroll(enigo:&mut Enigo, count:i32) {
+    enigo.mouse_scroll_y(count);
     utils::sleep(20);
 }
 

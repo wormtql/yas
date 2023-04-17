@@ -173,7 +173,7 @@ pub const WINDOW_7_3: WindowInfo = WindowInfo {
     star_x: 1900.0,
     star_y: 123.9,
     
-    pool_pos: Rect(390., 1010., 504., 792.)
+    pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0)
 };
 
 pub const WINDOW_16_9: WindowInfo = WindowInfo {
@@ -299,5 +299,5 @@ pub const WINDOW_MAC_8_5: WindowInfo = WindowInfo {
     flag_y: 223.,
     star_x: 1060.,
     star_y: 140.,
-    pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5) //猜测是一次检索的圣遗物数量，之后翻页？所以与art_col有关
+    pool_pos: Rect(390., 1010., 504., 792.) //猜测是一次检索的圣遗物数量，之后翻页？所以与art_col有关
 };

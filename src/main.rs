@@ -287,7 +287,7 @@ fn main() {
             }
         }
         UI::Mobile => {
-            if (rect.height * 8 - rect.width * 5) < 20 {
+            if (rect.height * 8 - rect.width * 5).abs() < 20 {
                 // 窗口状态下的playcover分辨率长宽无法整除
                 info!("mobile ui 8 / 5");
                 info = info::ScanInfo::from_mobile_8_5(

@@ -8,7 +8,7 @@ use std::time::SystemTime;
 
 use clap::ArgMatches;
 use enigo::*;
-use image::{RgbImage, GenericImage, GenericImageView};
+use image::{GenericImage, GenericImageView, RgbImage};
 use log::{debug, error, info, warn};
 use rand::Rng;
 
@@ -18,6 +18,7 @@ use crate::artifact::internal_artifact::{
 use crate::capture::{self, capture_absolute};
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
+use crate::common::utils::get_pid_and_ui;
 use crate::common::{utils, PixelRect, PixelRectBound, RawCaptureImage, RawImage};
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
@@ -237,15 +238,39 @@ impl YasScanner {
 }
 
 impl YasScanner {
-    pub fn move_to(&mut self, row: u32, col: u32) {
-        let info = &self.info;
-        let left = info.left
-            + (info.left_margin + (info.art_width + info.art_gap_x) * col + info.art_width / 2)
-                as i32;
-        let top = info.top
-            + (info.top_margin + (info.art_height + info.art_gap_y) * row + info.art_height / 4)
-                as i32;
-        self.enigo.mouse_move_to(left as i32, top as i32);
+    fn align_row(&mut self) -> bool {
+        #[cfg(target_os = "macos")]
+        let (_, ui) = get_pid_and_ui();
+        let mut count = 0;
+        while count < 10 {
+            let color = self.get_flag_color();
+            if color.is_same(&self.initial_color) {
+                return true;
+            }
+
+            #[cfg(windows)]
+            self.enigo.mouse_scroll_y(-1);
+            #[cfg(any(target_os = "linux"))]
+            self.enigo.mouse_scroll_y(1);
+            #[cfg(target_os = "macos")]
+            {
+                match ui {
+                    crate::common::UI::Desktop => {
+                        // mac_scroll(&mut self.enigo, 1);
+                        self.enigo.mouse_scroll_y(-1);
+                        utils::sleep(20);
+                    }
+                    crate::common::UI::Mobile => {
+                        mac_scroll(&mut self.enigo, 1);
+                    }
+                }
+            }
+
+            utils::sleep(self.config.scroll_stop);
+            count += 1;
+        }
+
+        false
     }
 
     /*
@@ -278,23 +303,30 @@ impl YasScanner {
     }
     */
 
-    fn sample_initial_color(&mut self) {
-        self.initial_color = self.get_flag_color();
-    }
-
-    fn get_flag_color(&self) -> Color {
-        let flag_x = self.info.flag_x as i32 + self.info.left;
-        let flag_y = self.info.flag_y as i32 + self.info.top;
-        let color = capture::get_color(flag_x as u32, flag_y as u32);
-
-        color
+    fn capture_panel(&mut self) -> Result<RgbImage, String> {
+        let now = SystemTime::now();
+        let w = self.info.panel_position.right - self.info.panel_position.left;
+        let h = self.info.panel_position.bottom - self.info.panel_position.top;
+        let rect: PixelRect = PixelRect {
+            left: self.info.left as i32 + self.info.panel_position.left,
+            top: self.info.top as i32 + self.info.panel_position.top,
+            width: w,
+            height: h,
+        };
+        let u8_arr = capture::capture_absolute(&rect)?;
+        // info!("capture time: {}ms", now.elapsed().unwrap().as_millis());
+        Ok(u8_arr)
     }
 
     fn get_art_count(&mut self) -> Result<u32, String> {
         let count = self.config.number;
         if let 0 = count {
             let info = &self.info;
-            let raw_after_pp = self.info.art_count_position.capture_relative(info, true).unwrap();
+            let raw_after_pp = self
+                .info
+                .art_count_position
+                .capture_relative(info, true)
+                .unwrap();
             let s = self.model.inference_string(&raw_after_pp);
             info!("raw count string: {}", s);
             if s.starts_with("圣遗物") {
@@ -314,155 +346,12 @@ impl YasScanner {
         }
     }
 
-    fn scroll_one_row(&mut self) -> ScrollResult {
-        let mut state = 0;
-        let mut count = 0;
-        let max_scroll = 20;
-        while count < max_scroll {
-            if utils::is_rmb_down() {
-                return ScrollResult::Interrupt;
-            }
+    fn get_flag_color(&self) -> Color {
+        let flag_x = self.info.flag_x as i32 + self.info.left;
+        let flag_y = self.info.flag_y as i32 + self.info.top;
+        let color = capture::get_color(flag_x as u32, flag_y as u32);
 
-            #[cfg(windows)]
-            self.enigo.mouse_scroll_y(-5);
-            #[cfg(any(target_os = "linux"))]
-            self.enigo.mouse_scroll_y(1);
-            #[cfg(target_os = "macos")]
-            mac_scroll(&mut self.enigo, 1);
-            utils::sleep(self.config.scroll_stop);
-            count += 1;
-            let color: Color = self.get_flag_color();
-            if state == 0 && !color.is_same(&self.initial_color) {
-                state = 1;
-            } else if state == 1 && self.initial_color.is_same(&color) {
-                self.avg_scroll_one_row = (self.avg_scroll_one_row * self.scrolled_rows as f64
-                    + count as f64)
-                    / (self.scrolled_rows as f64 + 1.0);
-                info!("avg scroll/row: {}", self.avg_scroll_one_row);
-                self.scrolled_rows += 1;
-                return ScrollResult::Success;
-            }
-        }
-
-        ScrollResult::TLE
-    }
-
-    fn scroll_rows(&mut self, count: u32) -> ScrollResult {
-        if self.scrolled_rows >= 5 {
-            let scroll = ((self.avg_scroll_one_row * count as f64 - 3.0).round() as u32).max(0);
-            for _ in 0..scroll {
-                #[cfg(windows)]
-                self.enigo.mouse_scroll_y(-1);
-                #[cfg(target_os = "linux")]
-                self.enigo.mouse_scroll_y(1);
-                #[cfg(target_os = "macos")]
-                mac_scroll(&mut self.enigo, 1);
-            }
-            utils::sleep(400);
-            self.align_row();
-            return ScrollResult::Skip;
-        }
-
-        for _ in 0..count {
-            match self.scroll_one_row() {
-                ScrollResult::TLE => return ScrollResult::TLE,
-                ScrollResult::Interrupt => return ScrollResult::Interrupt,
-                _ => (),
-            }
-        }
-
-        ScrollResult::Success
-    }
-
-    fn align_row(&mut self) -> bool {
-        let mut count = 0;
-        while count < 10 {
-            let color = self.get_flag_color();
-            if color.is_same(&self.initial_color) {
-                return true;
-            }
-
-            #[cfg(windows)]
-            self.enigo.mouse_scroll_y(-1);
-            #[cfg(any(target_os = "linux"))]
-            self.enigo.mouse_scroll_y(1);
-            #[cfg(target_os = "macos")]
-            mac_scroll(&mut self.enigo, 1);
-
-            utils::sleep(self.config.scroll_stop);
-            count += 1;
-        }
-
-        false
-    }
-
-    fn wait_until_switched(&mut self) -> bool {
-        if self.is_cloud {
-            utils::sleep(self.config.cloud_wait_switch_artifact);
-            return true;
-        }
-        let now = SystemTime::now();
-
-        let mut consecutive_time = 0;
-        let mut diff_flag = false;
-        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_artifact as u128 {
-            // let pool_start = SystemTime::now();
-            let rect = PixelRect {
-                left: self.info.left as i32 + self.info.pool_position.left,
-                top: self.info.top as i32 + self.info.pool_position.top,
-                width: self.info.pool_position.right - self.info.pool_position.left,
-                height: self.info.pool_position.bottom - self.info.pool_position.top,
-            };
-            let im = capture::capture_absolute(&rect).unwrap();
-            let pool = calc_pool(im.as_raw()) as f64;
-            // info!("pool: {}", pool);
-            // println!("pool time: {}ms", pool_start.elapsed().unwrap().as_millis());
-
-            if (pool - self.pool).abs() > 0.000001 {
-                // info!("pool: {}", pool);
-                // let raw = RawCaptureImage {
-                //     data: im,
-                //     w: rect.width as u32,
-                //     h: rect.height as u32,
-                // };
-                // let raw = raw.to_raw_image();
-                // println!("{:?}", &raw.data[..10]);
-                // raw.save(&format!("captures/{}.png", rand::thread_rng().gen::<u32>()));
-
-                self.pool = pool;
-                diff_flag = true;
-                consecutive_time = 0;
-                // info!("avg switch time: {}ms", self.avg_switch_time);
-            } else {
-                if diff_flag {
-                    consecutive_time += 1;
-                    if consecutive_time == 1 {
-                        self.avg_switch_time = (self.avg_switch_time * self.scanned_count as f64
-                            + now.elapsed().unwrap().as_millis() as f64)
-                            / (self.scanned_count as f64 + 1.0);
-                        self.scanned_count += 1;
-                        return true;
-                    }
-                }
-            }
-        }
-
-        false
-    }
-
-    fn capture_panel(&mut self) -> Result<RgbImage, String> {
-        let now = SystemTime::now();
-        let w = self.info.panel_position.right - self.info.panel_position.left;
-        let h = self.info.panel_position.bottom - self.info.panel_position.top;
-        let rect: PixelRect = PixelRect {
-            left: self.info.left as i32 + self.info.panel_position.left,
-            top: self.info.top as i32 + self.info.panel_position.top,
-            width: w,
-            height: h,
-        };
-        let u8_arr = capture::capture_absolute(&rect)?;
-        // info!("capture time: {}ms", now.elapsed().unwrap().as_millis());
-        Ok(u8_arr)
+        color
     }
 
     fn get_star(&self) -> u32 {
@@ -494,102 +383,206 @@ impl YasScanner {
 
         star
     }
-/*
-    fn start_capture_only(&mut self) {
-        fs::create_dir("captures");
-        let info = &self.info.clone();
 
-        println!("capture l:{}, t:{}, w:{},h:{}", info.left, info.top, info.width, info.height);
-        let raw_im_rect = PixelRectBound {
-            left: info.left as i32,
-            top: info.top as i32,
-            right: info.left + info.width as i32,
-            bottom: info.top + info.height as i32,
-        };
-
-        let raw_im = raw_im_rect.capture_relative(info, false).unwrap();
-        raw_im.grayscale_to_gray_image().save("captures/raw_im.png");
-        println!("Finish capture raw");
-        panic!();
-
-        let count = self.info.art_count_position.capture_relative(info, false).unwrap();
-        count.to_gray_image().save("captures/count.png");
-
-        let convert_rect = |rect: &PixelRectBound| PixelRect {
-            left: rect.left - info.panel_position.left,
-            top: rect.top - info.panel_position.top,
-            width: rect.right - rect.left,
-            height: rect.bottom - rect.top,
-        };
-
-        let panel = self.capture_panel().unwrap();
-        let im_title = pre_process(panel.crop_to_raw_img(&convert_rect(&info.title_position)));
-        if let Some(im) = im_title {
-            im.to_gray_image().save("captures/title.png").expect("Err");
-        }
-
-        let im_main_stat_name =
-            pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_name_position)));
-        if let Some(im) = im_main_stat_name {
-            im.to_gray_image()
-                .save("captures/main_stat_name.png")
-                .expect("Err");
-        }
-
-        let im_main_stat_value =
-            pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_value_position)));
-        if let Some(im) = im_main_stat_value {
-            im.to_gray_image()
-                .save("captures/main_stat_value.png")
-                .expect("Err");
-        }
-
-        let im_sub_stat_1 =
-            pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat1_position)));
-        if let Some(im) = im_sub_stat_1 {
-            im.to_gray_image()
-                .save("captures/sub_stat_1.png")
-                .expect("Err");
-        }
-
-        let im_sub_stat_2 =
-            pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat2_position)));
-        if let Some(im) = im_sub_stat_2 {
-            im.to_gray_image()
-                .save("captures/sub_stat_2.png")
-                .expect("Err");
-        }
-
-        let im_sub_stat_3 =
-            pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat3_position)));
-        if let Some(im) = im_sub_stat_3 {
-            im.to_gray_image()
-                .save("captures/sub_stat_3.png")
-                .expect("Err");
-        }
-
-        let im_sub_stat_4 =
-            pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat4_position)));
-        if let Some(im) = im_sub_stat_4 {
-            im.to_gray_image()
-                .save("captures/sub_stat_4.png")
-                .expect("Err");
-        }
-
-        let im_level = pre_process(panel.crop_to_raw_img(&convert_rect(&info.level_position)));
-        if let Some(im) = im_level {
-            im.to_gray_image().save("captures/level.png").expect("Err");
-        }
-
-        let im_equip = pre_process(panel.crop_to_raw_img(&convert_rect(&info.equip_position)));
-        if let Some(im) = im_equip {
-            im.to_gray_image().save("captures/equip.png").expect("Err");
-        }
+    pub fn move_to(&mut self, row: u32, col: u32) {
+        let info = &self.info;
+        let left = info.left
+            + (info.left_margin + (info.art_width + info.art_gap_x) * col + info.art_width / 2)
+                as i32;
+        let top = info.top
+            + (info.top_margin + (info.art_height + info.art_gap_y) * row + info.art_height / 4)
+                as i32;
+        self.enigo.mouse_move_to(left as i32, top as i32);
+        #[cfg(target_os = "macos")]
+        utils::sleep(20);
     }
-*/
+
+    fn sample_initial_color(&mut self) {
+        self.initial_color = self.get_flag_color();
+    }
+
+    fn scroll_one_row(&mut self) -> ScrollResult {
+        #[cfg(target_os = "macos")]
+        let (_, ui) = get_pid_and_ui();
+        let mut state = 0;
+        let mut count = 0;
+        let max_scroll = 20;
+        while count < max_scroll {
+            if utils::is_rmb_down() {
+                return ScrollResult::Interrupt;
+            }
+
+            #[cfg(windows)]
+            self.enigo.mouse_scroll_y(-5);
+            #[cfg(any(target_os = "linux"))]
+            self.enigo.mouse_scroll_y(1);
+            #[cfg(target_os = "macos")]
+            {
+                match ui {
+                    crate::common::UI::Desktop => {
+                        // mac_scroll(&mut self.enigo, 1);
+                        self.enigo.mouse_scroll_y(-1);
+                        utils::sleep(20);
+                    }
+                    crate::common::UI::Mobile => {
+                        mac_scroll(&mut self.enigo, 1);
+                    }
+                }
+            }
+            utils::sleep(self.config.scroll_stop);
+            count += 1;
+            let color: Color = self.get_flag_color();
+            if state == 0 && !color.is_same(&self.initial_color) {
+                state = 1;
+            } else if state == 1 && self.initial_color.is_same(&color) {
+                self.avg_scroll_one_row = (self.avg_scroll_one_row * self.scrolled_rows as f64
+                    + count as f64)
+                    / (self.scrolled_rows as f64 + 1.0);
+                info!("avg scroll/row: {}", self.avg_scroll_one_row);
+                self.scrolled_rows += 1;
+                return ScrollResult::Success;
+            }
+        }
+
+        ScrollResult::TLE
+    }
+
+    fn scroll_rows(&mut self, count: u32) -> ScrollResult {
+        #[cfg(target_os = "macos")]
+        let (_, ui) = get_pid_and_ui();
+        if self.scrolled_rows >= 5 {
+            let scroll = ((self.avg_scroll_one_row * count as f64 - 3.0).round() as u32).max(0);
+            for _ in 0..scroll {
+                #[cfg(windows)]
+                self.enigo.mouse_scroll_y(-1);
+                #[cfg(target_os = "linux")]
+                self.enigo.mouse_scroll_y(1);
+                #[cfg(target_os = "macos")]
+                {
+                    match ui {
+                        crate::common::UI::Desktop => {
+                            // mac_scroll(&mut self.enigo, 1);
+                            self.enigo.mouse_scroll_y(-1);
+                            utils::sleep(20);
+                        }
+                        crate::common::UI::Mobile => {
+                            mac_scroll(&mut self.enigo, 1);
+                        }
+                    }
+                }
+            }
+            utils::sleep(400);
+            self.align_row();
+            return ScrollResult::Skip;
+        }
+
+        for _ in 0..count {
+            match self.scroll_one_row() {
+                ScrollResult::TLE => return ScrollResult::TLE,
+                ScrollResult::Interrupt => return ScrollResult::Interrupt,
+                _ => (),
+            }
+        }
+
+        ScrollResult::Success
+    }
+
+    /*
+        fn start_capture_only(&mut self) {
+            fs::create_dir("captures");
+            let info = &self.info.clone();
+
+            println!("capture l:{}, t:{}, w:{},h:{}", info.left, info.top, info.width, info.height);
+            let raw_im_rect = PixelRectBound {
+                left: info.left as i32,
+                top: info.top as i32,
+                right: info.left + info.width as i32,
+                bottom: info.top + info.height as i32,
+            };
+
+            let raw_im = raw_im_rect.capture_relative(info, false).unwrap();
+            raw_im.grayscale_to_gray_image().save("captures/raw_im.png");
+            println!("Finish capture raw");
+            panic!();
+
+            let count = self.info.art_count_position.capture_relative(info, false).unwrap();
+            count.to_gray_image().save("captures/count.png");
+
+            let convert_rect = |rect: &PixelRectBound| PixelRect {
+                left: rect.left - info.panel_position.left,
+                top: rect.top - info.panel_position.top,
+                width: rect.right - rect.left,
+                height: rect.bottom - rect.top,
+            };
+
+            let panel = self.capture_panel().unwrap();
+            let im_title = pre_process(panel.crop_to_raw_img(&convert_rect(&info.title_position)));
+            if let Some(im) = im_title {
+                im.to_gray_image().save("captures/title.png").expect("Err");
+            }
+
+            let im_main_stat_name =
+                pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_name_position)));
+            if let Some(im) = im_main_stat_name {
+                im.to_gray_image()
+                    .save("captures/main_stat_name.png")
+                    .expect("Err");
+            }
+
+            let im_main_stat_value =
+                pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_value_position)));
+            if let Some(im) = im_main_stat_value {
+                im.to_gray_image()
+                    .save("captures/main_stat_value.png")
+                    .expect("Err");
+            }
+
+            let im_sub_stat_1 =
+                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat1_position)));
+            if let Some(im) = im_sub_stat_1 {
+                im.to_gray_image()
+                    .save("captures/sub_stat_1.png")
+                    .expect("Err");
+            }
+
+            let im_sub_stat_2 =
+                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat2_position)));
+            if let Some(im) = im_sub_stat_2 {
+                im.to_gray_image()
+                    .save("captures/sub_stat_2.png")
+                    .expect("Err");
+            }
+
+            let im_sub_stat_3 =
+                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat3_position)));
+            if let Some(im) = im_sub_stat_3 {
+                im.to_gray_image()
+                    .save("captures/sub_stat_3.png")
+                    .expect("Err");
+            }
+
+            let im_sub_stat_4 =
+                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat4_position)));
+            if let Some(im) = im_sub_stat_4 {
+                im.to_gray_image()
+                    .save("captures/sub_stat_4.png")
+                    .expect("Err");
+            }
+
+            let im_level = pre_process(panel.crop_to_raw_img(&convert_rect(&info.level_position)));
+            if let Some(im) = im_level {
+                im.to_gray_image().save("captures/level.png").expect("Err");
+            }
+
+            let im_equip = pre_process(panel.crop_to_raw_img(&convert_rect(&info.equip_position)));
+            if let Some(im) = im_equip {
+                im.to_gray_image().save("captures/equip.png").expect("Err");
+            }
+        }
+    */
     pub fn start(&mut self) -> Vec<InternalArtifact> {
         //self.panel_down();
-/*         if self.config.capture_only {
+        /*         if self.config.capture_only {
            self.start_capture_only();
            return Vec::new();
         } */
@@ -616,7 +609,6 @@ impl YasScanner {
         info!("detected count: {}", count);
         info!("total row: {}", total_row);
         info!("last column: {}", last_row_col);
-        
 
         let (tx, rx) = mpsc::channel::<Option<(RgbImage, u32)>>();
         let info_2 = self.info.clone();
@@ -648,7 +640,6 @@ impl YasScanner {
                 height: rect.bottom - rect.top,
             };
 
-
             for i in rx {
                 let (capture, star) = match i {
                     Some(v) => v,
@@ -657,9 +648,20 @@ impl YasScanner {
                 //info!("raw capture image: width = {}, height = {}", capture.width(), capture.height());
                 let now = SystemTime::now();
 
-                let model_inference = |pos: &PixelRectBound, name: &str, captured_img: &RgbImage, cnt: i32| -> String {
+                let model_inference = |pos: &PixelRectBound,
+                                       name: &str,
+                                       captured_img: &RgbImage,
+                                       cnt: i32|
+                 -> String {
                     let rect = convert_rect(pos);
-                    let raw_img = to_gray(captured_img).view(rect.left as u32, rect.top as u32, rect.width as u32, rect.height as u32).to_image();
+                    let raw_img = to_gray(captured_img)
+                        .view(
+                            rect.left as u32,
+                            rect.top as u32,
+                            rect.width as u32,
+                            rect.height as u32,
+                        )
+                        .to_image();
                     //info!("raw_img: width = {}, height = {}", raw_img.width(), raw_img.height());
 
                     if is_dump_mode {
@@ -692,15 +694,27 @@ impl YasScanner {
                 };
 
                 let str_title = model_inference(&info.title_position, "title", &capture, cnt);
-                let str_main_stat_name =
-                    model_inference(&info.main_stat_name_position, "main_stat_name", &capture, cnt);
-                let str_main_stat_value =
-                    model_inference(&info.main_stat_value_position, "main_stat_value", &capture, cnt);
+                let str_main_stat_name = model_inference(
+                    &info.main_stat_name_position,
+                    "main_stat_name",
+                    &capture,
+                    cnt,
+                );
+                let str_main_stat_value = model_inference(
+                    &info.main_stat_value_position,
+                    "main_stat_value",
+                    &capture,
+                    cnt,
+                );
 
-                let str_sub_stat_1 = model_inference(&info.sub_stat1_position, "sub_stat_1", &capture, cnt);
-                let str_sub_stat_2 = model_inference(&info.sub_stat2_position, "sub_stat_2", &capture, cnt);
-                let str_sub_stat_3 = model_inference(&info.sub_stat3_position, "sub_stat_3", &capture, cnt);
-                let str_sub_stat_4 = model_inference(&info.sub_stat4_position, "sub_stat_4", &capture, cnt);
+                let str_sub_stat_1 =
+                    model_inference(&info.sub_stat1_position, "sub_stat_1", &capture, cnt);
+                let str_sub_stat_2 =
+                    model_inference(&info.sub_stat2_position, "sub_stat_2", &capture, cnt);
+                let str_sub_stat_3 =
+                    model_inference(&info.sub_stat3_position, "sub_stat_3", &capture, cnt);
+                let str_sub_stat_4 =
+                    model_inference(&info.sub_stat4_position, "sub_stat_4", &capture, cnt);
 
                 let str_level = model_inference(&info.level_position, "level", &capture, cnt);
                 let str_equip = model_inference(&info.equip_position, "equip", &capture, cnt);
@@ -836,6 +850,59 @@ impl YasScanner {
         let results: Vec<InternalArtifact> = handle.join().unwrap();
         info!("count: {}", results.len());
         results
+    }
+    fn wait_until_switched(&mut self) -> bool {
+        if self.is_cloud {
+            utils::sleep(self.config.cloud_wait_switch_artifact);
+            return true;
+        }
+        let now = SystemTime::now();
+
+        let mut consecutive_time = 0;
+        let mut diff_flag = false;
+        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_artifact as u128 {
+            // let pool_start = SystemTime::now();
+            let rect = PixelRect {
+                left: self.info.left as i32 + self.info.pool_position.left,
+                top: self.info.top as i32 + self.info.pool_position.top,
+                width: self.info.pool_position.right - self.info.pool_position.left,
+                height: self.info.pool_position.bottom - self.info.pool_position.top,
+            };
+            let im = capture::capture_absolute(&rect).unwrap();
+            let pool = calc_pool(im.as_raw()) as f64;
+            // info!("pool: {}", pool);
+            // println!("pool time: {}ms", pool_start.elapsed().unwrap().as_millis());
+
+            if (pool - self.pool).abs() > 0.000001 {
+                // info!("pool: {}", pool);
+                // let raw = RawCaptureImage {
+                //     data: im,
+                //     w: rect.width as u32,
+                //     h: rect.height as u32,
+                // };
+                // let raw = raw.to_raw_image();
+                // println!("{:?}", &raw.data[..10]);
+                // raw.save(&format!("captures/{}.png", rand::thread_rng().gen::<u32>()));
+
+                self.pool = pool;
+                diff_flag = true;
+                consecutive_time = 0;
+                // info!("avg switch time: {}ms", self.avg_switch_time);
+            } else {
+                if diff_flag {
+                    consecutive_time += 1;
+                    if consecutive_time == 1 {
+                        self.avg_switch_time = (self.avg_switch_time * self.scanned_count as f64
+                            + now.elapsed().unwrap().as_millis() as f64)
+                            / (self.scanned_count as f64 + 1.0);
+                        self.scanned_count += 1;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
     }
 }
 

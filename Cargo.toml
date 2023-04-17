@@ -26,6 +26,7 @@ semver = "1.0.7"
 lazy_static = "1.4.0"
 screenshots = "0.5.3"
 png = "0.17.8"
+cocoa = "0.24.1"
 #screenshots = { git = "https://github.com/poly000/screenshots-rs", rev = "d96dff76c5f5cbd849d80451f0df8f415f8e5f4b" }
 
 [target.'cfg(windows)'.dependencies]

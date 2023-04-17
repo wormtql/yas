@@ -1,14 +1,16 @@
 use crate::capture;
-use crate::inference::pre_process::{pre_process, to_gray, raw_to_img, uint8_raw_to_img, GrayImageFloat};
+use crate::inference::pre_process::{
+    pre_process, raw_to_img, to_gray, uint8_raw_to_img, GrayImageFloat,
+};
 use crate::info::info::ScanInfo;
 use image::{GrayImage, ImageBuffer, RgbImage};
+use log::info;
 use std::time::SystemTime;
-use log::{info};
 
-pub mod utils;
 pub mod buffer;
-pub mod color;
 pub mod character_name;
+pub mod color;
+pub mod utils;
 
 #[derive(Debug)]
 pub struct PixelRect {
@@ -51,11 +53,15 @@ impl PixelRectBound {
 
         match raw_after_pp {
             Some(im) => Ok(im),
-            None => Err(String::from("capture error"))
+            None => Err(String::from("capture error")),
         }
     }
 
-    pub fn capture_relative(&self, info: &ScanInfo, use_pre_process: bool) -> Result<GrayImageFloat, String> {
+    pub fn capture_relative(
+        &self,
+        info: &ScanInfo,
+        use_pre_process: bool,
+    ) -> Result<GrayImageFloat, String> {
         let w = self.right - self.left;
         let h = self.bottom - self.top;
         let rect = PixelRect {
@@ -69,17 +75,16 @@ impl PixelRectBound {
         info!("capture raw time: {}ms", now.elapsed().unwrap().as_millis());
         let raw_gray = to_gray(&raw_u8);
         let raw_after_pp = if use_pre_process {
-                pre_process(raw_gray)
-            }
-            else {
-                Some(raw_gray)
-            };
+            pre_process(raw_gray)
+        } else {
+            Some(raw_gray)
+        };
 
         info!("preprocess time: {}ms", now.elapsed().unwrap().as_millis());
 
         match raw_after_pp {
             Some(im) => Ok(im),
-            None => Err(String::from("capture error"))
+            None => Err(String::from("capture error")),
         }
     }
 
@@ -172,3 +177,8 @@ impl RawCaptureImage {
 }
 
 // pub struct
+
+pub enum UI {
+    Desktop,
+    Mobile,
+}

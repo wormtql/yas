@@ -6,14 +6,13 @@ use cocoa::{
 };
 use enigo::*;
 
-#[cfg(target_arch = "aarch64")]
 pub fn mac_scroll(enigo: &mut Enigo, count: i32) {
-    enigo.mouse_down(MouseButton::Left);
     utils::sleep(10);
     for j in 0..count {
+        enigo.mouse_down(MouseButton::Left);
         for i in 0..5 {
             enigo.mouse_move_relative(0, -2);
-            utils::sleep(20);
+            utils::sleep(10);
         }
         enigo.mouse_up(MouseButton::Left);
         utils::sleep(10);
@@ -22,11 +21,6 @@ pub fn mac_scroll(enigo: &mut Enigo, count: i32) {
     }
 }
 
-#[cfg(target_arch = "x86_64")]
-pub fn mac_scroll(enigo:&mut Enigo, count:i32) {
-    enigo.mouse_scroll_y(count);
-    utils::sleep(20);
-}
 
 pub fn get_titlebar_height() -> f64 {
     use cocoa::appkit::{NSBackingStoreBuffered, NSImage, NSWindow, NSWindowStyleMask};
@@ -160,9 +154,9 @@ pub unsafe fn find_window_by_pid(pid: i32) -> Result<(PixelRect, String), String
                     let titlebar_height = get_titlebar_height();
                     mrect = PixelRect {
                         left: cg_rect.origin.x as i32,
-                        top: cg_rect.origin.y as i32 + titlebar_height as i32, // The titlebar appears in windowe mode
+                        top: cg_rect.origin.y as i32 + titlebar_height as i32, // The titlebar appears in window mode
                         width: cg_rect.size.width as i32,
-                        height: cg_rect.size.height as i32 - titlebar_height as i32, // The titlebar appears in windowe mode
+                        height: cg_rect.size.height as i32 - titlebar_height as i32, // The titlebar appears in window mode
                     };
                 } else {
                     mrect = PixelRect {

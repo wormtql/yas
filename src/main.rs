@@ -139,87 +139,10 @@ fn main() {
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
-    let rect: PixelRect;
-    let is_cloud: bool;
-
-    #[cfg(windows)]
-    {
-        use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
-        use winapi::um::wingdi::{GetDeviceCaps, HORZRES};
-        use winapi::um::winuser::{
-            GetDpiForSystem, GetSystemMetrics, SetForegroundWindow, SetProcessDPIAware,
-            SetThreadDpiAwarenessContext, ShowWindow, SW_RESTORE, SW_SHOW,
-        };
-        // use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
-
-        crate::utils::set_dpi_awareness();
-
-        let hwnd = match utils::find_window_local() {
-            Ok(h) => {
-                is_cloud = false;
-                h
-            }
-            Err(_) => match utils::find_window_cloud() {
-                Ok(h) => {
-                    is_cloud = true;
-                    h
-                }
-                Err(_) => utils::error_and_quit("未找到原神窗口，请确认原神已经开启"),
-            },
-        };
-
-        unsafe {
-            ShowWindow(hwnd, SW_RESTORE);
-        }
-        // utils::sleep(1000);
-        unsafe {
-            SetForegroundWindow(hwnd);
-        }
-        utils::sleep(1000);
-
-        rect = utils::get_client_rect(hwnd).unwrap();
-    }
-
-    #[cfg(all(target_os = "linux"))]
-    {
-        let window_id = unsafe {
-            String::from_utf8_unchecked(
-                std::process::Command::new("sh")
-                    .arg("-c")
-                    .arg(r#" xwininfo|grep "Window id"|cut -d " " -f 4 "#)
-                    .output()
-                    .unwrap()
-                    .stdout,
-            )
-        };
-        let window_id = window_id.trim_end_matches("\n");
-
-        let position_size = unsafe {
-            String::from_utf8_unchecked(
-                std::process::Command::new("sh")
-                    .arg("-c")
-                    .arg(&format!(r#" xwininfo -id {window_id}|cut -f 2 -d :|tr -cd "0-9\n"|grep -v "^$"|sed -n "1,2p;5,6p" "#))
-                    .output()
-                    .unwrap()
-                    .stdout,
-            )
-        };
-
-        let mut info = position_size.split("\n");
-
-        let left = info.next().unwrap().parse().unwrap();
-        let top = info.next().unwrap().parse().unwrap();
-        let width = info.next().unwrap().parse().unwrap();
-        let height = info.next().unwrap().parse().unwrap();
-
-        rect = PixelRect {
-            left,
-            top,
-            width,
-            height,
-        };
-        is_cloud = false; // todo: detect cloud genshin by title
-    }
+    let (rect, is_cloud) = utils::error_and_quit_if(
+        utils::detect_game_window(),
+        "未找到原神窗口，请确认原神已经开启",
+    );
 
     // rect.scale(1.25);
     info!(
@@ -227,22 +150,10 @@ fn main() {
         rect.left, rect.top, rect.width, rect.height
     );
 
-    let mut info: info::ScanInfo;
-    if rect.height * 43 == rect.width * 18 {
-        info =
-            info::ScanInfo::from_43_18(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 16 == rect.width * 9 {
-        info =
-            info::ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 8 == rect.width * 5 {
-        info = info::ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 4 == rect.width * 3 {
-        info = info::ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else if rect.height * 7 == rect.width * 3 {
-        info = info::ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
-    } else {
-        utils::error_and_quit("不支持的分辨率");
-    }
+    let mut info = utils::error_and_quit_if(
+        info::ScanInfo::from_pixel_rect(rect),
+        "不支持的分辨率",
+    );
 
     let offset_x = matches
         .value_of("offset-x")

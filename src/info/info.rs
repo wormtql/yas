@@ -47,6 +47,22 @@ pub struct ScanInfo {
 }
 
 impl ScanInfo {
+    pub fn from_pixel_rect(rect: PixelRect) -> Option<ScanInfo> {
+        if rect.height * 43 == rect.width * 18 {
+            Some(ScanInfo::from_43_18(rect.width as u32, rect.height as u32, rect.left, rect.top))
+        } else if rect.height * 16 == rect.width * 9 {
+            Some(ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top))
+        } else if rect.height * 8 == rect.width * 5 {
+            Some(ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top))
+        } else if rect.height * 4 == rect.width * 3 {
+            Some(ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top))
+        } else if rect.height * 7 == rect.width * 3 {
+            Some(ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top))
+        } else {
+            None
+        }
+    }
+
     pub fn from_43_18(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
         WINDOW_43_18.to_scan_info(height as f64, width as f64, left, top)
     }

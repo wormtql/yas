@@ -66,7 +66,7 @@ pub fn detect_game_window() -> Option<(PixelRect, bool)> {
         }
         sleep(1000);
 
-        let rect = get_client_rect(hwnd).unwrap();
+        let rect = get_client_rect(hwnd).ok()?;
         Some((rect, is_cloud))
     }
 

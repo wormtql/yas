@@ -18,6 +18,7 @@ use crate::artifact::internal_artifact::{
 use crate::capture::{self, capture_absolute};
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
+#[cfg(target_os = "macos")]
 use crate::common::utils::get_pid_and_ui;
 use crate::common::{utils, PixelRect, PixelRectBound, RawCaptureImage, RawImage};
 use crate::inference::inference::CRNNModel;

@@ -3,6 +3,7 @@ use std::path::Path;
 use std::time::{Duration, Instant, SystemTime};
 
 use yas::capture::{capture_absolute, capture_absolute_image};
+#[cfg(target_os = "macos")]
 use yas::common::utils::get_pid_and_ui;
 use yas::common::{utils, UI};
 use yas::common::{PixelRect, RawImage};

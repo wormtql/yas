@@ -1,4 +1,5 @@
-use std::{os::macos::raw, fs::File};
+#[cfg(target_os = "macos")]
+use std::{os::macos::raw};
 
 use image::{Rgb, RgbImage, ImageBuffer, RgbaImage, buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle};
 

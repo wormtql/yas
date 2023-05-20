@@ -1,5 +1,5 @@
 [package]
-name = "yas"
+name = "yas_scanner"
 version = "0.1.13"
 edition = "2018"
 build = "build.rs"

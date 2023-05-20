@@ -2,20 +2,20 @@ use std::io::stdin;
 use std::path::Path;
 use std::time::{Duration, Instant, SystemTime};
 
-use yas::capture::{capture_absolute, capture_absolute_image};
+use yas_scanner::capture::{capture_absolute, capture_absolute_image};
 #[cfg(target_os = "macos")]
-use yas::common::utils::get_pid_and_ui;
-use yas::common::{utils, UI};
-use yas::common::{PixelRect, RawImage};
-use yas::expo::good::GOODFormat;
-use yas::expo::mingyu_lab::MingyuLabFormat;
-use yas::expo::mona_uranai::MonaFormat;
-use yas::inference::inference::CRNNModel;
-use yas::inference::pre_process::{
+use yas_scanner::common::utils::get_pid_and_ui;
+use yas_scanner::common::{utils, UI};
+use yas_scanner::common::{PixelRect, RawImage};
+use yas_scanner::expo::good::GOODFormat;
+use yas_scanner::expo::mingyu_lab::MingyuLabFormat;
+use yas_scanner::expo::mona_uranai::MonaFormat;
+use yas_scanner::inference::inference::CRNNModel;
+use yas_scanner::inference::pre_process::{
     crop, image_to_raw, normalize, pre_process, raw_to_img, to_gray,
 };
-use yas::info::info;
-use yas::scanner::yas_scanner::{YasScanner, YasScannerConfig};
+use yas_scanner::info::info;
+use yas_scanner::scanner::yas_scanner::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
 use env_logger::{Builder, Env, Target};

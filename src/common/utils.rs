@@ -14,6 +14,11 @@ mod windows;
 #[cfg(windows)]
 pub use windows::*;
 
+#[cfg(target_os = "macos")]
+mod mac;
+#[cfg(target_os = "macos")]
+pub use mac::*;
+
 pub fn sleep(ms: u32) {
     let time = time::Duration::from_millis(ms as u64);
     thread::sleep(time);

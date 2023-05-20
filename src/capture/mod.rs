@@ -1,7 +1,11 @@
-use image::{Rgb, RgbImage};
+use std::{os::macos::raw, fs::File};
+
+use image::{Rgb, RgbImage, ImageBuffer, RgbaImage, buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle};
 
 use crate::common::color::Color;
 use crate::common::PixelRect;
+
+use png::{Decoder, Encoder};
 
 /// retures Ok(buf) on success
 /// buf contains pixels in [b:u8, g:u8, r:u8, a:u8] format, as an `[[i32;width];height]`.
@@ -12,21 +16,33 @@ pub fn capture_absolute(
         width,
         height,
     }: &PixelRect,
-) -> Result<Vec<u8>, String> {
-    let screen = screenshots::Screen::all().ok_or("cannot get DisplayInfo")?[0];
-    let (mut buffer, is_bgra) = screen
+) -> Result<RgbImage, String> {
+    let screen = screenshots::Screen::all().expect("cannot get DisplayInfo")[0];
+    let png_img = screen
         .capture_area(*left, *top, *width as u32, *height as u32)
-        .ok_or("capture failed")?;
-
-    if !is_bgra {
-        for chunk in buffer.chunks_mut(4) {
-            let temp = chunk[0];
-            chunk[0] = chunk[2];
-            chunk[2] = temp;
-        }
+        .expect("capture failed");
+    let mut rgb_img = png_decode(png_img).unwrap();
+    if rgb_img.width() as i32> *width && rgb_img.height() as i32> *height {
+        rgb_img = resize(&rgb_img, (*width) as u32, (*height) as u32, Triangle);
     }
+    Ok(rgb_img)
+}
 
-    Ok(buffer)
+fn png_decode(png_img:screenshots::Image) -> Result<RgbImage, String>  {
+    let png_decoder = Decoder::new(png_img.buffer().as_slice());
+    let mut png_reader = png_decoder.read_info().unwrap();
+
+    let mut png_data_buf = vec![0; png_reader.output_buffer_size()];
+
+    let info = png_reader.next_frame(&mut png_data_buf).unwrap();
+    
+    assert!(info.color_type == png::ColorType::Rgba, "Not rgba format image");
+
+    let mut buffer = png_data_buf[..info.buffer_size()].to_vec();
+
+    let rgba_img = RgbaImage::from_raw(png_img.width(), png_img.height(), png_data_buf).unwrap();
+    let rgb_img: RgbImage = rgba_img.convert();
+    Ok(rgb_img)
 }
 
 pub fn capture_absolute_image(
@@ -39,18 +55,17 @@ pub fn capture_absolute_image(
 ) -> Result<image::RgbImage, String> {
     // simply use the first screen.
     // todo: multi-screen support
-    let screen = screenshots::Screen::all().ok_or("cannot get DisplayInfo")?[0];
-    let (buffer, is_bgra) = screen
+    let screen = screenshots::Screen::all().expect("cannot get DisplayInfo")[0];
+    let image = screen
         .capture_area(*left, *top, *width as u32, *height as u32)
-        .ok_or("capture failed")?;
-    Ok(RgbImage::from_fn(*width as u32, *height as u32, |x, y| {
-        let offset = (y * (*width as u32) + x) as usize;
-        if is_bgra {
-            Rgb([buffer[offset + 2], buffer[offset + 1], buffer[offset]])
-        } else {
-            Rgb([buffer[offset], buffer[offset + 1], buffer[offset + 2]])
-        }
-    }))
+        .expect("capture failed");
+
+    let mut buffer = png_decode(image).unwrap();
+
+    if buffer.width() as i32> *width && buffer.height() as i32> *height {
+        buffer = resize(&buffer, (*width) as u32, (*height) as u32, Triangle);
+    }
+    Ok(buffer)
 }
 
 pub fn get_color(x: u32, y: u32) -> Color {
@@ -61,5 +76,6 @@ pub fn get_color(x: u32, y: u32) -> Color {
         height: 1,
     })
     .unwrap();
-    Color::from(im[2], im[1], im[0])
+    let pixel = im.get_pixel(0, 0);
+    Color::from(pixel[0], pixel[1], pixel[2])
 }

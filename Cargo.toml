@@ -3,6 +3,9 @@ name = "yas"
 version = "0.1.13"
 edition = "2018"
 build = "build.rs"
+description = "Genshin Impact item scanner"
+repository = "https://github.com/wormtql/yas"
+keywords = ["Genshin Impact", "artifacts", "scanner", "ocr", "crnn", "svtr", "transformer", "onnx"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -24,7 +27,7 @@ rand = "0.8.5"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 semver = "1.0.7"
 lazy_static = "1.4.0"
-screenshots = { git = "https://github.com/poly000/screenshots-rs", rev = "d96dff76c5f5cbd849d80451f0df8f415f8e5f4b" }
+screenshots = "0.5.3"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = [

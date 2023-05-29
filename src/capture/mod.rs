@@ -18,7 +18,7 @@ pub fn capture_absolute(
         height,
     }: &PixelRect,
 ) -> Result<RgbImage, String> {
-    let screen = screenshots::Screen::all().expect("cannot get DisplayInfo")[0];
+    let screen = screenshots::Screen::from_point(0, 0).expect("cannot get DisplayInfo");
     let png_img = screen
         .capture_area(*left, *top, *width as u32, *height as u32)
         .expect("capture failed");
@@ -54,9 +54,9 @@ pub fn capture_absolute_image(
         height,
     }: &PixelRect,
 ) -> Result<image::RgbImage, String> {
-    // simply use the first screen.
+    // simply use the main screen (from 0,0) to support multi-screen.
     // todo: multi-screen support
-    let screen = screenshots::Screen::all().expect("cannot get DisplayInfo")[0];
+    let screen = screenshots::Screen::from_point(0, 0).expect("cannot get DisplayInfo");
     let image = screen
         .capture_area(*left, *top, *width as u32, *height as u32)
         .expect("capture failed");

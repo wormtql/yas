@@ -1,14 +1,15 @@
+use rand::thread_rng;
+use rand::Rng;
 use std::convert::From;
 use std::fs::File;
 use std::io::prelude::*;
-use rand::thread_rng;
-use rand::Rng;
 
-use serde::ser::{Serialize, Serializer, SerializeMap};
+use serde::ser::{Serialize, SerializeMap, Serializer};
 use tract_onnx::prelude::tract_itertools::Itertools;
 
-use crate::artifact::internal_artifact::{ArtifactStatName, ArtifactSetName, ArtifactSlot, InternalArtifact, ArtifactStat};
-
+use crate::artifact::internal_artifact::{
+    ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, InternalArtifact,
+};
 
 type MonaArtifact = InternalArtifact;
 
@@ -80,7 +81,7 @@ impl ArtifactSetName {
             ArtifactSetName::ShimenawaReminiscence => "shimenawaReminiscence",
             ArtifactSetName::HuskOfOpulentDreams => "huskOfOpulentDreams",
             ArtifactSetName::OceanHuedClam => "oceanHuedClam",
-            _ => same.as_str()
+            _ => same.as_str(),
         };
         String::from(temp)
     }
@@ -100,7 +101,10 @@ impl ArtifactSlot {
 }
 
 impl Serialize for ArtifactStat {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let mut root = serializer.serialize_map(Some(2))?;
         root.serialize_entry("name", &self.name.to_mona());
         root.serialize_entry("value", &self.value);
@@ -109,7 +113,10 @@ impl Serialize for ArtifactStat {
 }
 
 impl Serialize for MonaArtifact {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let mut root = serializer.serialize_map(Some(7))?;
 
         root.serialize_entry("setName", &self.set_name.to_mona());
@@ -172,7 +179,10 @@ pub struct MonaFormat<'a> {
 }
 
 impl<'a> Serialize for MonaFormat<'a> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let mut root = serializer.serialize_map(Some(6))?;
         root.serialize_entry("version", &self.version);
         root.serialize_entry("flower", &self.flower);

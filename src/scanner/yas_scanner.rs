@@ -260,10 +260,10 @@ impl YasScanner {
                         // mac_scroll(&mut self.enigo, 1);
                         self.enigo.mouse_scroll_y(-1);
                         utils::sleep(20);
-                    }
+                    },
                     crate::common::UI::Mobile => {
                         mac_scroll(&mut self.enigo, 1);
-                    }
+                    },
                 }
             }
 
@@ -337,7 +337,7 @@ impl YasScanner {
                     Ok(v) => v,
                     Err(_) => {
                         return Err(String::from("无法识别圣遗物数量"));
-                    }
+                    },
                 };
                 return Ok(count);
             }
@@ -424,10 +424,10 @@ impl YasScanner {
                         // mac_scroll(&mut self.enigo, 1);
                         self.enigo.mouse_scroll_y(-1);
                         utils::sleep(20);
-                    }
+                    },
                     crate::common::UI::Mobile => {
                         mac_scroll(&mut self.enigo, 1);
-                    }
+                    },
                 }
             }
             utils::sleep(self.config.scroll_stop);
@@ -465,10 +465,10 @@ impl YasScanner {
                             // mac_scroll(&mut self.enigo, 1);
                             self.enigo.mouse_scroll_y(-1);
                             utils::sleep(20);
-                        }
+                        },
                         crate::common::UI::Mobile => {
                             mac_scroll(&mut self.enigo, 1);
-                        }
+                        },
                     }
                 }
             }
@@ -676,7 +676,7 @@ impl YasScanner {
                         Some(im) => im,
                         None => {
                             return String::new();
-                        }
+                        },
                     };
                     if is_dump_mode {
                         processed_img
@@ -837,7 +837,7 @@ impl YasScanner {
                 ScrollResult::TLE => {
                     error!("翻页出现问题");
                     break 'outer;
-                }
+                },
                 ScrollResult::Interrupt => break 'outer,
                 _ => (),
             }

@@ -21,7 +21,6 @@ pub fn mac_scroll(enigo: &mut Enigo, count: i32) {
     }
 }
 
-
 pub fn get_titlebar_height() -> f64 {
     use cocoa::appkit::{NSBackingStoreBuffered, NSImage, NSWindow, NSWindowStyleMask};
     use cocoa::base::nil;

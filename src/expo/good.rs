@@ -51,7 +51,7 @@ impl<'a> Serialize for GOODArtifact<'a> {
 #[derive(Serialize)]
 struct GOODStat<'a> {
     key: &'a str,
-    value: f64
+    value: f64,
 }
 
 impl<'a> GOODStat<'a> {
@@ -64,7 +64,7 @@ impl<'a> GOODStat<'a> {
                 | ArtifactStatName::Hp
                 | ArtifactStatName::Def => stat.value,
                 _ => stat.value * 100.0,
-            }
+            },
         }
     }
 }
@@ -177,7 +177,7 @@ impl<'a> GOODFormat<'a> {
             format: "GOOD",
             version: 1,
             source: "yas",
-            artifacts
+            artifacts,
         }
     }
 
@@ -189,7 +189,7 @@ impl<'a> GOODFormat<'a> {
         let s = serde_json::to_string(&self).unwrap();
         match file.write_all(s.as_bytes()) {
             Err(why) => panic!("couldn't write to {}: {}", path, why),
-            _ => {}
+            _ => {},
         }
     }
 }

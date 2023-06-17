@@ -1,7 +1,7 @@
-use regex::Regex;
-use std::hash::{Hash, Hasher};
 use edit_distance;
 use log::error;
+use regex::Regex;
+use std::hash::{Hash, Hasher};
 use strum_macros::Display;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
@@ -36,8 +36,7 @@ pub enum ArtifactSlot {
     Head,
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
-#[derive(Display)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Display)]
 pub enum ArtifactSetName {
     ArchaicPetra,
     HeartOfDepth,
@@ -130,6 +129,7 @@ impl PartialEq for ArtifactStat {
 impl Eq for ArtifactStat {}
 
 impl ArtifactStatName {
+    #[rustfmt::skip]
     pub fn from_zh_cn(name: &str, is_percentage: bool) -> Option<ArtifactStatName> {
         match name {
             "治疗加成" => Some(ArtifactStatName::HealingBonus),
@@ -187,6 +187,7 @@ impl ArtifactStat {
 }
 
 pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
+    #[rustfmt::skip]
     let all_artifact_chs = [
         "磐陀裂生之花", "嵯峨群峰之翼", "星罗圭壁之晷", "星罗圭璧之晷", "巉岩琢塑之樽", "不动玄石之相",
         "历经风雪的思念", "摧冰而行的执望", "冰雪故园的终期", "遍结寒霜的傲骨", "破冰踏雪的回音",
@@ -254,6 +255,7 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
 }
 
 impl ArtifactSetName {
+    #[rustfmt::skip]
     pub fn from_zh_cn(s: &str) -> Option<ArtifactSetName> {
         // let s = match get_real_artifact_name_chs(s) {
         //     Some(v) => v,
@@ -668,4 +670,3 @@ impl ArtifactSlot {
         }
     }
 }
-

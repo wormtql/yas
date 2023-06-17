@@ -161,12 +161,12 @@ fn main() {
             Ok(h) => {
                 is_cloud = false;
                 h
-            }
+            },
             Err(_) => match utils::find_window_cloud() {
                 Ok(h) => {
                     is_cloud = true;
                     h
-                }
+                },
                 Err(_) => utils::error_and_quit("未找到原神窗口，请确认原神已经开启"),
             },
         };
@@ -286,7 +286,7 @@ fn main() {
             } else {
                 utils::error_and_quit("不支持的分辨率");
             }
-        }
+        },
         UI::Mobile => {
             if (rect.height * 8 - rect.width * 5).abs() < 20 {
                 // 窗口状态下的playcover分辨率长宽无法整除
@@ -300,7 +300,7 @@ fn main() {
             } else {
                 utils::error_and_quit("不支持的分辨率");
             }
-        }
+        },
     }
 
     let offset_x = matches
@@ -334,17 +334,17 @@ fn main() {
             let output_filename = output_dir.join("mona.json");
             let mona = MonaFormat::new(&results);
             mona.save(String::from(output_filename.to_str().unwrap()));
-        }
+        },
         Some("mingyulab") => {
             let output_filename = output_dir.join("mingyulab.json");
             let mingyulab = MingyuLabFormat::new(&results);
             mingyulab.save(String::from(output_filename.to_str().unwrap()));
-        }
+        },
         Some("good") => {
             let output_filename = output_dir.join("good.json");
             let good = GOODFormat::new(&results);
             good.save(String::from(output_filename.to_str().unwrap()));
-        }
+        },
         _ => unreachable!(),
     }
     // let info = info;

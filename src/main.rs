@@ -146,7 +146,7 @@ fn main() {
         use winapi::um::winuser::{SetForegroundWindow, ShowWindow, SW_RESTORE};
         // use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
 
-        crate::utils::set_dpi_awareness();
+        utils::set_dpi_awareness();
 
         let hwnd = match utils::find_window_local() {
             Ok(h) => {
@@ -346,5 +346,5 @@ fn main() {
     // println!("{}", s);
     info!("识别结束，请按Enter退出");
     let mut s = String::new();
-    stdin().read_line(&mut s);
+    stdin().read_line(&mut s).unwrap();
 }

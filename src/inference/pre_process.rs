@@ -1,7 +1,8 @@
 use image::imageops::{overlay, resize};
-use image::{GenericImage, GenericImageView, GrayImage, ImageBuffer, Luma, RgbImage};
+use image::{GenericImageView, GrayImage, ImageBuffer, Luma, RgbImage};
 
 use crate::common::RawImage;
+
 pub type GrayImageFloat = ImageBuffer<Luma<f32>, Vec<f32>>;
 
 pub trait ImageConvExt {
@@ -20,7 +21,7 @@ impl ImageConvExt for GrayImageFloat {
             } else {
                 pixel as u8
             };
-            image::Luma([pixel])
+            Luma([pixel])
         });
         img
     }
@@ -170,7 +171,7 @@ pub fn raw_to_img(im: &RawImage) -> GrayImage {
         } else {
             pixel as u8
         };
-        image::Luma([pixel])
+        Luma([pixel])
     });
 
     img
@@ -191,7 +192,7 @@ pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
         } else {
             pixel as u8
         };
-        image::Luma([pixel])
+        Luma([pixel])
     });
 
     img

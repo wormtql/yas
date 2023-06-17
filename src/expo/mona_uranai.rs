@@ -106,8 +106,8 @@ impl Serialize for ArtifactStat {
         S: Serializer,
     {
         let mut root = serializer.serialize_map(Some(2))?;
-        root.serialize_entry("name", &self.name.to_mona());
-        root.serialize_entry("value", &self.value);
+        root.serialize_entry("name", &self.name.to_mona()).unwrap();
+        root.serialize_entry("value", &self.value).unwrap();
         root.end()
     }
 }
@@ -119,9 +119,11 @@ impl Serialize for MonaArtifact {
     {
         let mut root = serializer.serialize_map(Some(7))?;
 
-        root.serialize_entry("setName", &self.set_name.to_mona());
-        root.serialize_entry("position", &self.slot.to_mona());
-        root.serialize_entry("mainTag", &self.main_stat);
+        root.serialize_entry("setName", &self.set_name.to_mona())
+            .unwrap();
+        root.serialize_entry("position", &self.slot.to_mona())
+            .unwrap();
+        root.serialize_entry("mainTag", &self.main_stat).unwrap();
 
         let mut sub_stats: Vec<&ArtifactStat> = vec![];
         if let Some(ref s) = self.sub_stat_1 {
@@ -144,10 +146,10 @@ impl Serialize for MonaArtifact {
         // subs.end();
         // subs.
 
-        root.serialize_entry("normalTags", &sub_stats);
-        root.serialize_entry("omit", &false);
-        root.serialize_entry("level", &self.level);
-        root.serialize_entry("star", &self.star);
+        root.serialize_entry("normalTags", &sub_stats).unwrap();
+        root.serialize_entry("omit", &false).unwrap();
+        root.serialize_entry("level", &self.level).unwrap();
+        root.serialize_entry("star", &self.star).unwrap();
 
         let equip = match self.equip {
             Some(ref x) => {
@@ -161,7 +163,7 @@ impl Serialize for MonaArtifact {
             },
             None => String::new(),
         };
-        root.serialize_entry("equip", &equip);
+        root.serialize_entry("equip", &equip).unwrap();
         let _random_id = thread_rng().gen::<u64>();
         // root.serialize_entry("id", &random_id);
 
@@ -184,12 +186,12 @@ impl<'a> Serialize for MonaFormat<'a> {
         S: Serializer,
     {
         let mut root = serializer.serialize_map(Some(6))?;
-        root.serialize_entry("version", &self.version);
-        root.serialize_entry("flower", &self.flower);
-        root.serialize_entry("feather", &self.feather);
-        root.serialize_entry("sand", &self.sand);
-        root.serialize_entry("cup", &self.cup);
-        root.serialize_entry("head", &self.head);
+        root.serialize_entry("version", &self.version).unwrap();
+        root.serialize_entry("flower", &self.flower).unwrap();
+        root.serialize_entry("feather", &self.feather).unwrap();
+        root.serialize_entry("sand", &self.sand).unwrap();
+        root.serialize_entry("cup", &self.cup).unwrap();
+        root.serialize_entry("head", &self.head).unwrap();
         root.end()
     }
 }

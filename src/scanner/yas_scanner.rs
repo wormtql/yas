@@ -624,7 +624,7 @@ impl YasScanner {
 
             let mut cnt = 0;
             if is_dump_mode {
-                fs::create_dir("dumps");
+                fs::create_dir("dumps").unwrap();
             }
 
             let convert_rect = |rect: &PixelRectBound| PixelRect {

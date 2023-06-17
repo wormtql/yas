@@ -2,14 +2,13 @@
 use std::os::macos::raw;
 
 use image::{
-    buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, ImageBuffer, Rgb,
-    RgbImage, RgbaImage,
+    buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, RgbImage, RgbaImage,
 };
 
 use crate::common::color::Color;
 use crate::common::PixelRect;
 
-use png::{Decoder, Encoder};
+use png::Decoder;
 
 /// retures Ok(buf) on success
 /// buf contains pixels in [b:u8, g:u8, r:u8, a:u8] format, as an `[[i32;width];height]`.
@@ -45,7 +44,7 @@ fn png_decode(png_img: screenshots::Image) -> Result<RgbImage, String> {
         "Not rgba format image"
     );
 
-    let mut buffer = png_data_buf[..info.buffer_size()].to_vec();
+    let _buffer = png_data_buf[..info.buffer_size()].to_vec();
 
     let rgba_img = RgbaImage::from_raw(png_img.width(), png_img.height(), png_data_buf).unwrap();
     let rgb_img: RgbImage = rgba_img.convert();

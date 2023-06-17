@@ -1,11 +1,6 @@
-use std::collections::HashMap;
-use std::io::Read;
-
-use serde_json::{Result, Value};
+use serde_json::Value;
 use tract_onnx::prelude::*;
-use tract_onnx::Onnx;
 
-use crate::common::utils;
 use crate::inference::pre_process::GrayImageFloat;
 use image::EncodableLayout;
 
@@ -19,13 +14,13 @@ pub struct CRNNModel {
 }
 
 impl CRNNModel {
-    pub fn new(name: String, dict_name: String) -> CRNNModel {
+    pub fn new(_name: String, _dict_name: String) -> CRNNModel {
         // let model = tract_onnx::onnx()
         //     .model_for_path(String::from("models/") + name.as_str()).unwrap()
         //     .with_input_fact(0, InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384))).unwrap()
         //     .into_optimized().unwrap()
         //     .into_runnable().unwrap();
-        let mut bytes = include_bytes!("../../models/model_acc100-epoch49.onnx");
+        let bytes = include_bytes!("../../models/model_acc100-epoch49.onnx");
         // let mut bytes = include_bytes!("../../models/model_training.onnx");
 
         let model = tract_onnx::onnx()

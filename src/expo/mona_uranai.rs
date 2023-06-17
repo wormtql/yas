@@ -162,7 +162,7 @@ impl Serialize for MonaArtifact {
             None => String::new(),
         };
         root.serialize_entry("equip", &equip);
-        let random_id = thread_rng().gen::<u64>();
+        let _random_id = thread_rng().gen::<u64>();
         // root.serialize_entry("id", &random_id);
 
         root.end()

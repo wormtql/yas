@@ -155,6 +155,8 @@ impl ArtifactSetName {
             ArtifactSetName::DesertPavilionChronicle => "DesertPavilionChronicle",
             ArtifactSetName::NymphsDream => "NymphsDream",
             ArtifactSetName::VourukashasGlow => "VourukashasGlow",
+            ArtifactSetName::MarechausseeHunter => "MarechausseeHunter",
+            ArtifactSetName::GoldenTroupe => "GoldenTroupe",
         }
     }
 }

@@ -132,6 +132,8 @@ impl ArtifactSetName {
             ArtifactSetName::DesertPavilionChronicle => "desert_pavilion_chronicle",
             ArtifactSetName::NymphsDream => "nymphs_dream",
             ArtifactSetName::VourukashasGlow => "vourukashas_glow",
+            ArtifactSetName::MarechausseeHunter => "marechaussee_hunter",
+            ArtifactSetName::GoldenTroupe => "golden_troupe",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

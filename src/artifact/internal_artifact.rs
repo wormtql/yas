@@ -84,6 +84,8 @@ pub enum ArtifactSetName {
     DesertPavilionChronicle,
     NymphsDream,
     VourukashasGlow,
+    MarechausseeHunter,
+    GoldenTroupe,
 }
 
 #[derive(Debug, Clone)]
@@ -230,6 +232,8 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         "众王之都的开端", "黄金邦国的结末", "失落迷途的机芯", "迷醉长梦的守护", "流沙贵嗣的遗宝",
         "恶龙的单片镜", "坏巫师的羽杖", "旅途中的鲜花", "水仙的时时刻刻", "勇者们的茶会",
         "灵光明烁之心", "琦色灵彩之羽", "灵光源起之蕊", "久远花落之时", "无边酣乐之筵",
+        "老兵的容颜", "杰作的序曲", "猎人的胸花", "裁判的时刻", "遗忘的容器",
+        "黄金剧团的奖赏", "黄金飞鸟的落羽", "黄金乐曲的变奏", "黄金时代的先声", "黄金之夜的喧嚣",
     ];
 
     let mut min_index = 0;
@@ -441,6 +445,8 @@ impl ArtifactSetName {
             "众王之都的开端" | "黄金邦国的结末" | "失落迷途的机芯" | "迷醉长梦的守护" | "流沙贵嗣的遗宝" => Some(ArtifactSetName::DesertPavilionChronicle),
             "恶龙的单片镜" | "坏巫师的羽杖" | "旅途中的鲜花" | "水仙的时时刻刻" | "勇者们的茶会" => Some(ArtifactSetName::NymphsDream),
             "灵光明烁之心" | "琦色灵彩之羽" | "灵光源起之蕊" | "久远花落之时" | "无边酣乐之筵" => Some(ArtifactSetName::VourukashasGlow),
+            "猎人的胸花" | "杰作的序曲" | "裁判的时刻" | "遗忘的容器" | "老兵的容颜" => Some(ArtifactSetName::MarechausseeHunter),
+            "黄金乐曲的变奏" | "黄金飞鸟的落羽" | "黄金时代的先声" | "黄金之夜的喧嚣" | "黄金剧团的奖赏" => Some(ArtifactSetName::GoldenTroupe),
             _ => None,
         }
     }
@@ -664,6 +670,16 @@ impl ArtifactSlot {
             "久远花落之时" => Some(ArtifactSlot::Sand),
             "无边酣乐之筵" => Some(ArtifactSlot::Goblet),
             "灵光明烁之心" => Some(ArtifactSlot::Head),
+            "猎人的胸花" => Some(ArtifactSlot::Flower),
+            "杰作的序曲" => Some(ArtifactSlot::Feather),
+            "裁判的时刻" => Some(ArtifactSlot::Sand),
+            "遗忘的容器" => Some(ArtifactSlot::Goblet),
+            "老兵的容颜" => Some(ArtifactSlot::Head),
+            "黄金乐曲的变奏" => Some(ArtifactSlot::Flower),
+            "黄金飞鸟的落羽" => Some(ArtifactSlot::Feather),
+            "黄金时代的先声" => Some(ArtifactSlot::Sand),
+            "黄金之夜的喧嚣" => Some(ArtifactSlot::Goblet),
+            "黄金剧团的奖赏" => Some(ArtifactSlot::Head),
             _ => None,
         }
     }

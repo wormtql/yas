@@ -73,6 +73,12 @@ lazy_static! {
         set.insert(String::from("艾尔海森"));
         set.insert(String::from("迪希雅"));
         set.insert(String::from("米卡"));
+        set.insert(String::from("琳妮特"));
+        set.insert(String::from("林尼"));
+        set.insert(String::from("菲米尼"));
+        set.insert(String::from("芙宁娜"));
+        set.insert(String::from("那维莱特"));
+        set.insert(String::from("娜维娅"));
 
         set
     };

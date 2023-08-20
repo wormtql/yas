@@ -26,7 +26,7 @@ impl CRNNModel {
         //     .with_input_fact(0, InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384))).unwrap()
         //     .into_optimized().unwrap()
         //     .into_runnable().unwrap();
-        let mut bytes = include_bytes!("../../models/model_acc100-epoch49.onnx");
+        let mut bytes = include_bytes!("../../models/model_acc100-epoch16.onnx");
         // let mut bytes = include_bytes!("../../models/model_training.onnx");
 
         let model = tract_onnx::onnx()

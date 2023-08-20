@@ -2665,7 +2665,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "yas"
+name = "yas_scanner"
 version = "0.1.13"
 dependencies = [
  "clap",

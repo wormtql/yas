@@ -1,11 +1,8 @@
-use rand::thread_rng;
-use rand::Rng;
 use std::convert::From;
 use std::fs::File;
 use std::io::prelude::*;
 
 use serde::ser::{Serialize, SerializeMap, Serializer};
-use tract_onnx::prelude::tract_itertools::Itertools;
 
 use crate::artifact::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, InternalArtifact,
@@ -146,25 +143,12 @@ impl Serialize for MonaArtifact {
         // subs.end();
         // subs.
 
-        root.serialize_entry("normalTags", &sub_stats).unwrap();
-        root.serialize_entry("omit", &false).unwrap();
-        root.serialize_entry("level", &self.level).unwrap();
-        root.serialize_entry("star", &self.star).unwrap();
-
-        let equip = match self.equip {
-            Some(ref x) => {
-                if x.contains("已装备") {
-                    let chars = x.chars().collect_vec();
-                    let chars2 = &chars[..chars.len() - 3];
-                    chars2.iter().collect()
-                } else {
-                    String::new()
-                }
-            },
-            None => String::new(),
-        };
-        root.serialize_entry("equip", &equip).unwrap();
-        let _random_id = thread_rng().gen::<u64>();
+        root.serialize_entry("normalTags", &sub_stats)?;
+        root.serialize_entry("omit", &false)?;
+        root.serialize_entry("level", &self.level)?;
+        root.serialize_entry("star", &self.star)?;
+        root.serialize_entry("equip", &self.equip)?;
+        // let random_id = thread_rng().gen::<u64>();
         // root.serialize_entry("id", &random_id);
 
         root.end()

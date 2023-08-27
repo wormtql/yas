@@ -28,28 +28,14 @@ pub fn encode_lpcstr(s: &str) -> Vec<i8> {
     arr
 }
 
-fn encode_wide(s: String) -> Vec<u16> {
-    let wide: Vec<u16> = OsStr::new(&s).encode_wide().chain(once(0)).collect();
+fn encode_wide_with_null(s: impl AsRef<str>) -> Vec<u16> {
+    let wide: Vec<u16> = OsStr::new(s.as_ref()).encode_wide().chain(once(0)).collect();
     wide
 }
 
-/*
-pub fn find_window(title: &str) -> Result<HWND, String> {
-    let wide = encode_wide(String::from(title));
-    let result: HWND = unsafe {
-        FindWindowW(null_mut(), wide.as_ptr())
-    };
-    if result.is_null() {
-        Err(String::from("cannot find window"))
-    } else {
-        Ok(result)
-    }
-}
-*/
-
-pub fn find_window_local() -> Result<HWND, String> {
-    let title = encode_wide(String::from("原神"));
-    let class = encode_wide(String::from("UnityWndClass"));
+pub fn find_window_local(title: impl AsRef<str>) -> Result<HWND, String> {
+    let title = encode_wide_with_null(title);
+    let class = encode_wide_with_null("UnityWndClass");
     let result: HWND = unsafe { FindWindowW(class.as_ptr(), title.as_ptr()) };
     if result.is_null() {
         Err(String::from("cannot find window"))
@@ -59,7 +45,7 @@ pub fn find_window_local() -> Result<HWND, String> {
 }
 
 pub fn find_window_cloud() -> Result<HWND, String> {
-    let title = encode_wide(String::from("云·原神"));
+    let title = encode_wide_with_null(String::from("云·原神"));
     //let class = encode_wide(String::from("Qt5152QWindowIcon"));
     unsafe {
         let mut result: HWND = null_mut();

@@ -157,19 +157,17 @@ fn main() {
 
         crate::utils::set_dpi_awareness();
 
-        let hwnd = match utils::find_window_local() {
-            Ok(h) => {
-                is_cloud = false;
-                h
-            }
-            Err(_) => match utils::find_window_cloud() {
-                Ok(h) => {
-                    is_cloud = true;
-                    h
-                }
-                Err(_) => utils::error_and_quit("未找到原神窗口，请确认原神已经开启"),
-            },
-        };
+        let hwnd;
+
+        (hwnd, is_cloud) = utils::find_window_local("原神")
+            .or_else(|_| utils::find_window_local("Genshin Impact"))
+            .map(|hwnd| (hwnd, false))
+            .unwrap_or_else(|_| {
+                let Ok(hwnd) = utils::find_window_cloud() else {
+                    utils::error_and_quit("未找到原神窗口，请确认原神已经开启")
+                };
+                (hwnd, true)
+            });
 
         unsafe {
             ShowWindow(hwnd, SW_RESTORE);

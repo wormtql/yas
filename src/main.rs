@@ -1,8 +1,7 @@
 use std::io::stdin;
 use std::path::Path;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::SystemTime;
 
-use yas_scanner::capture::{capture_absolute, capture_absolute_image};
 #[cfg(target_os = "macos")]
 use yas_scanner::common::utils::get_pid_and_ui;
 use yas_scanner::common::{utils, UI};
@@ -10,19 +9,16 @@ use yas_scanner::common::{PixelRect, RawImage};
 use yas_scanner::expo::good::GOODFormat;
 use yas_scanner::expo::mingyu_lab::MingyuLabFormat;
 use yas_scanner::expo::mona_uranai::MonaFormat;
-use yas_scanner::inference::inference::CRNNModel;
-use yas_scanner::inference::pre_process::{
-    crop, image_to_raw, normalize, pre_process, raw_to_img, to_gray,
-};
+
+use yas_scanner::inference::pre_process::image_to_raw;
 use yas_scanner::info::info;
 use yas_scanner::scanner::yas_scanner::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
-use env_logger::{Builder, Env, Target};
+use env_logger::Builder;
 use image::imageops::grayscale;
-use image::{ImageBuffer, Pixel};
+
 use log::{info, warn, LevelFilter};
-use os_info;
 
 fn open_local(path: String) -> RawImage {
     let img = image::open(path).unwrap();
@@ -147,15 +143,10 @@ fn main() {
 
     #[cfg(windows)]
     {
-        use winapi::shared::windef::DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE;
-        use winapi::um::wingdi::{GetDeviceCaps, HORZRES};
-        use winapi::um::winuser::{
-            GetDpiForSystem, GetSystemMetrics, SetForegroundWindow, SetProcessDPIAware,
-            SetThreadDpiAwarenessContext, ShowWindow, SW_RESTORE, SW_SHOW,
-        };
+        use winapi::um::winuser::{SetForegroundWindow, ShowWindow, SW_RESTORE};
         // use winapi::um::shellscalingapi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
 
-        crate::utils::set_dpi_awareness();
+        utils::set_dpi_awareness();
 
         let hwnd;
 
@@ -284,7 +275,7 @@ fn main() {
             } else {
                 utils::error_and_quit("不支持的分辨率");
             }
-        }
+        },
         UI::Mobile => {
             if (rect.height * 8 - rect.width * 5).abs() < 20 {
                 // 窗口状态下的playcover分辨率长宽无法整除
@@ -298,7 +289,7 @@ fn main() {
             } else {
                 utils::error_and_quit("不支持的分辨率");
             }
-        }
+        },
     }
 
     let offset_x = matches
@@ -332,17 +323,17 @@ fn main() {
             let output_filename = output_dir.join("mona.json");
             let mona = MonaFormat::new(&results);
             mona.save(String::from(output_filename.to_str().unwrap()));
-        }
+        },
         Some("mingyulab") => {
             let output_filename = output_dir.join("mingyulab.json");
             let mingyulab = MingyuLabFormat::new(&results);
             mingyulab.save(String::from(output_filename.to_str().unwrap()));
-        }
+        },
         Some("good") => {
             let output_filename = output_dir.join("good.json");
             let good = GOODFormat::new(&results);
             good.save(String::from(output_filename.to_str().unwrap()));
-        }
+        },
         _ => unreachable!(),
     }
     // let info = info;
@@ -353,5 +344,5 @@ fn main() {
     // println!("{}", s);
     info!("识别结束，请按Enter退出");
     let mut s = String::new();
-    stdin().read_line(&mut s);
+    stdin().read_line(&mut s).unwrap();
 }

@@ -169,7 +169,7 @@ impl<'a> MingyuLabFormat<'a> {
         let s = serde_json::to_string(&self.artifacts).unwrap();
         match file.write_all(s.as_bytes()) {
             Err(why) => panic!("couldn't write to {}: {}", path, why),
-            _ => {}
+            _ => {},
         }
     }
 }

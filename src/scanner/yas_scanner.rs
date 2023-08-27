@@ -1,35 +1,28 @@
 use std::collections::HashSet;
 use std::convert::From;
 use std::fs;
-use std::io::stdin;
+
 use std::sync::mpsc;
 use std::thread;
 use std::time::SystemTime;
 
 use clap::ArgMatches;
 use enigo::*;
-use image::{GenericImage, GenericImageView, RgbImage};
-use log::{debug, error, info, warn};
-use rand::Rng;
+use image::{GenericImageView, RgbImage};
+use log::{error, info, warn};
 
 use crate::artifact::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact,
 };
-use crate::capture::{self, capture_absolute};
+use crate::capture::{self};
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 #[cfg(target_os = "macos")]
 use crate::common::utils::get_pid_and_ui;
-use crate::common::{utils, PixelRect, PixelRectBound, RawCaptureImage, RawImage};
+use crate::common::{utils, PixelRect, PixelRectBound};
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
 use crate::info::info::ScanInfo;
-
-#[cfg(windows)]
-use crate::common::utils::{
-    find_window_cloud, find_window_local, get_client_rect, set_dpi_awareness,
-    show_window_and_set_foreground, sleep,
-};
 
 // Playcover only, wine should not need this.
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
@@ -260,10 +253,10 @@ impl YasScanner {
                         // mac_scroll(&mut self.enigo, 1);
                         self.enigo.mouse_scroll_y(-1);
                         utils::sleep(20);
-                    }
+                    },
                     crate::common::UI::Mobile => {
                         mac_scroll(&mut self.enigo, 1);
-                    }
+                    },
                 }
             }
 
@@ -305,7 +298,7 @@ impl YasScanner {
     */
 
     fn capture_panel(&mut self) -> Result<RgbImage, String> {
-        let now = SystemTime::now();
+        let _now = SystemTime::now();
         let w = self.info.panel_position.right - self.info.panel_position.left;
         let h = self.info.panel_position.bottom - self.info.panel_position.top;
         let rect: PixelRect = PixelRect {
@@ -337,7 +330,7 @@ impl YasScanner {
                     Ok(v) => v,
                     Err(_) => {
                         return Err(String::from("无法识别圣遗物数量"));
-                    }
+                    },
                 };
                 return Ok(count);
             }
@@ -367,7 +360,7 @@ impl YasScanner {
         let color_4 = Color::from(161, 86, 224);
         let color_5 = Color::from(188, 105, 50);
 
-        let mut min_dis: u32 = color_1.dis_2(&color);
+        let min_dis: u32 = color_1.dis_2(&color);
         let mut star = 1_u32;
         if color_2.dis_2(&color) < min_dis {
             star = 2;
@@ -424,10 +417,10 @@ impl YasScanner {
                         // mac_scroll(&mut self.enigo, 1);
                         self.enigo.mouse_scroll_y(-1);
                         utils::sleep(20);
-                    }
+                    },
                     crate::common::UI::Mobile => {
                         mac_scroll(&mut self.enigo, 1);
-                    }
+                    },
                 }
             }
             utils::sleep(self.config.scroll_stop);
@@ -465,10 +458,10 @@ impl YasScanner {
                             // mac_scroll(&mut self.enigo, 1);
                             self.enigo.mouse_scroll_y(-1);
                             utils::sleep(20);
-                        }
+                        },
                         crate::common::UI::Mobile => {
                             mac_scroll(&mut self.enigo, 1);
-                        }
+                        },
                     }
                 }
             }
@@ -588,7 +581,7 @@ impl YasScanner {
            return Vec::new();
         } */
 
-        let mut count = match self.get_art_count() {
+        let count = match self.get_art_count() {
             Ok(v) => v,
             Err(_) => 1500,
         };
@@ -619,7 +612,7 @@ impl YasScanner {
         let min_level = self.config.min_level;
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalArtifact> = Vec::new();
-            let mut model = CRNNModel::new(
+            let model = CRNNModel::new(
                 String::from("model_training.onnx"),
                 String::from("index_2_word.json"),
             );
@@ -631,7 +624,7 @@ impl YasScanner {
 
             let mut cnt = 0;
             if is_dump_mode {
-                fs::create_dir("dumps");
+                fs::create_dir("dumps").unwrap();
             }
 
             let convert_rect = |rect: &PixelRectBound| PixelRect {
@@ -647,7 +640,7 @@ impl YasScanner {
                     None => break,
                 };
                 //info!("raw capture image: width = {}, height = {}", capture.width(), capture.height());
-                let now = SystemTime::now();
+                let _now = SystemTime::now();
 
                 let model_inference = |pos: &PixelRectBound,
                                        name: &str,
@@ -676,7 +669,7 @@ impl YasScanner {
                         Some(im) => im,
                         None => {
                             return String::new();
-                        }
+                        },
                     };
                     if is_dump_mode {
                         processed_img
@@ -837,7 +830,7 @@ impl YasScanner {
                 ScrollResult::TLE => {
                     error!("翻页出现问题");
                     break 'outer;
-                }
+                },
                 ScrollResult::Interrupt => break 'outer,
                 _ => (),
             }

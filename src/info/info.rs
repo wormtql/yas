@@ -175,7 +175,7 @@ impl ScanInfo {
 
 impl ScanInfo {
     pub fn from_rect(rect: &PixelRect) -> Result<ScanInfo, String> {
-        let mut info: ScanInfo;
+        let info: ScanInfo;
         if rect.height * 16 == rect.width * 9 {
             info = ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
         } else if rect.height * 8 == rect.width * 5 {

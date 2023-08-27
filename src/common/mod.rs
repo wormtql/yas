@@ -141,7 +141,7 @@ impl RawCaptureImage {
             // image::Luma([pixel])
         });
 
-        img.save(path);
+        img.save(path).unwrap();
     }
 
     pub fn crop_to_raw_img(&self, rect: &PixelRect) -> RawImage {

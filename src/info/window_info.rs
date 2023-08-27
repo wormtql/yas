@@ -1,7 +1,5 @@
 use crate::common::PixelRectBound;
 use crate::info::info::ScanInfo;
-use std::borrow::Borrow;
-use std::ops::{Div, Mul};
 
 pub struct Rect(f64, f64, f64, f64); // top, right, bottom, left
 

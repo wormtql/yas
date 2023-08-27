@@ -1,7 +1,5 @@
-use image::imageops::colorops::grayscale;
 use image::imageops::{overlay, resize};
-use image::{GenericImage, GenericImageView, GrayImage, ImageBuffer, Luma, RgbImage};
-use log::info;
+use image::{GenericImageView, GrayImage, ImageBuffer, Luma, RgbImage};
 
 use crate::common::RawImage;
 pub type GrayImageFloat = ImageBuffer<Luma<f32>, Vec<f32>>;
@@ -140,7 +138,7 @@ pub fn crop(im: &GrayImageFloat) -> GrayImageFloat {
     let new_height = max_row - min_row + 1;
     let new_width = max_col - min_col + 1;
 
-    let mut ans: Vec<f32> = vec![0.0; (new_width * new_height) as usize];
+    let _ans: Vec<f32> = vec![0.0; (new_width * new_height) as usize];
     let cropped_im = im.view(min_col, min_row, new_width, new_height).to_image();
 
     cropped_im
@@ -162,7 +160,7 @@ pub fn raw_to_img(im: &RawImage) -> GrayImage {
         } else {
             pixel as u8
         };
-        image::Luma([pixel])
+        Luma([pixel])
     });
 
     img
@@ -183,7 +181,7 @@ pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
         } else {
             pixel as u8
         };
-        image::Luma([pixel])
+        Luma([pixel])
     });
 
     img
@@ -211,7 +209,7 @@ pub fn resize_and_pad(im: &GrayImageFloat) -> GrayImageFloat {
         image::imageops::FilterType::Triangle,
     );
 
-    let mut data: Vec<f32> = vec![0.0; 32 * 384];
+    let data: Vec<f32> = vec![0.0; 32 * 384];
     let mut padded_im = ImageBuffer::from_vec(384, 32, data).unwrap();
     overlay(&mut padded_im, &img, 0, 0);
     padded_im

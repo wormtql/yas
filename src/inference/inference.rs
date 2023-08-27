@@ -1,14 +1,8 @@
-use std::collections::HashMap;
-use std::io::Read;
-
+use serde_json::Value;
 use tract_onnx::prelude::*;
-use tract_onnx::Onnx;
-use serde_json::{Result, Value};
 
-use crate::common::utils;
-use image::EncodableLayout;
 use crate::inference::pre_process::GrayImageFloat;
-
+use image::EncodableLayout;
 
 type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
 
@@ -20,20 +14,27 @@ pub struct CRNNModel {
 }
 
 impl CRNNModel {
-    pub fn new(name: String, dict_name: String) -> CRNNModel {
+    pub fn new(_name: String, _dict_name: String) -> CRNNModel {
         // let model = tract_onnx::onnx()
         //     .model_for_path(String::from("models/") + name.as_str()).unwrap()
         //     .with_input_fact(0, InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384))).unwrap()
         //     .into_optimized().unwrap()
         //     .into_runnable().unwrap();
         // let mut bytes = include_bytes!("../../models/model_acc100-epoch16.onnx");
-        let mut bytes = include_bytes!("../../models/model_training.onnx");
+        let bytes = include_bytes!("../../models/model_training.onnx");
 
         let model = tract_onnx::onnx()
-            .model_for_read(&mut bytes.as_bytes()).unwrap()
-            .with_input_fact(0, InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384))).unwrap()
-            .into_optimized().unwrap()
-            .into_runnable().unwrap();
+            .model_for_read(&mut bytes.as_bytes())
+            .unwrap()
+            .with_input_fact(
+                0,
+                InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384)),
+            )
+            .unwrap()
+            .into_optimized()
+            .unwrap()
+            .into_runnable()
+            .unwrap();
 
         // let content = utils::read_file_to_string(String::from("models/index_2_word.json"));
         let content = String::from(include_str!("../../models/index_2_word.json"));
@@ -59,9 +60,11 @@ impl CRNNModel {
     }
 
     pub fn inference_string(&self, img: &GrayImageFloat) -> String {
-        let tensor: Tensor = tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
-            img.get_pixel(x as u32, y as u32)[0]
-        }).into();
+        let tensor: Tensor =
+            tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
+                img.get_pixel(x as u32, y as u32)[0]
+            })
+            .into();
 
         let result = self.model.run(tvec!(tensor)).unwrap();
         let arr = result[0].to_array_view::<f32>().unwrap();

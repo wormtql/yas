@@ -3,6 +3,8 @@ use crate::info::window_info::{
     WINDOW_16_9, WINDOW_43_18, WINDOW_4_3, WINDOW_7_3, WINDOW_8_5, WINDOW_MAC_8_5,
 };
 
+use super::window_info::{WINDOW_43_18_STARRAIL, WINDOW_16_9_STARRAIL, WINDOW_8_5_STARRAIL, WINDOW_4_3_STARRAIL, WINDOW_7_3_STARRAIL, WINDOW_MAC_8_5_STARRAIL};
+
 #[derive(Clone, Debug)]
 pub struct ScanInfo {
     // pub panel_height: u32,
@@ -19,6 +21,15 @@ pub struct ScanInfo {
     pub sub_stat2_position: PixelRectBound,
     pub sub_stat3_position: PixelRectBound,
     pub sub_stat4_position: PixelRectBound,
+
+    pub sub_stat1_name_pos: PixelRectBound,
+    pub sub_stat1_value_pos: PixelRectBound,
+    pub sub_stat2_name_pos: PixelRectBound,
+    pub sub_stat2_value_pos: PixelRectBound,
+    pub sub_stat3_name_pos: PixelRectBound,
+    pub sub_stat3_value_pos: PixelRectBound,
+    pub sub_stat4_name_pos: PixelRectBound,
+    pub sub_stat4_value_pos: PixelRectBound,
 
     pub equip_position: PixelRectBound,
     pub art_count_position: PixelRectBound,
@@ -49,152 +60,80 @@ pub struct ScanInfo {
 }
 
 impl ScanInfo {
-    pub fn from_43_18(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
-        WINDOW_43_18.to_scan_info(height as f64, width as f64, left, top)
-    }
-
-    pub fn from_7_3(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
-        WINDOW_7_3.to_scan_info(height as f64, width as f64, left, top)
-    }
-
-    pub fn from_16_9(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
-        WINDOW_16_9.to_scan_info(height as f64, width as f64, left, top)
-    }
-
-    pub fn from_8_5(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
-        WINDOW_8_5.to_scan_info(height as f64, width as f64, left, top)
-        // let w: u32 = 1440;
-        // let h: u32 = 900;
-        //
-        // let my_get_rect = |rect: (u32, u32, u32, u32)| {
-        //     get_rect(rect, h, w, height, width)
-        // };
-        //
-        // let info = ScanInfo {
-        //     // panel_height: get_scalar(700.0, w, width),
-        //     // panel_width: get_scalar(410.0, h, height),
-        //
-        //     title_position: my_get_rect((990, 95, 1240, 125)),
-        //     main_stat_name_position: my_get_rect((990, 194, 1105, 223)),
-        //     main_stat_value_position: my_get_rect((990, 223, 1105, 262)),
-        //     level_position: my_get_rect((993, 323, 1032, 340)),
-        //     panel_position: my_get_rect((969, 90, 1338, 810)),
-        //
-        //     sub_stat1_position: my_get_rect((1006, 356, 1188, 383)),
-        //     sub_stat2_position: my_get_rect((1006, 385, 1188, 411)),
-        //     sub_stat3_position: my_get_rect((1006, 413, 1188, 439)),
-        //     sub_stat4_position: my_get_rect((1006, 442, 1188, 467)),
-        //
-        //     equip_position: my_get_rect((1028, 777, 1189, 799)),
-        //     art_count_position: my_get_rect((1173, 25, 1351, 45)),
-        //
-        //     art_width: get_scalar(92.0, w, width),
-        //     art_height: get_scalar(115.0, h, height),
-        //     art_gap_x: get_scalar(17.0, w, width),
-        //     art_gap_y: get_scalar(17.0, h, height),
-        //
-        //     art_row: 6,
-        //     art_col: 7,
-        //
-        //     left_margin: get_scalar(155.0, w, width),
-        //     top_margin: get_scalar(90.0, h, height),
-        //
-        //     width,
-        //     height,
-        //     left,
-        //     top,
-        //
-        //     flag_x: get_scalar(312.0, w, width),
-        //     flag_y: get_scalar(87.0, h, height),
-        //
-        //     star_x: get_scalar(1310.0, w, width),
-        //     star_y: get_scalar(111.0, h, height),
-        //
-        //     pool_position: my_get_rect((1081, 100, 1092, 408)),
-        // };
-        //
-        // info
-    }
-
-    pub fn from_4_3(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
-        WINDOW_4_3.to_scan_info(height as f64, width as f64, left, top)
-        // let w: u32 = 1280;
-        // let h: u32 = 960;
-        //
-        // let my_get_rect = |rect: (u32, u32, u32, u32)| {
-        //     get_rect(rect, h, w, height, width)
-        // };
-        //
-        // let info = ScanInfo {
-        //     title_position: my_get_rect((880, 85, 1092, 110)),
-        //     main_stat_name_position: my_get_rect((880, 175, 984, 200)),
-        //     main_stat_value_position: my_get_rect((880, 200, 970, 233)),
-        //     level_position: my_get_rect((883, 287, 916, 303)),
-        //     panel_position: my_get_rect((862, 80, 1189, 879)),
-        //
-        //     sub_stat1_position: my_get_rect((894, 320, 1054, 339)),
-        //     sub_stat2_position: my_get_rect((894, 345, 1054, 365)),
-        //     sub_stat3_position: my_get_rect((894, 373, 1054, 392)),
-        //     sub_stat4_position: my_get_rect((894, 398, 1054, 418)),
-        //
-        //     equip_position: my_get_rect((913, 850, 1057, 870)),
-        //     art_count_position: my_get_rect((1057, 21, 1204, 41)),
-        //
-        //     art_width: get_scalar(82.0, w, width),
-        //     art_height: get_scalar(102.0, h, height),
-        //     art_gap_x: get_scalar(15.0, w, width),
-        //     art_gap_y: get_scalar(15.0, h, height),
-        //
-        //     art_row: 7,
-        //     art_col: 7,
-        //
-        //     left_margin: get_scalar(138.0, w, width),
-        //     top_margin: get_scalar(80.0, h, height),
-        //
-        //     width,
-        //     height,
-        //     left,
-        //     top,
-        //
-        //     flag_x: get_scalar(277.0, w, width),
-        //     flag_y: get_scalar(77.0, h, height),
-        //
-        //     star_x: get_scalar(1162.0, w, width),
-        //     star_y: get_scalar(100.0, h, height),
-        //
-        //     pool_position: my_get_rect((959, 95, 974, 365)),
-        // };
-        //
-        // info
-    }
-
-    pub fn from_mobile_8_5(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
-        WINDOW_MAC_8_5.to_scan_info(height as f64, width as f64, left, top)
-    }
-}
-
-impl ScanInfo {
-    pub fn from_rect(rect: &PixelRect) -> Result<ScanInfo, String> {
-        let info: ScanInfo;
-        if rect.height * 16 == rect.width * 9 {
-            info = ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
-        } else if rect.height * 8 == rect.width * 5 {
-            info = ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
-        } else if rect.height * 4 == rect.width * 3 {
-            info = ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
-        } else if rect.height * 7 == rect.width * 3 {
-            info = ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
-        } else if cfg!(target_os = "macos") {
-            info = ScanInfo::from_mobile_8_5(
-                rect.width as u32,
-                rect.height as u32,
-                rect.left,
-                rect.top,
-            );
+    pub fn from_genshin(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
+        if height * 43 == width * 18 {
+            WINDOW_43_18.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 16 == width * 9 {
+            WINDOW_16_9.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 8 == width * 5 {
+            WINDOW_8_5.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 4 == width * 3 {
+            WINDOW_4_3.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 7 == width * 3 {
+            WINDOW_7_3.to_scan_info(height as f64, width as f64, left, top)
         } else {
-            return Err(String::from("不支持的分辨率"));
+            // 不支持的分辨率
+            panic!("不支持的分辨率");
         }
-
-        Ok(info)
+    }
+    pub fn from_mobile_genshin(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
+        if (height as i32 * 8 - width as i32 * 5).abs() < 20 {
+            // 窗口状态下的playcover分辨率长宽无法整除
+            WINDOW_MAC_8_5.to_scan_info(height as f64, width as f64, left, top)
+        } else {
+            // 不支持的分辨率
+            panic!("不支持的分辨率");            
+        }
+    }
+    pub fn from_starrail(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
+        if height * 43 == width * 18 {
+            WINDOW_43_18_STARRAIL.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 16 == width * 9 {
+            WINDOW_16_9_STARRAIL.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 8 == width * 5 {
+            WINDOW_8_5_STARRAIL.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 4 == width * 3 {
+            WINDOW_4_3_STARRAIL.to_scan_info(height as f64, width as f64, left, top)
+        } else if height * 7 == width * 3 {
+            WINDOW_7_3_STARRAIL.to_scan_info(height as f64, width as f64, left, top)
+        } else {
+            // 不支持的分辨率
+            panic!("不支持的分辨率");
+        }
+    }
+    pub fn from_mobile_starrail(width: u32, height: u32, left: i32, top: i32) -> ScanInfo {
+        if (height as i32 * 8 - width as i32 * 5).abs() < 20 {
+            // 窗口状态下的playcover分辨率长宽无法整除
+            WINDOW_MAC_8_5_STARRAIL.to_scan_info(height as f64, width as f64, left, top)
+        } else {
+            // 不支持的分辨率
+            panic!("不支持的分辨率");            
+        }
     }
 }
+
+// impl ScanInfo {
+//     pub fn from_rect(rect: &PixelRect) -> Result<ScanInfo, String> {
+//         let info: ScanInfo;
+//         if rect.height * 16 == rect.width * 9 {
+//             info = ScanInfo::from_16_9(rect.width as u32, rect.height as u32, rect.left, rect.top);
+//         } else if rect.height * 8 == rect.width * 5 {
+//             info = ScanInfo::from_8_5(rect.width as u32, rect.height as u32, rect.left, rect.top);
+//         } else if rect.height * 4 == rect.width * 3 {
+//             info = ScanInfo::from_4_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
+//         } else if rect.height * 7 == rect.width * 3 {
+//             info = ScanInfo::from_7_3(rect.width as u32, rect.height as u32, rect.left, rect.top);
+//         } else if cfg!(target_os = "macos") {
+//             info = ScanInfo::from_mobile_8_5(
+//                 rect.width as u32,
+//                 rect.height as u32,
+//                 rect.left,
+//                 rect.top,
+//             );
+//         } else {
+//             return Err(String::from("不支持的分辨率"));
+//         }
+
+//         Ok(info)
+//     }
+// }

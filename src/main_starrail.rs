@@ -9,10 +9,11 @@ use yas_scanner::common::{PixelRect, RawImage};
 use yas_scanner::expo::good::GOODFormat;
 use yas_scanner::expo::mingyu_lab::MingyuLabFormat;
 use yas_scanner::expo::mona_uranai::MonaFormat;
+use yas_scanner::expo::march7th::March7thFormat;
 
 use yas_scanner::inference::pre_process::image_to_raw;
 use yas_scanner::info::info;
-use yas_scanner::scanner::yas_scanner::{YasScanner, YasScannerConfig};
+use yas_scanner::scanner::yas_scanner_starrail::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
 use env_logger::Builder;
@@ -125,8 +126,8 @@ fn main() {
                 .short("f")
                 .takes_value(true)
                 .help("输出格式")
-                .possible_values(&["mona", "mingyulab", "good"])
-                .default_value("mona"),
+                .possible_values(&["mona", "mingyulab", "good", "march7th"])
+                .default_value("march7th"),
         )
         .arg(
             Arg::with_name("cloud-wait-switch-artifact")
@@ -150,7 +151,7 @@ fn main() {
 
         let hwnd;
 
-        (hwnd, is_cloud) = utils::find_window_local("原神")
+        (hwnd, is_cloud) = utils::find_window_local("崩坏：星穹铁道")
             .or_else(|_| utils::find_window_local("Genshin Impact"))
             .map(|hwnd| (hwnd, false))
             .unwrap_or_else(|_| {
@@ -237,7 +238,7 @@ fn main() {
     match ui {
         UI::Desktop => {
             info!("desktop ui");
-            info = info::ScanInfo::from_genshin(
+            info = info::ScanInfo::from_starrail(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,
@@ -246,7 +247,7 @@ fn main() {
         },
         UI::Mobile => {
             info!("mobile ui");
-            info = info::ScanInfo::from_mobile_genshin(
+            info = info::ScanInfo::from_mobile_starrail(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,
@@ -282,6 +283,7 @@ fn main() {
 
     let output_dir = Path::new(matches.value_of("output-dir").unwrap());
     match matches.value_of("output-format") {
+        /*
         Some("mona") => {
             let output_filename = output_dir.join("mona.json");
             let mona = MonaFormat::new(&results);
@@ -296,6 +298,11 @@ fn main() {
             let output_filename = output_dir.join("good.json");
             let good = GOODFormat::new(&results);
             good.save(String::from(output_filename.to_str().unwrap()));
+        }, */
+        Some("march7th") => {
+            let output_filename = output_dir.join("march7th.json");
+            let march7th = March7thFormat::new(&results);
+            march7th.save(String::from(output_filename.to_str().unwrap()));
         },
         _ => unreachable!(),
     }

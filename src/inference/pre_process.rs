@@ -27,19 +27,18 @@ fn get_index(width: u32, x: u32, y: u32) -> usize {
 
 pub fn to_gray(raw: &RgbImage) -> GrayImageFloat {
     let mut new_gray = GrayImageFloat::new(raw.width(), raw.height());
-    for (x, y) in (0..raw.width()).zip(0..raw.height()) {
-        let rgb = raw.get_pixel(x, y);
-        let r = rgb[0];
-        let g = rgb[1];
-        let b = rgb[2];
+    for x in 0..raw.width() {
+        for y in 0..raw.height() {
+            let rgb = raw.get_pixel(x, y);
 
-        let r = r as f32 / 255.0;
-        let g = g as f32 / 255.0;
-        let b = b as f32 / 255.0;
+            let r = rgb[0] as f32 / 255.0;
+            let g = rgb[1] as f32 / 255.0;
+            let b = rgb[2] as f32 / 255.0;
 
-        let gray = r as f32 * 0.2989 + g as f32 * 0.5870 + b as f32 * 0.1140;
-        let grayp = new_gray.get_pixel_mut(x, y);
-        grayp[0] = gray;
+            let gray = r * 0.2989 + g * 0.5870 + b * 0.1140;
+            let grayp = new_gray.get_pixel_mut(x, y);
+            grayp[0] = gray;
+        }
     }
     new_gray
 }

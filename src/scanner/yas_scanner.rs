@@ -321,7 +321,7 @@ impl YasScanner {
             let raw_after_pp = self
                 .info
                 .art_count_position
-                .capture_relative(info, true)
+                .capture_relative(info.left, info.top, true)
                 .unwrap();
             let s = self.model.inference_string(&raw_after_pp);
             info!("raw count string: {}", s);

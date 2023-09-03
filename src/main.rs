@@ -237,7 +237,7 @@ fn main() {
     match ui {
         UI::Desktop => {
             info!("desktop ui");
-            info = info::ScanInfo::from_genshin(
+            info = info::ScanInfo::from_pc(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,
@@ -246,7 +246,7 @@ fn main() {
         },
         UI::Mobile => {
             info!("mobile ui");
-            info = info::ScanInfo::from_mobile_genshin(
+            info = info::ScanInfo::from_mobile(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,

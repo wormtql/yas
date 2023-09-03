@@ -59,14 +59,15 @@ impl PixelRectBound {
 
     pub fn capture_relative(
         &self,
-        info: &ScanInfo,
+        left: i32,
+        top: i32,
         use_pre_process: bool,
     ) -> Result<GrayImageFloat, String> {
         let w = self.right - self.left;
         let h = self.bottom - self.top;
         let rect = PixelRect {
-            left: self.left + info.left as i32,
-            top: self.top + info.top as i32,
+            left: self.left + left,
+            top: self.top + top,
             width: w,
             height: h,
         };
@@ -88,12 +89,12 @@ impl PixelRectBound {
         }
     }
 
-    pub fn capture_relative_image(&self, info: &ScanInfo) -> Result<RgbImage, String> {
+    pub fn capture_relative_image(&self, left: i32, top: i32) -> Result<RgbImage, String> {
         let w = self.right - self.left;
         let h = self.bottom - self.top;
         let rect = PixelRect {
-            left: self.left + info.left as i32,
-            top: self.top + info.top as i32,
+            left: self.left + left,
+            top: self.top + top,
             width: w,
             height: h,
         };

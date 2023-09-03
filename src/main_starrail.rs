@@ -9,7 +9,7 @@ use yas_scanner::common::{PixelRect, RawImage};
 use yas_scanner::expo::march7th::March7thFormat;
 
 use yas_scanner::inference::pre_process::image_to_raw;
-use yas_scanner::info::info;
+use yas_scanner::info::info_starrail;
 use yas_scanner::scanner::yas_scanner_starrail::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
@@ -229,13 +229,13 @@ fn main() {
         rect.left, rect.top, rect.width, rect.height
     );
 
-    let mut info: info::ScanInfo;
+    let mut info: info_starrail::ScanInfoStarRail;
 
     // desktop ui or mobile ui
     match ui {
         UI::Desktop => {
             info!("desktop ui");
-            info = info::ScanInfo::from_starrail(
+            info = info_starrail::ScanInfoStarRail::from_pc(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,
@@ -244,7 +244,7 @@ fn main() {
         },
         UI::Mobile => {
             info!("mobile ui");
-            info = info::ScanInfo::from_mobile_starrail(
+            info = info_starrail::ScanInfoStarRail::from_mobile(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,

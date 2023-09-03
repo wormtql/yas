@@ -1,9 +1,9 @@
 use crate::common::PixelRectBound;
-use crate::info::info::ScanInfo;
+use crate::info::info_starrail::ScanInfoStarRail;
 
 pub struct Rect(f64, f64, f64, f64); // top, right, bottom, left
 
-pub struct WindowInfo {
+pub struct WindowInfoStarRail {
     pub width: f64,
     pub height: f64,
 
@@ -12,11 +12,6 @@ pub struct WindowInfo {
     pub main_stat_value_pos: Rect,
     pub level_pos: Rect,
     pub panel_pos: Rect,
-
-    pub sub_stat1_pos: Rect,
-    pub sub_stat2_pos: Rect,
-    pub sub_stat3_pos: Rect,
-    pub sub_stat4_pos: Rect,
 
     pub sub_stat1_name_pos: Rect,
     pub sub_stat1_value_pos: Rect,
@@ -50,8 +45,8 @@ pub struct WindowInfo {
     pub pool_pos: Rect,
 }
 
-impl WindowInfo {
-    pub fn to_scan_info(&self, h: f64, w: f64, left: i32, top: i32) -> ScanInfo {
+impl WindowInfoStarRail {
+    pub fn to_scan_info(&self, h: f64, w: f64, left: i32, top: i32) -> ScanInfoStarRail {
         let convert_rect = |rect: &Rect| {
             let top = rect.0 / self.height * h;
             let right = rect.1 / self.width * w;
@@ -70,16 +65,12 @@ impl WindowInfo {
 
         let convert_y = |y: f64| y / self.height * h;
 
-        ScanInfo {
+        ScanInfoStarRail {
             title_position: convert_rect(&self.title_pos),
             main_stat_name_position: convert_rect(&self.main_stat_name_pos),
             main_stat_value_position: convert_rect(&self.main_stat_value_pos),
             level_position: convert_rect(&self.level_pos),
             panel_position: convert_rect(&self.panel_pos),
-            sub_stat1_position: convert_rect(&self.sub_stat1_pos),
-            sub_stat2_position: convert_rect(&self.sub_stat2_pos),
-            sub_stat3_position: convert_rect(&self.sub_stat3_pos),
-            sub_stat4_position: convert_rect(&self.sub_stat4_pos),
             sub_stat1_name_pos: convert_rect(&self.sub_stat1_name_pos),
             sub_stat1_value_pos: convert_rect(&self.sub_stat1_value_pos),
             sub_stat2_name_pos: convert_rect(&self.sub_stat2_name_pos),
@@ -111,7 +102,7 @@ impl WindowInfo {
     }
 }
 
-pub const WINDOW_43_18_STARRAIL: WindowInfo = WindowInfo {
+pub const WINDOW_43_18: WindowInfoStarRail = WindowInfoStarRail {
     width: 3440.0,
     height: 1440.0,
 
@@ -120,11 +111,6 @@ pub const WINDOW_43_18_STARRAIL: WindowInfo = WindowInfo {
     main_stat_value_pos: Rect(400.0, 2850.0, 460.0, 2560.0),
     level_pos: Rect(575.0, 2640.0, 605.0, 2568.0),
     panel_pos: Rect(160.0, 3185.0, 1280.0, 2528.0),
-
-    sub_stat1_pos: Rect(640.0, 3080.0, 680.0, 2590.0),
-    sub_stat2_pos: Rect(690.0, 3080.0, 730.0, 2590.0),
-    sub_stat3_pos: Rect(742.0, 3080.0, 782.0, 2590.0),
-    sub_stat4_pos: Rect(795.0, 3080.0, 835.0, 2590.0),
 
     // 凑数用的
     sub_stat1_name_pos: Rect(370.0, 1534.0, 390.0, 1204.0),
@@ -159,7 +145,7 @@ pub const WINDOW_43_18_STARRAIL: WindowInfo = WindowInfo {
     pool_pos: Rect(170.0, 2610.0 + 30.0, 900.0, 2610.0),
 };
 
-pub const WINDOW_7_3_STARRAIL: WindowInfo = WindowInfo {
+pub const WINDOW_7_3: WindowInfoStarRail = WindowInfoStarRail {
     width: 2100.0,
     height: 900.0,
 
@@ -168,11 +154,6 @@ pub const WINDOW_7_3_STARRAIL: WindowInfo = WindowInfo {
     main_stat_value_pos: Rect(248.4, 1690.0, 286.8, 1550.0),
     level_pos: Rect(360.0, 1600.0, 378.0, 1557.0),
     panel_pos: Rect(100.0, 1941.0, 800.0, 1531.0),
-
-    sub_stat1_pos: Rect(398.1, 1780.0, 427.3, 1570.0),
-    sub_stat2_pos: Rect(427.3, 1780.0, 458.2, 1570.0),
-    sub_stat3_pos: Rect(458.2, 1780.0, 490.9, 1570.0),
-    sub_stat4_pos: Rect(490.9, 1780.0, 523.0, 1570.0),
 
     // 凑数用的
     sub_stat1_name_pos: Rect(370.0, 1534.0, 390.0, 1204.0),
@@ -206,7 +187,7 @@ pub const WINDOW_7_3_STARRAIL: WindowInfo = WindowInfo {
     pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0),
 };
 
-pub const WINDOW_16_9_STARRAIL: WindowInfo = WindowInfo {
+pub const WINDOW_16_9: WindowInfoStarRail = WindowInfoStarRail {
     width: 1600.0,
     height: 900.0,
 
@@ -224,11 +205,6 @@ pub const WINDOW_16_9_STARRAIL: WindowInfo = WindowInfo {
     sub_stat3_value_pos: Rect(435.0, 1534.0, 456.0, 1369.0),
     sub_stat4_name_pos: Rect(467.0, 1369.0, 487.0, 1204.0),
     sub_stat4_value_pos: Rect(467.0, 1534.0, 487.0, 1369.0),
-
-    sub_stat1_pos: Rect(370.0, 1534.0, 390.0, 1204.0),
-    sub_stat2_pos: Rect(402.0, 1534.0, 423.0, 1204.0),
-    sub_stat3_pos: Rect(435.0, 1534.0, 456.0, 1204.0),
-    sub_stat4_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
 
     equip_pos: Rect(762.6, 1389.4, 787.8, 1154.9),
     art_count_pos: Rect(813.0, 960.0, 836.0, 753.0),
@@ -254,7 +230,7 @@ pub const WINDOW_16_9_STARRAIL: WindowInfo = WindowInfo {
 };
 
 
-pub const WINDOW_8_5_STARRAIL: WindowInfo = WindowInfo {
+pub const WINDOW_8_5: WindowInfoStarRail = WindowInfoStarRail {
     width: 1440.0,
     height: 900.0,
     title_pos: Rect(96.0, 1268.9, 126.1, 1000.9),
@@ -271,10 +247,6 @@ pub const WINDOW_8_5_STARRAIL: WindowInfo = WindowInfo {
     sub_stat3_value_pos: Rect(435.0, 1534.0, 456.0, 1204.0),
     sub_stat4_name_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
     sub_stat4_value_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
-    sub_stat1_pos: Rect(358.0, 1224.1, 384.1, 1016.2),
-    sub_stat2_pos: Rect(384.1, 1224.1, 412.6, 1016.2),
-    sub_stat3_pos: Rect(412.6, 1224.1, 440.5, 1016.2),
-    sub_stat4_pos: Rect(440.5, 1224.1, 467.1, 1016.2),
     equip_pos: Rect(776.0, 1247.3, 800.6, 1041.3),
     art_count_pos: Rect(25.0, 1353.1, 46.8, 1182.8),
     art_width: 950.0 - 857.0,
@@ -293,7 +265,7 @@ pub const WINDOW_8_5_STARRAIL: WindowInfo = WindowInfo {
 };
 
 
-pub const WINDOW_4_3_STARRAIL: WindowInfo = WindowInfo {
+pub const WINDOW_4_3: WindowInfoStarRail = WindowInfoStarRail {
     width: 1280.0,
     height: 960.0,
     title_pos: Rect(85.0, 1094.8, 111.7, 889.5),
@@ -310,10 +282,6 @@ pub const WINDOW_4_3_STARRAIL: WindowInfo = WindowInfo {
     sub_stat3_value_pos: Rect(435.0, 1534.0, 456.0, 1204.0),
     sub_stat4_name_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
     sub_stat4_value_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
-    sub_stat1_pos: Rect(318.2, 1100.5, 342.3, 904.3),
-    sub_stat2_pos: Rect(342.3, 1100.5, 369.4, 904.3),
-    sub_stat3_pos: Rect(369.4, 1100.5, 395.3, 904.3),
-    sub_stat4_pos: Rect(395.3, 1100.5, 420.6, 904.3),
     equip_pos: Rect(849.8, 1090.8, 870.1, 924.4),
     art_count_pos: Rect(22.9, 1202.3, 41.4, 1058.6),
     art_width: 844.0 - 762.0,
@@ -332,7 +300,7 @@ pub const WINDOW_4_3_STARRAIL: WindowInfo = WindowInfo {
 };
 
 
-pub const WINDOW_MAC_8_5_STARRAIL: WindowInfo = WindowInfo {
+pub const WINDOW_MAC_8_5: WindowInfoStarRail = WindowInfoStarRail {
     width: 1164.0,
     height: 755.0 - 28.,
     title_pos: Rect(122.0 - 28., 1090.0, 157.0 - 28., 770.0),
@@ -349,10 +317,6 @@ pub const WINDOW_MAC_8_5_STARRAIL: WindowInfo = WindowInfo {
     sub_stat3_value_pos: Rect(435.0, 1534.0, 456.0, 1204.0),
     sub_stat4_name_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
     sub_stat4_value_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
-    sub_stat1_pos: Rect(387. - 28., 1050., 417. - 28., 791.),
-    sub_stat2_pos: Rect(417. - 28., 1050., 446. - 28., 791.),
-    sub_stat3_pos: Rect(446. - 28., 1050., 475. - 28., 791.),
-    sub_stat4_pos: Rect(475. - 28., 1050., 504. - 28., 791.),
     equip_pos: Rect(627. - 28., 1090., 659. - 28., 815.),
     art_count_pos: Rect(51. - 28., 1076., 80. - 28., 924.),
     art_width: 250. - 155.,

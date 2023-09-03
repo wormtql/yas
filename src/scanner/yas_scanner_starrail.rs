@@ -23,7 +23,7 @@ use crate::common::utils::get_pid_and_ui;
 use crate::common::{utils, PixelRect, PixelRectBound};
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
-use crate::info::info::ScanInfo;
+use crate::info::info_starrail::ScanInfoStarRail;
 
 // Playcover only, wine should not need this.
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
@@ -65,7 +65,7 @@ impl YasScannerConfig {
                 .parse::<u32>()
                 .unwrap(),
             max_wait_switch_relic: matches
-                .value_of("max-wait-switch-artifact")
+                .value_of("max-wait-switch-relic")
                 .unwrap_or("800")
                 .parse::<u32>()
                 .unwrap(),
@@ -81,7 +81,7 @@ impl YasScannerConfig {
                 .unwrap(),
             verbose: matches.is_present("verbose"),
             cloud_wait_switch_relic: matches
-                .value_of("cloud-wait-switch-artifact")
+                .value_of("cloud-wait-switch-relic")
                 .unwrap_or("300")
                 .parse::<u32>()
                 .unwrap(),
@@ -95,7 +95,7 @@ pub struct YasScanner {
     model: CRNNModel,
     enigo: Enigo,
 
-    info: ScanInfo,
+    info: ScanInfoStarRail,
     config: YasScannerConfig,
 
     row: u32,
@@ -205,7 +205,7 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
 }
 
 impl YasScanner {
-    pub fn new(info: ScanInfo, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
+    pub fn new(info: ScanInfoStarRail, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
         let row = info.art_row;
         let col = info.art_col;
 
@@ -322,7 +322,7 @@ impl YasScanner {
             let raw_after_pp = self
                 .info
                 .art_count_position
-                .capture_relative(info, true)
+                .capture_relative(info.left, info.top, true)
                 .unwrap();
             let s = self.model.inference_string(&raw_after_pp);
             info!("raw count string: {}", s);

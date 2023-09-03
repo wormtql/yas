@@ -111,7 +111,7 @@ impl WindowInfo {
     }
 }
 
-pub const WINDOW_43_18: WindowInfo = WindowInfo {
+pub const WINDOW_43_18_STARRAIL: WindowInfo = WindowInfo {
     width: 3440.0,
     height: 1440.0,
 
@@ -159,7 +159,7 @@ pub const WINDOW_43_18: WindowInfo = WindowInfo {
     pool_pos: Rect(170.0, 2610.0 + 30.0, 900.0, 2610.0),
 };
 
-pub const WINDOW_7_3: WindowInfo = WindowInfo {
+pub const WINDOW_7_3_STARRAIL: WindowInfo = WindowInfo {
     width: 2100.0,
     height: 900.0,
 
@@ -206,55 +206,55 @@ pub const WINDOW_7_3: WindowInfo = WindowInfo {
     pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0),
 };
 
-pub const WINDOW_16_9: WindowInfo = WindowInfo {
+pub const WINDOW_16_9_STARRAIL: WindowInfo = WindowInfo {
     width: 1600.0,
     height: 900.0,
 
-    title_pos: Rect(106.6, 1417.7, 139.6, 1111.8),
-    main_stat_name_pos: Rect(224.3, 1253.9, 248.0, 1110.0),
-    main_stat_value_pos: Rect(248.4, 1246.8, 286.8, 1110.0),
-    level_pos: Rect(360.0, 1160.0, 378.0, 1117.0),
-    panel_pos: Rect(100.0, 1500.0, 800.0, 1090.0),
+    title_pos: Rect(111.0, 1400.0, 132.0, 1169.0),
+    main_stat_name_pos: Rect(335.0, 1379.0, 355.0, 1207.0),
+    main_stat_value_pos: Rect(335.0, 1535.0, 355.0, 1465.0),
+    level_pos: Rect(258.0, 1240.0, 285.0, 1170.0),
+    panel_pos: Rect(100.0, 1550.0, 800.0, 1150.0),
 
-    sub_stat1_pos: Rect(398.1, 1343.0, 427.3, 1130.2),
-    sub_stat2_pos: Rect(427.3, 1343.0, 458.2, 1130.2),
-    sub_stat3_pos: Rect(458.2, 1343.0, 490.9, 1130.2),
-    sub_stat4_pos: Rect(490.9, 1343.0, 523.0, 1130.2),
+    sub_stat1_name_pos: Rect(370.0, 1369.0, 390.0, 1204.0),
+    sub_stat1_value_pos: Rect(370.0, 1534.0, 390.0, 1369.0),
+    sub_stat2_name_pos: Rect(402.0, 1369.0, 423.0, 1204.0),
+    sub_stat2_value_pos: Rect(402.0, 1534.0, 423.0, 1369.0),
+    sub_stat3_name_pos: Rect(435.0, 1369.0, 456.0, 1204.0),
+    sub_stat3_value_pos: Rect(435.0, 1534.0, 456.0, 1369.0),
+    sub_stat4_name_pos: Rect(467.0, 1369.0, 487.0, 1204.0),
+    sub_stat4_value_pos: Rect(467.0, 1534.0, 487.0, 1369.0),
 
-    // 凑数用的
-    sub_stat1_name_pos: Rect(370.0, 1534.0, 390.0, 1204.0),
-    sub_stat1_value_pos: Rect(370.0, 1534.0, 390.0, 1204.0),
-    sub_stat2_name_pos: Rect(402.0, 1534.0, 423.0, 1204.0),
-    sub_stat2_value_pos: Rect(402.0, 1534.0, 423.0, 1204.0),
-    sub_stat3_name_pos: Rect(435.0, 1534.0, 456.0, 1204.0),
-    sub_stat3_value_pos: Rect(435.0, 1534.0, 456.0, 1204.0),
-    sub_stat4_name_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
-    sub_stat4_value_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
+    sub_stat1_pos: Rect(370.0, 1534.0, 390.0, 1204.0),
+    sub_stat2_pos: Rect(402.0, 1534.0, 423.0, 1204.0),
+    sub_stat3_pos: Rect(435.0, 1534.0, 456.0, 1204.0),
+    sub_stat4_pos: Rect(467.0, 1534.0, 487.0, 1204.0),
 
     equip_pos: Rect(762.6, 1389.4, 787.8, 1154.9),
-    art_count_pos: Rect(27.1, 1504.7, 52.9, 1314.9),
+    art_count_pos: Rect(813.0, 960.0, 836.0, 753.0),
 
-    art_width: 1055.0 - 953.0,
-    art_height: 373.0 - 247.0,
-    art_gap_x: 953.0 - 933.0,
-    art_gap_y: 247.0 - 227.0,
+    art_width: 197.5 - 112.5,
+    art_height: 379.2 - 295.8,
+    art_gap_x: 217.5 - 197.5,
+    art_gap_y: 420.0 - 379.2,
 
     art_row: 5,
-    art_col: 8,
+    art_col: 9,
 
-    left_margin: 99.0,
-    top_margin: 101.0,
+    left_margin: 113.0,
+    top_margin: 172.0,
 
     flag_x: 271.1,
-    flag_y: 89.8,
+    flag_y: 158.0,
 
-    star_x: 1469.4,
-    star_y: 123.9,
+    star_x: 1500.0,
+    star_y: 208.0,
 
-    pool_pos: Rect(118.2, 1144.7 + 15.0, 510.3, 1144.7),
+    pool_pos: Rect(118.2, 1218.7 + 15.0, 510.3, 1218.7),
 };
 
-pub const WINDOW_8_5: WindowInfo = WindowInfo {
+
+pub const WINDOW_8_5_STARRAIL: WindowInfo = WindowInfo {
     width: 1440.0,
     height: 900.0,
     title_pos: Rect(96.0, 1268.9, 126.1, 1000.9),
@@ -292,7 +292,8 @@ pub const WINDOW_8_5: WindowInfo = WindowInfo {
     pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5),
 };
 
-pub const WINDOW_4_3: WindowInfo = WindowInfo {
+
+pub const WINDOW_4_3_STARRAIL: WindowInfo = WindowInfo {
     width: 1280.0,
     height: 960.0,
     title_pos: Rect(85.0, 1094.8, 111.7, 889.5),
@@ -330,8 +331,8 @@ pub const WINDOW_4_3: WindowInfo = WindowInfo {
     pool_pos: Rect(93.2, 912.7 + 15.0, 412.4, 912.7),
 };
 
-//top, right, bottom, left
-pub const WINDOW_MAC_8_5: WindowInfo = WindowInfo {
+
+pub const WINDOW_MAC_8_5_STARRAIL: WindowInfo = WindowInfo {
     width: 1164.0,
     height: 755.0 - 28.,
     title_pos: Rect(122.0 - 28., 1090.0, 157.0 - 28., 770.0),

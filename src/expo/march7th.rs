@@ -12,7 +12,7 @@ use crate::artifact::internal_relic::{
 type March7thRelic = InternalRelic;
 
 impl RelicStatName {
-    pub fn to_mona(&self) -> String {
+    pub fn to_march7th(&self) -> String {
         let temp = match self {
             RelicStatName::HP => "hp",
             RelicStatName::HPPercentage => "hp_",
@@ -41,7 +41,7 @@ impl RelicStatName {
 }
 
 impl RelicSetName {
-    pub fn to_mona(&self) -> String {
+    pub fn to_march7th(&self) -> String {
         let same = self.to_string();
         let temp = match self {
             RelicSetName::PasserbyofWanderingCloud => "PasserbyofWanderingCloud",
@@ -75,7 +75,7 @@ impl RelicSetName {
 }
 
 impl RelicSlot {
-    pub fn to_mona(&self) -> String {
+    pub fn to_march7th(&self) -> String {
         let temp = match self {
             RelicSlot::Head => "head",
             RelicSlot::Hands => "hands",
@@ -94,8 +94,8 @@ impl Serialize for RelicStat {
         S: Serializer,
     {
         let mut root = serializer.serialize_map(Some(2))?;
-        root.serialize_entry("name", &self.name.to_mona()).unwrap();
-        root.serialize_entry("value", &self.value).unwrap();
+        root.serialize_entry("name", &self.name.to_march7th())?;
+        root.serialize_entry("value", &self.value)?;
         root.end()
     }
 }
@@ -107,11 +107,9 @@ impl Serialize for March7thRelic {
     {
         let mut root = serializer.serialize_map(Some(7))?;
 
-        root.serialize_entry("setName", &self.set_name.to_mona())
-            .unwrap();
-        root.serialize_entry("position", &self.slot.to_mona())
-            .unwrap();
-        root.serialize_entry("mainTag", &self.main_stat).unwrap();
+        root.serialize_entry("setName", &self.set_name.to_march7th())?;
+        root.serialize_entry("position", &self.slot.to_march7th())?;
+        root.serialize_entry("mainTag", &self.main_stat)?;
 
         let mut sub_stats: Vec<&RelicStat> = vec![];
         if let Some(ref s) = self.sub_stat_1 {
@@ -162,13 +160,13 @@ impl<'a> Serialize for March7thFormat<'a> {
         S: Serializer,
     {
         let mut root = serializer.serialize_map(Some(6))?;
-        root.serialize_entry("version", &self.version).unwrap();
-        root.serialize_entry("head", &self.head).unwrap();
-        root.serialize_entry("hands", &self.hands).unwrap();
-        root.serialize_entry("body", &self.body).unwrap();
-        root.serialize_entry("feet", &self.feet).unwrap();
-        root.serialize_entry("planarSphere", &self.sphere).unwrap();
-        root.serialize_entry("linkRope", &self.rope).unwrap();
+        root.serialize_entry("version", &self.version)?;
+        root.serialize_entry("head", &self.head)?;
+        root.serialize_entry("hands", &self.hands)?;
+        root.serialize_entry("body", &self.body)?;
+        root.serialize_entry("feet", &self.feet)?;
+        root.serialize_entry("planarSphere", &self.sphere)?;
+        root.serialize_entry("linkRope", &self.rope)?;
         root.end()
     }
 }

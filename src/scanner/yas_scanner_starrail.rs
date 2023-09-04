@@ -12,8 +12,8 @@ use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 use tract_onnx::prelude::tract_itertools::Itertools;
 
-use crate::artifact::internal_artifact::{
-    ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact,
+use crate::artifact::internal_relic::{
+    RelicSetName, RelicSlot, RelicStat, InternalRelic,
 };
 use crate::capture::{self};
 use crate::common::character_name::CHARACTER_NAMES;
@@ -23,7 +23,7 @@ use crate::common::utils::get_pid_and_ui;
 use crate::common::{utils, PixelRect, PixelRectBound};
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
-use crate::info::info::ScanInfo;
+use crate::info::info_starrail::ScanInfoStarRail;
 
 // Playcover only, wine should not need this.
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
@@ -34,12 +34,12 @@ pub struct YasScannerConfig {
     capture_only: bool,
     min_star: u32,
     min_level: u32,
-    max_wait_switch_artifact: u32,
+    max_wait_switch_relic: u32,
     scroll_stop: u32,
     number: u32,
     verbose: bool,
     dump_mode: bool,
-    cloud_wait_switch_artifact: u32,
+    cloud_wait_switch_relic: u32,
     // offset_x: i32,
     // offset_y: i32,
 }
@@ -64,8 +64,8 @@ impl YasScannerConfig {
                 .unwrap_or("0")
                 .parse::<u32>()
                 .unwrap(),
-            max_wait_switch_artifact: matches
-                .value_of("max-wait-switch-artifact")
+            max_wait_switch_relic: matches
+                .value_of("max-wait-switch-relic")
                 .unwrap_or("800")
                 .parse::<u32>()
                 .unwrap(),
@@ -80,8 +80,8 @@ impl YasScannerConfig {
                 .parse::<u32>()
                 .unwrap(),
             verbose: matches.is_present("verbose"),
-            cloud_wait_switch_artifact: matches
-                .value_of("cloud-wait-switch-artifact")
+            cloud_wait_switch_relic: matches
+                .value_of("cloud-wait-switch-relic")
                 .unwrap_or("300")
                 .parse::<u32>()
                 .unwrap(),
@@ -95,7 +95,7 @@ pub struct YasScanner {
     model: CRNNModel,
     enigo: Enigo,
 
-    info: ScanInfo,
+    info: ScanInfoStarRail,
     config: YasScannerConfig,
 
     row: u32,
@@ -138,9 +138,9 @@ pub struct YasScanResult {
 }
 
 impl YasScanResult {
-    pub fn to_internal_artifact(&self) -> Option<InternalArtifact> {
-        let set_name = ArtifactSetName::from_zh_cn(&self.name)?;
-        let slot = ArtifactSlot::from_zh_cn(&self.name)?;
+    pub fn to_internal_relic(&self) -> Option<InternalRelic> {
+        let set_name = RelicSetName::from_zh_cn(&self.name)?;
+        let slot = RelicSlot::from_zh_cn(&self.name)?;
         let star = self.star;
         if !self.level.contains("+") {
             return None;
@@ -152,15 +152,16 @@ impl YasScanResult {
             .collect::<String>()
             .parse::<u32>()
             .ok()?;
-        let main_stat = ArtifactStat::from_zh_cn_raw(
+        let main_stat = RelicStat::from_zh_cn_raw(
             (self.main_stat_name.clone() + "+" + self.main_stat_value.as_str()).as_str(),
         )?;
-        let sub1 = ArtifactStat::from_zh_cn_raw(&self.sub_stat_1);
-        let sub2 = ArtifactStat::from_zh_cn_raw(&self.sub_stat_2);
-        let sub3 = ArtifactStat::from_zh_cn_raw(&self.sub_stat_3);
-        let sub4 = ArtifactStat::from_zh_cn_raw(&self.sub_stat_4);
+        let sub1 = RelicStat::from_zh_cn_raw(&self.sub_stat_1);
+        let sub2 = RelicStat::from_zh_cn_raw(&self.sub_stat_2);
+        let sub3 = RelicStat::from_zh_cn_raw(&self.sub_stat_3);
+        let sub4 = RelicStat::from_zh_cn_raw(&self.sub_stat_4);
 
-        let equip = if self.equip.contains("已装备") {
+        let equip = None;
+/*         let equip = if self.equip.contains("已装备") {
             //let equip_name = self.equip.clone();
             //equip_name.remove_matches("已装备");
             //let equip_name = &self.equip[..self.equip.len()-9];
@@ -174,9 +175,9 @@ impl YasScanResult {
             }
         } else {
             None
-        };
+        }; */
 
-        let art = InternalArtifact {
+        let relic = InternalRelic {
             set_name,
             slot,
             star,
@@ -188,7 +189,7 @@ impl YasScanResult {
             sub_stat_4: sub4,
             equip,
         };
-        Some(art)
+        Some(relic)
     }
 }
 
@@ -204,14 +205,14 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
 }
 
 impl YasScanner {
-    pub fn new(info: ScanInfo, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
+    pub fn new(info: ScanInfoStarRail, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
         let row = info.art_row;
         let col = info.art_col;
 
         YasScanner {
             model: CRNNModel::new(
-                String::from("model_training.onnx"),
-                String::from("index_2_word.json"),
+                String::from("model_training_starrail.onnx"),
+                String::from("index_2_word_starrail.json"),
             ),
             enigo: Enigo::new(),
             info,
@@ -314,7 +315,7 @@ impl YasScanner {
         Ok(u8_arr)
     }
 
-    fn get_art_count(&mut self) -> Result<u32, String> {
+    fn get_relic_count(&mut self) -> Result<u32, String> {
         let count = self.config.number;
         if let 0 = count {
             let info = &self.info;
@@ -325,18 +326,18 @@ impl YasScanner {
                 .unwrap();
             let s = self.model.inference_string(&raw_after_pp);
             info!("raw count string: {}", s);
-            if s.starts_with("圣遗物") {
+            if s.starts_with("遗器数量") {
                 let chars = s.chars().collect::<Vec<char>>();
                 let count_str = (&chars[4..chars.len() - 5]).iter().collect::<String>();
                 let count = match count_str.parse::<u32>() {
                     Ok(v) => v,
                     Err(_) => {
-                        return Err(String::from("无法识别圣遗物数量"));
-                    },
+                        return Err(String::from("无法识别遗器数量"));
+                    }
                 };
                 return Ok(count);
             }
-            Err(String::from("无法识别圣遗物数量"))
+            Err(String::from("无法识别遗器数量"))
         } else {
             return Ok(count);
         }
@@ -356,11 +357,11 @@ impl YasScanner {
             (self.info.star_y as i32 + self.info.top) as u32,
         );
 
-        let color_1 = Color::from(113, 119, 139);
-        let color_2 = Color::from(42, 143, 114);
-        let color_3 = Color::from(81, 127, 203);
-        let color_4 = Color::from(161, 86, 224);
-        let color_5 = Color::from(188, 105, 50);
+        let color_1 = Color::from(113, 119, 139); // 未核实
+        let color_2 = Color::from(42, 143, 114); // 未核实
+        let color_3 = Color::from(81, 127, 203); // 未核实
+        let color_4 = Color::from(155, 117, 206);
+        let color_5 = Color::from(194, 159, 112);
 
         let min_dis: u32 = color_1.dis_2(&color);
         let mut star = 1_u32;
@@ -402,7 +403,7 @@ impl YasScanner {
         let (_, ui) = get_pid_and_ui();
         let mut state = 0;
         let mut count = 0;
-        let max_scroll = 20;
+        let max_scroll = 25;
         while count < max_scroll {
             if utils::is_rmb_down() {
                 return ScrollResult::Interrupt;
@@ -576,14 +577,14 @@ impl YasScanner {
             }
         }
     */
-    pub fn start(&mut self) -> Vec<InternalArtifact> {
+    pub fn start(&mut self) -> Vec<InternalRelic> {
         //self.panel_down();
         /*         if self.config.capture_only {
            self.start_capture_only();
            return Vec::new();
         } */
 
-        let count = match self.get_art_count() {
+        let count = match self.get_relic_count() {
             Ok(v) => v,
             Err(_) => 1500,
         };
@@ -613,10 +614,10 @@ impl YasScanner {
         let is_dump_mode = self.config.dump_mode;
         let min_level = self.config.min_level;
         let handle = thread::spawn(move || {
-            let mut results: Vec<InternalArtifact> = Vec::new();
+            let mut results: Vec<InternalRelic> = Vec::new();
             let model = CRNNModel::new(
-                String::from("model_training.onnx"),
-                String::from("index_2_word.json"),
+                String::from("model_training_starrail.onnx"),
+                String::from("index_2_word_starrail.json"),
             );
             let mut error_count = 0;
             let mut dup_count = 0;
@@ -703,17 +704,25 @@ impl YasScanner {
                     cnt,
                 );
 
-                let str_sub_stat_1 =
-                    model_inference(&info.sub_stat1_position, "sub_stat_1", &capture, cnt);
-                let str_sub_stat_2 =
-                    model_inference(&info.sub_stat2_position, "sub_stat_2", &capture, cnt);
-                let str_sub_stat_3 =
-                    model_inference(&info.sub_stat3_position, "sub_stat_3", &capture, cnt);
-                let str_sub_stat_4 =
-                    model_inference(&info.sub_stat4_position, "sub_stat_4", &capture, cnt);
+                let str_sub_stat_1_name = model_inference(
+                    &info.sub_stat1_name_pos, "sub_stat_1_name", &capture, cnt);
+                let str_sub_stat_1_value = model_inference(
+                    &info.sub_stat1_value_pos, "sub_stat_1_value", &capture, cnt);
+                let str_sub_stat_2_name = model_inference(
+                    &info.sub_stat2_name_pos, "sub_stat_2_name", &capture, cnt);
+                let str_sub_stat_2_value = model_inference(
+                    &info.sub_stat2_value_pos, "sub_stat_2_value", &capture, cnt);
+                let str_sub_stat_3_name = model_inference(
+                    &info.sub_stat3_name_pos, "sub_stat_3_name", &capture, cnt);
+                let str_sub_stat_3_value = model_inference(
+                    &info.sub_stat3_value_pos, "sub_stat_3_value", &capture, cnt);
+                let str_sub_stat_4_name = model_inference(
+                    &info.sub_stat4_name_pos, "sub_stat_4_name", &capture, cnt);
+                let str_sub_stat_4_value = model_inference(
+                    &info.sub_stat4_value_pos, "sub_stat_4_value", &capture, cnt);
 
                 let str_level = model_inference(&info.level_position, "level", &capture, cnt);
-                let str_equip = model_inference(&info.equip_position, "equip", &capture, cnt);
+                // let str_equip = model_inference(&info.equip_position, "equip", &capture, cnt);
 
                 cnt += 1;
 
@@ -724,24 +733,24 @@ impl YasScanner {
                     name: str_title,
                     main_stat_name: str_main_stat_name,
                     main_stat_value: str_main_stat_value,
-                    sub_stat_1: str_sub_stat_1,
-                    sub_stat_2: str_sub_stat_2,
-                    sub_stat_3: str_sub_stat_3,
-                    sub_stat_4: str_sub_stat_4,
+                    sub_stat_1: str_sub_stat_1_name + "+" + &str_sub_stat_1_value,
+                    sub_stat_2: str_sub_stat_2_name + "+" + &str_sub_stat_2_value,
+                    sub_stat_3: str_sub_stat_3_name + "+" + &str_sub_stat_3_value,
+                    sub_stat_4: str_sub_stat_4_name + "+" + &str_sub_stat_4_value,
                     level: str_level,
-                    equip: str_equip,
+                    equip: String::new(),
                     star,
                 };
                 if is_verbose {
                     info!("{:?}", result);
                 }
                 // println!("{:?}", result);
-                let art = result.to_internal_artifact();
-                if let Some(a) = art {
+                let relic = result.to_internal_relic();
+                if let Some(a) = relic {
                     if hash.contains(&a) {
                         dup_count += 1;
                         consecutive_dup_count += 1;
-                        warn!("dup artifact detected: {:?}", result);
+                        warn!("dup relic detected: {:?}", result);
                     } else {
                         consecutive_dup_count = 0;
                         hash.insert(a.clone());
@@ -753,7 +762,7 @@ impl YasScanner {
                     // println!("error parsing results");
                 }
                 if consecutive_dup_count >= info.art_row {
-                    error!("检测到连续多个重复圣遗物，可能为翻页错误，或者为非背包顶部开始扫描");
+                    error!("检测到连续多个重复遗器，可能为翻页错误，或者为非背包顶部开始扫描");
                     break;
                 }
             }
@@ -843,20 +852,20 @@ impl YasScanner {
         tx.send(None).unwrap();
 
         info!("扫描结束，等待识别线程结束，请勿关闭程序");
-        let results: Vec<InternalArtifact> = handle.join().unwrap();
+        let results: Vec<InternalRelic> = handle.join().unwrap();
         info!("count: {}", results.len());
         results
     }
     fn wait_until_switched(&mut self) -> bool {
         if self.is_cloud {
-            utils::sleep(self.config.cloud_wait_switch_artifact);
+            utils::sleep(self.config.cloud_wait_switch_relic);
             return true;
         }
         let now = SystemTime::now();
 
         let mut consecutive_time = 0;
         let mut diff_flag = false;
-        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_artifact as u128 {
+        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_relic as u128 {
             // let pool_start = SystemTime::now();
             let rect = PixelRect {
                 left: self.info.left as i32 + self.info.pool_position.left,

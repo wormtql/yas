@@ -52,3 +52,11 @@ winres = "0.1"
 lto = true
 panic = "abort"
 strip = true
+
+[[bin]]
+name = "yas_scanner"
+path = "src/main.rs"
+
+[[bin]]
+name = "yas_scanner_starrail"
+path = "src/main_starrail.rs"

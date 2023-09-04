@@ -14,7 +14,7 @@ pub struct CRNNModel {
 }
 
 impl CRNNModel {
-    pub fn new(_name: String, _dict_name: String) -> CRNNModel {
+    pub fn new(name: String, dict_name: String) -> CRNNModel {
         // let model = tract_onnx::onnx()
         //     .model_for_path(String::from("models/") + name.as_str()).unwrap()
         //     .with_input_fact(0, InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384))).unwrap()
@@ -22,23 +22,49 @@ impl CRNNModel {
         //     .into_runnable().unwrap();
         // let mut bytes = include_bytes!("../../models/model_acc100-epoch16.onnx");
         let bytes = include_bytes!("../../models/model_training.onnx");
+        let bytes_starrail = include_bytes!("../../models/model_training_starrail.onnx");
 
-        let model = tract_onnx::onnx()
-            .model_for_read(&mut bytes.as_bytes())
-            .unwrap()
-            .with_input_fact(
-                0,
-                InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384)),
-            )
-            .unwrap()
-            .into_optimized()
-            .unwrap()
-            .into_runnable()
-            .unwrap();
+        let model: ModelType;
+
+        if name == "model_training_starrail.onnx" {
+            model = tract_onnx::onnx()
+                .model_for_read(&mut bytes_starrail.as_bytes())
+                .unwrap()
+                .with_input_fact(
+                    0,
+                    InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384)),
+                )
+                .unwrap()
+                .into_optimized()
+                .unwrap()
+                .into_runnable()
+                .unwrap();
+        } else {
+            model = tract_onnx::onnx()
+                .model_for_read(&mut bytes.as_bytes())
+                .unwrap()
+                .with_input_fact(
+                    0,
+                    InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384)),
+                )
+                .unwrap()
+                .into_optimized()
+                .unwrap()
+                .into_runnable()
+                .unwrap();
+        }
 
         // let content = utils::read_file_to_string(String::from("models/index_2_word.json"));
         let content = String::from(include_str!("../../models/index_2_word.json"));
-        let json: Value = serde_json::from_str(content.as_str()).unwrap();
+        let content_starrail = String::from(include_str!("../../models/index_2_word_starrail.json"));
+
+        let json: Value;
+
+        if dict_name == "index_2_word_starrail.json" {
+            json = serde_json::from_str(content_starrail.as_str()).unwrap();
+        } else {
+            json = serde_json::from_str(content.as_str()).unwrap();
+        }
 
         let mut index_2_word: Vec<String> = Vec::new();
         let mut i = 0;

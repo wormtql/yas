@@ -6,13 +6,11 @@ use std::time::SystemTime;
 use yas_scanner::common::utils::get_pid_and_ui;
 use yas_scanner::common::{utils, UI};
 use yas_scanner::common::{PixelRect, RawImage};
-use yas_scanner::expo::good::GOODFormat;
-use yas_scanner::expo::mingyu_lab::MingyuLabFormat;
-use yas_scanner::expo::mona_uranai::MonaFormat;
+use yas_scanner::expo::march7th::March7thFormat;
 
 use yas_scanner::inference::pre_process::image_to_raw;
-use yas_scanner::info::info;
-use yas_scanner::scanner::yas_scanner::{YasScanner, YasScannerConfig};
+use yas_scanner::info::info_starrail;
+use yas_scanner::scanner::yas_scanner_starrail::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
 use env_logger::Builder;
@@ -40,10 +38,10 @@ fn main() {
         warn!("检测到新版本，请手动更新：{}", v);
     }
 
-    let matches = App::new("YAS - 原神圣遗物导出器")
+    let matches = App::new("YAS - 崩坏：星穹铁道遗器导出器")
         .version(utils::VERSION)
         .author("wormtql <584130248@qq.com>")
-        .about("Genshin Impact Artifact Exporter")
+        .about("Honkai: Star Rail Relic Exporter")
         .arg(
             Arg::with_name("max-row")
                 .long("max-row")
@@ -77,10 +75,10 @@ fn main() {
                 .help("最小等级"),
         )
         .arg(
-            Arg::with_name("max-wait-switch-artifact")
-                .long("max-wait-switch-artifact")
+            Arg::with_name("max-wait-switch-relic")
+                .long("max-wait-switch-relic")
                 .takes_value(true)
-                .help("切换圣遗物最大等待时间(ms)"),
+                .help("切换遗器最大等待时间(ms)"),
         )
         .arg(
             Arg::with_name("output-dir")
@@ -100,7 +98,7 @@ fn main() {
             Arg::with_name("number")
                 .long("number")
                 .takes_value(true)
-                .help("指定圣遗物数量（在自动识别数量不准确时使用）"),
+                .help("指定遗器数量（在自动识别数量不准确时使用）"),
         )
         .arg(
             Arg::with_name("verbose")
@@ -125,14 +123,14 @@ fn main() {
                 .short("f")
                 .takes_value(true)
                 .help("输出格式")
-                .possible_values(&["mona", "mingyulab", "good"])
-                .default_value("mona"),
+                .possible_values(&["march7th"])
+                .default_value("march7th"),
         )
         .arg(
-            Arg::with_name("cloud-wait-switch-artifact")
-                .long("cloud-wait-switch-artifact")
+            Arg::with_name("cloud-wait-switch-relic")
+                .long("cloud-wait-switch-relic")
                 .takes_value(true)
-                .help("指定云·原神切换圣遗物等待时间(ms)"),
+                .help("指定云·崩坏：星穹铁道切换遗器等待时间(ms)"),
         )
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
@@ -150,12 +148,12 @@ fn main() {
 
         let hwnd;
 
-        (hwnd, is_cloud) = utils::find_window_local("原神")
-            .or_else(|_| utils::find_window_local("Genshin Impact"))
+        (hwnd, is_cloud) = utils::find_window_local("崩坏：星穹铁道")
+            .or_else(|_| utils::find_window_local("Honkai: Star Rail"))
             .map(|hwnd| (hwnd, false))
             .unwrap_or_else(|_| {
                 let Ok(hwnd) = utils::find_window_cloud() else {
-                    utils::error_and_quit("未找到原神窗口，请确认原神已经开启")
+                    utils::error_and_quit("未找到崩坏：星穹铁道窗口，请确认崩坏：星穹铁道已经开启")
                 };
                 (hwnd, true)
             });
@@ -211,7 +209,7 @@ fn main() {
             width,
             height,
         };
-        is_cloud = false; // todo: detect cloud genshin by title
+        is_cloud = false; // todo: detect cloud starrail by title
         ui = UI::Desktop;
     }
 
@@ -220,8 +218,8 @@ fn main() {
         let (pid, ui_) = get_pid_and_ui();
         let window_title: String;
         (rect, window_title) = unsafe { utils::find_window_by_pid(pid).unwrap() };
-        info!("Found genshin pid:{}, window name:{}", pid, window_title);
-        is_cloud = false; // todo: detect cloud genshin by title
+        info!("Found starrail pid:{}, window name:{}", pid, window_title);
+        is_cloud = false; // todo: detect cloud starrail by title
         ui = ui_;
     }
 
@@ -231,13 +229,13 @@ fn main() {
         rect.left, rect.top, rect.width, rect.height
     );
 
-    let mut info: info::ScanInfo;
+    let mut info: info_starrail::ScanInfoStarRail;
 
     // desktop ui or mobile ui
     match ui {
         UI::Desktop => {
             info!("desktop ui");
-            info = info::ScanInfo::from_pc(
+            info = info_starrail::ScanInfoStarRail::from_pc(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,
@@ -246,7 +244,7 @@ fn main() {
         },
         UI::Mobile => {
             info!("mobile ui");
-            info = info::ScanInfo::from_mobile(
+            info = info_starrail::ScanInfoStarRail::from_mobile(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,
@@ -273,7 +271,7 @@ fn main() {
     let now = SystemTime::now();
     #[cfg(target_os = "macos")]
     {
-        info!("初始化完成，请切换到原神窗口，yas将在10s后开始扫描圣遗物");
+        info!("初始化完成，请切换到崩坏：星穹铁道窗口，yas将在10s后开始扫描遗器");
         utils::sleep(10000);
     }
     let results = scanner.start();
@@ -282,25 +280,15 @@ fn main() {
 
     let output_dir = Path::new(matches.value_of("output-dir").unwrap());
     match matches.value_of("output-format") {
-        Some("mona") => {
-            let output_filename = output_dir.join("mona.json");
-            let mona = MonaFormat::new(&results);
-            mona.save(String::from(output_filename.to_str().unwrap()));
-        },
-        Some("mingyulab") => {
-            let output_filename = output_dir.join("mingyulab.json");
-            let mingyulab = MingyuLabFormat::new(&results);
-            mingyulab.save(String::from(output_filename.to_str().unwrap()));
-        },
-        Some("good") => {
-            let output_filename = output_dir.join("good.json");
-            let good = GOODFormat::new(&results);
-            good.save(String::from(output_filename.to_str().unwrap()));
+        Some("march7th") => {
+            let output_filename = output_dir.join("march7th.json");
+            let march7th = March7thFormat::new(&results);
+            march7th.save(String::from(output_filename.to_str().unwrap()));
         },
         _ => unreachable!(),
     }
     // let info = info;
-    // let img = info.art_count_position.capture_relative(&info).unwrap();
+    // let img = info.relic_count_position.capture_relative(&info).unwrap();
 
     // let mut inference = CRNNModel::new(String::from("model_training.onnx"), String::from("index_2_word.json"));
     // let s = inference.inference_string(&img);

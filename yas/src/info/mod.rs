@@ -2,6 +2,7 @@ mod convert;
 pub use convert::*;
 
 mod const_info;
+
 mod genshin;
 mod starrail;
 
@@ -66,11 +67,6 @@ impl SharedScanInfo<f64> {
     pub fn move_to(&mut self, pos: Pos<f64>) {
         self.origin = pos;
     }
-}
-
-pub enum ScanInfo {
-    StarRail(starrail::StarRailScanInfo),
-    Genshin(genshin::GenshinScanInfo),
 }
 
 pub enum WindowInfo {

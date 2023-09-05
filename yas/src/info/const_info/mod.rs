@@ -1,5 +1,7 @@
-pub mod genshin;
-pub mod starrail;
+use super::*;
+
+mod genshin;
+mod starrail;
 
 pub enum WindowSize {
     Windows43x18,
@@ -10,3 +12,6 @@ pub enum WindowSize {
     MacOS8x5,
 }
 
+type R = RectBound<WindowInfoType>;
+type P = Pos<WindowInfoType>;
+type S = Size<WindowInfoType>;

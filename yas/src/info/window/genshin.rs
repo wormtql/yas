@@ -1,44 +1,13 @@
-use crate::common::PixelRectBound;
-use crate::info::info::ScanInfo;
-
-pub struct Rect(f64, f64, f64, f64); // top, right, bottom, left
+use crate::common::RectBound;
+use super::*;
 
 pub struct WindowInfo {
-    pub width: f64,
-    pub height: f64,
+    pub shared: SharedWindowInfo,
 
-    pub title_pos: Rect,
-    pub main_stat_name_pos: Rect,
-    pub main_stat_value_pos: Rect,
-    pub level_pos: Rect,
-    pub panel_pos: Rect,
-
-    pub sub_stat1_pos: Rect,
-    pub sub_stat2_pos: Rect,
-    pub sub_stat3_pos: Rect,
-    pub sub_stat4_pos: Rect,
-
-    pub equip_pos: Rect,
-    pub art_count_pos: Rect,
-
-    pub art_width: f64,
-    pub art_height: f64,
-    pub art_gap_x: f64,
-    pub art_gap_y: f64,
-
-    pub art_row: usize,
-    pub art_col: usize,
-
-    pub left_margin: f64,
-    pub top_margin: f64,
-
-    pub flag_x: f64,
-    pub flag_y: f64,
-
-    pub star_x: f64,
-    pub star_y: f64,
-
-    pub pool_pos: Rect,
+    pub sub_stat1_pos: FloatRect,
+    pub sub_stat2_pos: FloatRect,
+    pub sub_stat3_pos: FloatRect,
+    pub sub_stat4_pos: FloatRect,
 }
 
 impl WindowInfo {
@@ -49,7 +18,7 @@ impl WindowInfo {
             let bottom = rect.2 / self.height * h;
             let left = rect.3 / self.width * w;
 
-            PixelRectBound {
+            RectBound {
                 left: left as i32,
                 top: top as i32,
                 right: right as i32,

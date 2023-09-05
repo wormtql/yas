@@ -5,3 +5,8 @@ members = [
     "yas-genshin",
     "yas-starrail"
 ]
+
+[profile.release]
+lto = true
+panic = "abort"
+strip = true

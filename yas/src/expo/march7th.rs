@@ -4,7 +4,7 @@ use std::io::prelude::*;
 
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
-use crate::item::internal_relic::{
+use crate::item::starrail_relic::{
     RelicSetName, RelicSlot, RelicStat, RelicStatName, InternalRelic,
 };
 

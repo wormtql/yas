@@ -9,16 +9,16 @@ use reqwest::blocking::Client;
 use reqwest::header::{HeaderValue, USER_AGENT};
 
 #[cfg(target_os = "macos")]
-pub use mac::*;
+mod macos;
+#[cfg(target_os = "macos")]
+pub use macos::*;
+
+#[cfg(windows)]
+mod windows;
 #[cfg(windows)]
 pub use windows::*;
 
 use crate::dto::GithubTag;
-
-#[cfg(target_os = "macos")]
-mod mac;
-#[cfg(windows)]
-mod windows;
 
 pub fn sleep(ms: u32) {
     let time = Duration::from_millis(ms as u64);
@@ -31,7 +31,7 @@ pub fn read_file_to_string(path: String) -> String {
 }
 
 pub fn error_and_quit(msg: &str) -> ! {
-    error!("{}, 按Enter退出", msg);
+    error!("{}, 按 Enter 退出", msg);
     let mut s: String = String::new();
     stdin().read_line(&mut s).unwrap();
     process::exit(0);

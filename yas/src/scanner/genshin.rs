@@ -1,26 +1,28 @@
 use std::collections::HashSet;
 use std::convert::From;
 use std::fs;
+use super::*;
+use anyhow::Result;
 
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::time::SystemTime;
 
-use clap::ArgMatches;
+use clap::Parser;
 use enigo::*;
 use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 use tract_onnx::prelude::tract_itertools::Itertools;
 
-use crate::item::internal_artifact::{
-    ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact,
+use crate::item::genshin_artifact::{
+    ArtifactSetName, ArtifactSlot, ArtifactStat, GenshinArtifact,
 };
 use crate::capture;
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 #[cfg(target_os = "macos")]
 use crate::common::utils::get_pid_and_ui;
-use crate::common::{utils, PixelRect, PixelRectBound};
+use crate::common::{utils, Rect, PixelRectBound};
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
 use crate::info::info::ScanInfo;
@@ -28,64 +30,6 @@ use crate::info::info::ScanInfo;
 // Playcover only, wine should not need this.
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use crate::common::utils::mac_scroll;
-
-pub struct YasScannerConfig {
-    max_row: u32,
-    capture_only: bool,
-    min_star: u32,
-    min_level: u32,
-    max_wait_switch_artifact: u32,
-    scroll_stop: u32,
-    number: u32,
-    verbose: bool,
-    dump_mode: bool,
-    cloud_wait_switch_artifact: u32,
-}
-
-impl YasScannerConfig {
-    pub fn from_match(matches: &ArgMatches) -> YasScannerConfig {
-        YasScannerConfig {
-            max_row: matches
-                .value_of("max-row")
-                .unwrap_or("1000")
-                .parse::<u32>()
-                .unwrap(),
-            capture_only: matches.is_present("capture-only"),
-            dump_mode: matches.is_present("dump"),
-            min_star: matches
-                .value_of("min-star")
-                .unwrap_or("4")
-                .parse::<u32>()
-                .unwrap(),
-            min_level: matches
-                .value_of("min-level")
-                .unwrap_or("0")
-                .parse::<u32>()
-                .unwrap(),
-            max_wait_switch_artifact: matches
-                .value_of("max-wait-switch-artifact")
-                .unwrap_or("800")
-                .parse::<u32>()
-                .unwrap(),
-            scroll_stop: matches
-                .value_of("scroll-stop")
-                .unwrap_or("80")
-                .parse::<u32>()
-                .unwrap(),
-            number: matches
-                .value_of("number")
-                .unwrap_or("0")
-                .parse::<u32>()
-                .unwrap(),
-            verbose: matches.is_present("verbose"),
-            cloud_wait_switch_artifact: matches
-                .value_of("cloud-wait-switch-artifact")
-                .unwrap_or("300")
-                .parse::<u32>()
-                .unwrap(),
-        }
-    }
-}
 
 pub struct YasScanner {
     model: Arc<CRNNModel>,
@@ -133,7 +77,7 @@ pub struct YasScanResult {
 }
 
 impl YasScanResult {
-    pub fn to_internal_artifact(&self) -> Option<InternalArtifact> {
+    pub fn to_internal_artifact(&self) -> Option<GenshinArtifact> {
         let set_name = ArtifactSetName::from_zh_cn(&self.name)?;
         let slot = ArtifactSlot::from_zh_cn(&self.name)?;
         let star = self.star;
@@ -171,7 +115,7 @@ impl YasScanResult {
             None
         };
 
-        let art = InternalArtifact {
+        let art = GenshinArtifact {
             set_name,
             slot,
             star,
@@ -199,7 +143,7 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
 }
 
 impl YasScanner {
-    pub fn new(info: ScanInfo, config: YasScannerConfig, is_cloud: bool, model: &[u8], content: String) -> YasScanner {
+    pub fn new(info: ScanInfo, is_cloud: bool, model: &[u8], content: String) -> YasScanner {
         let row = info.art_row;
         let col = info.art_col;
 
@@ -209,13 +153,13 @@ impl YasScanner {
             enigo: Enigo::new(),
             model: Arc::new(model),
             info,
-            config,
+            config: YasScannerConfig::parse(),
 
             row,
             col,
 
             pool: -1.0,
-            initial_color: Color::new(),
+            initial_color: Color::default(),
             scrolled_rows: 0,
             avg_scroll_one_row: 0.0,
 
@@ -234,7 +178,7 @@ impl YasScanner {
         let mut count = 0;
         while count < 10 {
             let color = self.get_flag_color();
-            if color.is_same(&self.initial_color) {
+            if color == self.initial_color {
                 return true;
             }
 
@@ -263,43 +207,45 @@ impl YasScanner {
         false
     }
 
-    fn capture_panel(&mut self) -> Result<RgbImage, String> {
-        let _now = SystemTime::now();
+    fn capture_panel(&mut self) -> Result<RgbImage> {
         let w = self.info.panel_position.right - self.info.panel_position.left;
         let h = self.info.panel_position.bottom - self.info.panel_position.top;
-        let rect: PixelRect = PixelRect {
+
+        let rect: Rect = Rect {
             left: self.info.left as i32 + self.info.panel_position.left,
             top: self.info.top as i32 + self.info.panel_position.top,
             width: w,
             height: h,
         };
-        let u8_arr = capture::capture_absolute(&rect)?;
-        // info!("capture time: {}ms", now.elapsed().unwrap().as_millis());
-        Ok(u8_arr)
+
+        capture::capture_absolute(&rect)
     }
 
     fn get_art_count(&mut self) -> Result<u32, String> {
         let count = self.config.number;
         if let 0 = count {
             let info = &self.info;
+
             let raw_after_pp = self
                 .info
                 .art_count_position
-                .capture_relative(info.left, info.top, true)
-                .unwrap();
-            let s = self.model.inference_string(&raw_after_pp);
-            info!("raw count string: {}", s);
-            if s.starts_with("圣遗物") {
-                let chars = s.chars().collect::<Vec<char>>();
-                let count_str = (&chars[4..chars.len() - 5]).iter().collect::<String>();
-                let count = match count_str.parse::<u32>() {
-                    Ok(v) => v,
-                    Err(_) => {
-                        return Err(String::from("无法识别圣遗物数量"));
-                    },
-                };
-                return Ok(count);
+                .capture_relative(info.left, info.top, true)?;
+
+            if let Ok(s) = self.model.inference_string(&raw_after_pp) {
+                info!("raw count string: {}", s);
+                if s.starts_with("圣遗物") {
+                    let chars = s.chars().collect::<Vec<char>>();
+                    let count_str = (&chars[4..chars.len() - 5]).iter().collect::<String>();
+                    let count = match count_str.parse::<u32>() {
+                        Ok(v) => v,
+                        Err(_) => {
+                            return Err(String::from("无法识别圣遗物数量"));
+                        },
+                    };
+                    return Ok(count);
+                }
             }
+
             Err(String::from("无法识别圣遗物数量"))
         } else {
             Ok(count)
@@ -380,7 +326,6 @@ impl YasScanner {
             {
                 match ui {
                     crate::common::UI::Desktop => {
-                        // mac_scroll(&mut self.enigo, 1);
                         self.enigo.mouse_scroll_y(-1);
                         utils::sleep(20);
                     },
@@ -389,6 +334,7 @@ impl YasScanner {
                     },
                 }
             }
+
             utils::sleep(self.config.scroll_stop);
             count += 1;
             let color: Color = self.get_flag_color();
@@ -410,6 +356,7 @@ impl YasScanner {
     fn scroll_rows(&mut self, count: u32) -> ScrollResult {
         #[cfg(target_os = "macos")]
         let (_, ui) = get_pid_and_ui();
+
         if self.scrolled_rows >= 5 {
             let scroll = ((self.avg_scroll_one_row * count as f64 - 3.0).round() as u32).max(0);
             for _ in 0..scroll {
@@ -421,7 +368,6 @@ impl YasScanner {
                 {
                     match ui {
                         crate::common::UI::Desktop => {
-                            // mac_scroll(&mut self.enigo, 1);
                             self.enigo.mouse_scroll_y(-1);
                             utils::sleep(20);
                         },
@@ -447,7 +393,7 @@ impl YasScanner {
         ScrollResult::Success
     }
 
-    pub fn start(&mut self) -> Vec<InternalArtifact> {
+    pub fn start(&mut self) -> Result<Vec<GenshinArtifact>> {
         let count = match self.get_art_count() {
             Ok(v) => v,
             Err(_) => 1500,
@@ -472,7 +418,7 @@ impl YasScanner {
         let model = self.model.clone();
 
         let handle = thread::spawn(move || {
-            let mut results: Vec<InternalArtifact> = Vec::new();
+            let mut results: Vec<GenshinArtifact> = Vec::new();
             let mut error_count = 0;
             let mut dup_count = 0;
             let mut hash = HashSet::new();
@@ -484,7 +430,7 @@ impl YasScanner {
                 fs::create_dir("dumps").unwrap();
             }
 
-            let convert_rect = |rect: &PixelRectBound| PixelRect {
+            let convert_rect = |rect: &PixelRectBound| Rect {
                 left: rect.left - info.panel_position.left,
                 top: rect.top - info.panel_position.top,
                 width: rect.right - rect.left,
@@ -513,7 +459,6 @@ impl YasScanner {
                             rect.height as u32,
                         )
                         .to_image();
-                    //info!("raw_img: width = {}, height = {}", raw_img.width(), raw_img.height());
 
                     if is_dump_mode {
                         raw_img
@@ -535,7 +480,7 @@ impl YasScanner {
                             .expect("Err");
                     }
 
-                    let inference_result = model.inference_string(&processed_img);
+                    let inference_result = model.inference_string(&processed_img).unwrap();
                     if is_dump_mode {
                         fs::write(format!("dumps/{}_{}.txt", name, cnt), &inference_result)
                             .expect("Err");
@@ -638,13 +583,13 @@ impl YasScanner {
         self.sample_initial_color();
 
         'outer: while scanned_count < count {
-            'row: for row in start_row..self.row {
+            '_row: for row in start_row..self.row {
                 let c = if scanned_row == total_row - 1 {
                     last_row_col
                 } else {
                     self.col
                 };
-                'col: for col in 0..c {
+                '_col: for col in 0..c {
                     // 大于最大数量则退出
                     if scanned_count > count {
                         break 'outer;
@@ -695,25 +640,28 @@ impl YasScanner {
             utils::sleep(100);
         }
 
-        tx.send(None).unwrap();
+        tx.send(None)?;
 
         info!("扫描结束，等待识别线程结束，请勿关闭程序");
-        let results: Vec<InternalArtifact> = handle.join().unwrap();
+
+        let results: Vec<GenshinArtifact> = handle.join().unwrap();
+
         info!("count: {}", results.len());
-        results
+
+        Ok(results)
     }
     fn wait_until_switched(&mut self) -> bool {
         if self.is_cloud {
-            utils::sleep(self.config.cloud_wait_switch_artifact);
+            utils::sleep(self.config.cloud_wait_switch_item);
             return true;
         }
         let now = SystemTime::now();
 
         let mut consecutive_time = 0;
         let mut diff_flag = false;
-        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_artifact as u128 {
+        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_item as u128 {
             // let pool_start = SystemTime::now();
-            let rect = PixelRect {
+            let rect = Rect {
                 left: self.info.left as i32 + self.info.pool_position.left,
                 top: self.info.top as i32 + self.info.pool_position.top,
                 width: self.info.pool_position.right - self.info.pool_position.left,

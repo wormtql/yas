@@ -4,11 +4,11 @@ use std::io::prelude::*;
 
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
-use crate::item::internal_artifact::{
-    ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, InternalArtifact,
+use crate::item::genshin_artifact::{
+    ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
 
-type MonaArtifact = InternalArtifact;
+type MonaArtifact = GenshinArtifact;
 
 impl ArtifactStatName {
     pub fn to_mona(&self) -> String {
@@ -181,7 +181,7 @@ impl<'a> Serialize for MonaFormat<'a> {
 }
 
 impl<'a> MonaFormat<'a> {
-    pub fn new(results: &Vec<InternalArtifact>) -> MonaFormat {
+    pub fn new(results: &Vec<GenshinArtifact>) -> MonaFormat {
         let mut flower: Vec<&MonaArtifact> = Vec::new();
         let mut feather: Vec<&MonaArtifact> = Vec::new();
         let mut cup: Vec<&MonaArtifact> = Vec::new();

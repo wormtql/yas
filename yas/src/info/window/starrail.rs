@@ -1,7 +1,6 @@
-use crate::common::PixelRectBound;
-use crate::info::info_starrail::ScanInfoStarRail;
+use crate::common::RectBound;
+use super::*;
 
-pub struct Rect(f64, f64, f64, f64); // top, right, bottom, left
 
 pub struct WindowInfoStarRail {
     pub width: f64,
@@ -53,7 +52,7 @@ impl WindowInfoStarRail {
             let bottom = rect.2 / self.height * h;
             let left = rect.3 / self.width * w;
 
-            PixelRectBound {
+            RectBound {
                 left: left as i32,
                 top: top as i32,
                 right: right as i32,

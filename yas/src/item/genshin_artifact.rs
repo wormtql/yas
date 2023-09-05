@@ -94,7 +94,7 @@ pub struct ArtifactStat {
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub struct InternalArtifact {
+pub struct GenshinArtifact {
     pub set_name: ArtifactSetName,
     pub slot: ArtifactSlot,
     pub star: u32,

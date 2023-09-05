@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::Arg;
 use env_logger::Builder;
 use log::{warn, LevelFilter};
 

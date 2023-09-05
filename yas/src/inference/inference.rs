@@ -46,15 +46,15 @@ impl CRNNModel {
         })
     }
 
-    pub fn inference_string(&self, img: &GrayImageFloat) -> String {
+    pub fn inference_string(&self, img: &GrayImageFloat) -> Result<String> {
         let tensor: Tensor =
             tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
                 img.get_pixel(x as u32, y as u32)[0]
             })
             .into();
 
-        let result = self.model.run(tvec!(tensor)).unwrap();
-        let arr = result[0].to_array_view::<f32>().unwrap();
+        let result = self.model.run(tvec!(tensor.into()))?;
+        let arr = result[0].to_array_view::<f32>()?;
 
         let shape = arr.shape();
 
@@ -78,6 +78,6 @@ impl CRNNModel {
             last_word = word.clone();
         }
 
-        ans
+        Ok(ans)
     }
 }

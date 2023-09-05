@@ -1,12 +1,12 @@
-use crate::item::internal_artifact::{
-    ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, InternalArtifact,
+use crate::item::genshin_artifact::{
+    ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::fs::File;
 use std::io::prelude::*;
 
 struct MingyuLabArtifact<'a> {
-    artifact: &'a InternalArtifact,
+    artifact: &'a GenshinArtifact,
 }
 
 impl<'a> Serialize for MingyuLabArtifact<'a> {
@@ -148,7 +148,7 @@ pub struct MingyuLabFormat<'a> {
 }
 
 impl<'a> MingyuLabFormat<'a> {
-    pub fn new(results: &'a Vec<InternalArtifact>) -> MingyuLabFormat {
+    pub fn new(results: &'a Vec<GenshinArtifact>) -> MingyuLabFormat {
         let artifacts: Vec<MingyuLabArtifact<'a>> = results
             .into_iter()
             .filter(|artifact| {

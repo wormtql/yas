@@ -5,11 +5,11 @@ use std::time::SystemTime;
 #[cfg(target_os = "macos")]
 use yas::common::utils::get_pid_and_ui;
 use yas::common::{utils, UI};
-use yas::common::{PixelRect, RawImage};
+use yas::common::{Rect, RawImage};
 use yas::expo::march7th::March7thFormat;
 
 use yas::inference::pre_process::image_to_raw;
-use yas::info::info_starrail;
+use yas::info::starrail;
 use yas::scanner::starrail::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
@@ -135,7 +135,7 @@ fn main() {
         .get_matches();
     let config = YasScannerConfig::from_match(&matches);
 
-    let rect: PixelRect;
+    let rect: Rect;
     let is_cloud: bool;
     let ui: UI;
 
@@ -203,7 +203,7 @@ fn main() {
         let width = info.next().unwrap().parse().unwrap();
         let height = info.next().unwrap().parse().unwrap();
 
-        rect = PixelRect {
+        rect = Rect {
             left,
             top,
             width,
@@ -229,13 +229,13 @@ fn main() {
         rect.left, rect.top, rect.width, rect.height
     );
 
-    let mut info: info_starrail::ScanInfoStarRail;
+    let mut info: starrail::ScanInfoStarRail;
 
     // desktop ui or mobile ui
     match ui {
         UI::Desktop => {
             info!("desktop ui");
-            info = info_starrail::ScanInfoStarRail::from_pc(
+            info = starrail::ScanInfoStarRail::from_pc(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,
@@ -244,7 +244,7 @@ fn main() {
         },
         UI::Mobile => {
             info!("mobile ui");
-            info = info_starrail::ScanInfoStarRail::from_mobile(
+            info = starrail::ScanInfoStarRail::from_mobile(
                 rect.width as u32,
                 rect.height as u32,
                 rect.left,

@@ -5,7 +5,7 @@ use std::time::SystemTime;
 #[cfg(target_os = "macos")]
 use yas::common::utils::get_pid_and_ui;
 use yas::common::{utils, UI};
-use yas::common::{PixelRect, RawImage};
+use yas::common::{Rect, RawImage};
 use yas::expo::good::GOODFormat;
 use yas::expo::mingyu_lab::MingyuLabFormat;
 use yas::expo::mona_uranai::MonaFormat;
@@ -65,7 +65,7 @@ fn main() -> Result<()> {
 
     let config = YasScannerConfig::from_match(&matches);
 
-    let rect: PixelRect;
+    let rect: Rect;
     let is_cloud: bool;
     let ui: UI;
 
@@ -133,7 +133,7 @@ fn main() -> Result<()> {
         let width = info.next().unwrap().parse().unwrap();
         let height = info.next().unwrap().parse().unwrap();
 
-        rect = PixelRect {
+        rect = Rect {
             left,
             top,
             width,

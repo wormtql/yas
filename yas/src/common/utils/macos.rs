@@ -1,4 +1,4 @@
-use crate::common::{utils, PixelRect, UI};
+use crate::common::*;
 use cocoa::{
     appkit::CGFloat,
     base::NO,
@@ -22,7 +22,7 @@ pub fn mac_scroll(enigo: &mut Enigo, count: i32) {
 }
 
 pub fn get_titlebar_height() -> f64 {
-    use cocoa::appkit::{NSBackingStoreBuffered, NSImage, NSWindow, NSWindowStyleMask};
+    use cocoa::appkit::{NSBackingStoreBuffered, NSWindow, NSWindowStyleMask};
     use cocoa::base::nil;
     use cocoa::foundation::NSRect;
     let ns_point = NSPoint::new(100 as CGFloat, 100 as CGFloat);
@@ -79,10 +79,7 @@ pub fn get_pid_and_ui() -> (i32, UI) {
     }
 }
 
-pub unsafe fn find_window_by_pid(pid: i32) -> Result<(PixelRect, String), String> {
-    use cocoa::appkit::{NSBackingStoreBuffered, NSImage, NSWindow, NSWindowStyleMask};
-    use cocoa::base::nil;
-    use cocoa::foundation::NSRect;
+pub unsafe fn find_window_by_pid(pid: i32) -> Result<(Rect, String), String> {
     use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
     use core_foundation::base::TCFType;
     use core_foundation::dictionary::{
@@ -105,12 +102,7 @@ pub unsafe fn find_window_by_pid(pid: i32) -> Result<(PixelRect, String), String
         return Err("No genshin window found".to_string());
     }
 
-    let mut mrect = PixelRect {
-        left: 0,
-        top: 0,
-        width: 0,
-        height: 0,
-    };
+    let mut mrect = Rect::default();
     let mut window_count = 0;
     let mut title: String = String::new();
 
@@ -146,25 +138,13 @@ pub unsafe fn find_window_by_pid(pid: i32) -> Result<(PixelRect, String), String
             );
             let cg_title = CFString::wrap_under_get_rule(cg_title_ref as CFStringRef);
             title = cg_title.to_string();
-            // mac app cg_rect.size.x = 0 when full screen
             if cg_rect.size.height > 200. {
-                if cg_rect.origin.y > 0. {
+                mrect = if cg_rect.origin.y > 0. {
                     // Window Mode
-                    let titlebar_height = get_titlebar_height();
-                    mrect = PixelRect {
-                        left: cg_rect.origin.x as i32,
-                        top: cg_rect.origin.y as i32 + titlebar_height as i32, // The titlebar appears in window mode
-                        width: cg_rect.size.width as i32,
-                        height: cg_rect.size.height as i32 - titlebar_height as i32, // The titlebar appears in window mode
-                    };
+                    Rect::from(cg_rect).with_titlebar(get_titlebar_height() as i32)
                 } else {
-                    mrect = PixelRect {
-                        left: cg_rect.origin.x as i32,
-                        top: cg_rect.origin.y as i32,
-                        width: cg_rect.size.width as i32,
-                        height: cg_rect.size.height as i32,
-                    };
-                }
+                    Rect::from(cg_rect)
+                };
                 window_count += 1
             }
         }

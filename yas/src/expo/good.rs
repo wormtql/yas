@@ -1,5 +1,5 @@
-use crate::item::internal_artifact::{
-    ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, InternalArtifact,
+use crate::item::genshin_artifact::{
+    ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
 use serde::ser::{SerializeMap, Serializer};
 use serde::Serialize;
@@ -7,7 +7,7 @@ use std::fs::File;
 use std::io::prelude::*;
 
 struct GOODArtifact<'a> {
-    artifact: &'a InternalArtifact,
+    artifact: &'a GenshinArtifact,
 }
 
 impl<'a> Serialize for GOODArtifact<'a> {
@@ -170,7 +170,7 @@ pub struct GOODFormat<'a> {
 }
 
 impl<'a> GOODFormat<'a> {
-    pub fn new(results: &'a Vec<InternalArtifact>) -> GOODFormat {
+    pub fn new(results: &'a Vec<GenshinArtifact>) -> GOODFormat {
         let artifacts: Vec<GOODArtifact<'a>> = results
             .into_iter()
             .map(|artifact| GOODArtifact { artifact })

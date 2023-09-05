@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::convert::From;
 use std::fs;
 
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc};
 use std::thread;
 use std::time::SystemTime;
 
@@ -12,7 +12,7 @@ use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 use tract_onnx::prelude::tract_itertools::Itertools;
 
-use crate::artifact::internal_relic::{
+use crate::item::internal_relic::{
     RelicSetName, RelicSlot, RelicStat, InternalRelic,
 };
 use crate::capture::{self};
@@ -40,8 +40,6 @@ pub struct YasScannerConfig {
     verbose: bool,
     dump_mode: bool,
     cloud_wait_switch_relic: u32,
-    // offset_x: i32,
-    // offset_y: i32,
 }
 
 impl YasScannerConfig {
@@ -85,14 +83,12 @@ impl YasScannerConfig {
                 .unwrap_or("300")
                 .parse::<u32>()
                 .unwrap(),
-            // offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
-            // offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
         }
     }
 }
 
 pub struct YasScanner {
-    model: CRNNModel,
+    model: Arc<CRNNModel>,
     enigo: Enigo,
 
     info: ScanInfoStarRail,
@@ -116,8 +112,7 @@ pub struct YasScanner {
 }
 
 enum ScrollResult {
-    TLE,
-    // time limit exceeded
+    TimeLimitExceeded,
     Interrupt,
     Success,
     Skip,
@@ -161,21 +156,6 @@ impl YasScanResult {
         let sub4 = RelicStat::from_zh_cn_raw(&self.sub_stat_4);
 
         let equip = None;
-/*         let equip = if self.equip.contains("已装备") {
-            //let equip_name = self.equip.clone();
-            //equip_name.remove_matches("已装备");
-            //let equip_name = &self.equip[..self.equip.len()-9];
-            let chars = self.equip.chars().collect_vec();
-            let chars2 = &chars[..chars.len() - 3];
-            let equip_name = chars2.iter().collect::<String>();
-            if CHARACTER_NAMES.contains(equip_name.as_str()) {
-                Some(equip_name)
-            } else {
-                None
-            }
-        } else {
-            None
-        }; */
 
         let relic = InternalRelic {
             set_name,
@@ -205,16 +185,15 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
 }
 
 impl YasScanner {
-    pub fn new(info: ScanInfoStarRail, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
+    pub fn new(info: ScanInfoStarRail, config: YasScannerConfig, is_cloud: bool, model: &[u8], content: String) -> YasScanner {
         let row = info.art_row;
         let col = info.art_col;
 
+        let model = CRNNModel::new(model, content).expect("Err");
+
         YasScanner {
-            model: CRNNModel::new(
-                String::from("model_training_starrail.onnx"),
-                String::from("index_2_word_starrail.json"),
-            ),
             enigo: Enigo::new(),
+            model: Arc::new(model),
             info,
             config,
 
@@ -270,36 +249,6 @@ impl YasScanner {
         false
     }
 
-    /*
-    pub fn panel_down(&mut self) {
-        let info = &self.info;
-        let max_scroll = 20;
-        let mut count = 0;
-        self.enigo.mouse_move_to(
-            info.left + info.star_x as i32,
-            info.top + info.star_y as i32,
-        );
-        let level_color = Color::from(57, 67, 79);
-        let mut color = capture::get_color(
-            info.level_position.left as u32,
-            info.level_position.bottom as u32,
-        );
-        while !level_color.is_same(&color) && count < max_scroll {
-            #[cfg(windows)]
-            self.enigo.mouse_scroll_y(5);
-            #[cfg(target_os = "linux")]
-            self.enigo.mouse_scroll_y(-1);
-
-            utils::sleep(self.config.scroll_stop);
-            color = capture::get_color(
-                info.level_position.left as u32,
-                info.level_position.bottom as u32,
-            );
-            count += 1;
-        }
-    }
-    */
-
     fn capture_panel(&mut self) -> Result<RgbImage, String> {
         let _now = SystemTime::now();
         let w = self.info.panel_position.right - self.info.panel_position.left;
@@ -339,7 +288,7 @@ impl YasScanner {
             }
             Err(String::from("无法识别遗器数量"))
         } else {
-            return Ok(count);
+            Ok(count)
         }
     }
 
@@ -441,7 +390,7 @@ impl YasScanner {
             }
         }
 
-        ScrollResult::TLE
+        ScrollResult::TimeLimitExceeded
     }
 
     fn scroll_rows(&mut self, count: u32) -> ScrollResult {
@@ -475,7 +424,7 @@ impl YasScanner {
 
         for _ in 0..count {
             match self.scroll_one_row() {
-                ScrollResult::TLE => return ScrollResult::TLE,
+                ScrollResult::TimeLimitExceeded => return ScrollResult::TimeLimitExceeded,
                 ScrollResult::Interrupt => return ScrollResult::Interrupt,
                 _ => (),
             }
@@ -484,106 +433,7 @@ impl YasScanner {
         ScrollResult::Success
     }
 
-    /*
-        fn start_capture_only(&mut self) {
-            fs::create_dir("captures");
-            let info = &self.info.clone();
-
-            println!("capture l:{}, t:{}, w:{},h:{}", info.left, info.top, info.width, info.height);
-            let raw_im_rect = PixelRectBound {
-                left: info.left as i32,
-                top: info.top as i32,
-                right: info.left + info.width as i32,
-                bottom: info.top + info.height as i32,
-            };
-
-            let raw_im = raw_im_rect.capture_relative(info, false).unwrap();
-            raw_im.grayscale_to_gray_image().save("captures/raw_im.png");
-            println!("Finish capture raw");
-            panic!();
-
-            let count = self.info.art_count_position.capture_relative(info, false).unwrap();
-            count.to_gray_image().save("captures/count.png");
-
-            let convert_rect = |rect: &PixelRectBound| PixelRect {
-                left: rect.left - info.panel_position.left,
-                top: rect.top - info.panel_position.top,
-                width: rect.right - rect.left,
-                height: rect.bottom - rect.top,
-            };
-
-            let panel = self.capture_panel().unwrap();
-            let im_title = pre_process(panel.crop_to_raw_img(&convert_rect(&info.title_position)));
-            if let Some(im) = im_title {
-                im.to_gray_image().save("captures/title.png").expect("Err");
-            }
-
-            let im_main_stat_name =
-                pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_name_position)));
-            if let Some(im) = im_main_stat_name {
-                im.to_gray_image()
-                    .save("captures/main_stat_name.png")
-                    .expect("Err");
-            }
-
-            let im_main_stat_value =
-                pre_process(panel.crop_to_raw_img(&convert_rect(&info.main_stat_value_position)));
-            if let Some(im) = im_main_stat_value {
-                im.to_gray_image()
-                    .save("captures/main_stat_value.png")
-                    .expect("Err");
-            }
-
-            let im_sub_stat_1 =
-                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat1_position)));
-            if let Some(im) = im_sub_stat_1 {
-                im.to_gray_image()
-                    .save("captures/sub_stat_1.png")
-                    .expect("Err");
-            }
-
-            let im_sub_stat_2 =
-                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat2_position)));
-            if let Some(im) = im_sub_stat_2 {
-                im.to_gray_image()
-                    .save("captures/sub_stat_2.png")
-                    .expect("Err");
-            }
-
-            let im_sub_stat_3 =
-                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat3_position)));
-            if let Some(im) = im_sub_stat_3 {
-                im.to_gray_image()
-                    .save("captures/sub_stat_3.png")
-                    .expect("Err");
-            }
-
-            let im_sub_stat_4 =
-                pre_process(panel.crop_to_raw_img(&convert_rect(&info.sub_stat4_position)));
-            if let Some(im) = im_sub_stat_4 {
-                im.to_gray_image()
-                    .save("captures/sub_stat_4.png")
-                    .expect("Err");
-            }
-
-            let im_level = pre_process(panel.crop_to_raw_img(&convert_rect(&info.level_position)));
-            if let Some(im) = im_level {
-                im.to_gray_image().save("captures/level.png").expect("Err");
-            }
-
-            let im_equip = pre_process(panel.crop_to_raw_img(&convert_rect(&info.equip_position)));
-            if let Some(im) = im_equip {
-                im.to_gray_image().save("captures/equip.png").expect("Err");
-            }
-        }
-    */
     pub fn start(&mut self) -> Vec<InternalRelic> {
-        //self.panel_down();
-        /*         if self.config.capture_only {
-           self.start_capture_only();
-           return Vec::new();
-        } */
-
         let count = match self.get_relic_count() {
             Ok(v) => v,
             Err(_) => 1500,
@@ -596,29 +446,20 @@ impl YasScanner {
             count % self.col
         };
 
-        // println!("检测到圣遗物数量：{}，若无误请按回车，否则输入正确的圣遗物数量：", count);
-        // let mut s: String = String::new();
-        // stdin().read_line(&mut s);
-        // if s.trim() != "" {
-        //     count = s.trim().parse::<u32>().unwrap();
-        // }
-
         info!("detected count: {}", count);
         info!("total row: {}", total_row);
         info!("last column: {}", last_row_col);
 
         let (tx, rx) = mpsc::channel::<Option<(RgbImage, u32)>>();
         let info_2 = self.info.clone();
-        // v bvvmnvbm
+
         let is_verbose = self.config.verbose;
         let is_dump_mode = self.config.dump_mode;
         let min_level = self.config.min_level;
+        let model = self.model.clone();
+
         let handle = thread::spawn(move || {
             let mut results: Vec<InternalRelic> = Vec::new();
-            let model = CRNNModel::new(
-                String::from("model_training_starrail.onnx"),
-                String::from("index_2_word_starrail.json"),
-            );
             let mut error_count = 0;
             let mut dup_count = 0;
             let mut hash = HashSet::new();
@@ -838,7 +679,7 @@ impl YasScanner {
             let scroll_row = remain_row.min(self.row);
             start_row = self.row - scroll_row;
             match self.scroll_rows(scroll_row) {
-                ScrollResult::TLE => {
+                ScrollResult::TimeLimitExceeded => {
                     error!("翻页出现问题");
                     break 'outer;
                 },
@@ -879,16 +720,6 @@ impl YasScanner {
             // println!("pool time: {}ms", pool_start.elapsed().unwrap().as_millis());
 
             if (pool - self.pool).abs() > 0.000001 {
-                // info!("pool: {}", pool);
-                // let raw = RawCaptureImage {
-                //     data: im,
-                //     w: rect.width as u32,
-                //     h: rect.height as u32,
-                // };
-                // let raw = raw.to_raw_image();
-                // println!("{:?}", &raw.data[..10]);
-                // raw.save(&format!("captures/{}.png", rand::thread_rng().gen::<u32>()));
-
                 self.pool = pool;
                 diff_flag = true;
                 consecutive_time = 0;
@@ -909,38 +740,4 @@ impl YasScanner {
 
         false
     }
-}
-
-impl YasScanner {
-    // pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
-    //     set_dpi_awareness();
-    //     let mut is_cloud = false;
-    //     let hwnd = match find_window_local() {
-    //         Ok(v) => {is_cloud = true; v},
-    //         Err(s) => {
-    //             match find_window_cloud() {
-    //                 Ok(v) => v,
-    //                 Err(s) => return Err(String::from("未找到原神窗口"))
-    //             }
-    //         }
-    //     };
-    //
-    //     show_window_and_set_foreground(hwnd);
-    //     sleep(1000);
-    //
-    //     let mut rect = match get_client_rect(hwnd) {
-    //         Ok(v) => v,
-    //         Err(_) => return Err(String::from("未能获取窗口大小"))
-    //     };
-    //
-    //     let info = match ScanInfo::from_rect(&rect) {
-    //         Ok(v) => v,
-    //         Err(e) => return Err(e)
-    //     };
-    //
-    //     let mut scanner = YasScanner::new(info, config, is_cloud);
-    //     let result = scanner.start();
-    //
-    //     Ok(result)
-    // }
 }

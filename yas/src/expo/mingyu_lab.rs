@@ -1,4 +1,4 @@
-use crate::artifact::internal_artifact::{
+use crate::item::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, InternalArtifact,
 };
 use serde::ser::{Serialize, SerializeMap, Serializer};

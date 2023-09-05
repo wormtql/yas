@@ -4,7 +4,7 @@ use std::io::prelude::*;
 
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
-use crate::artifact::internal_artifact::{
+use crate::item::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, InternalArtifact,
 };
 

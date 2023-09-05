@@ -1,8 +1,7 @@
-/target
-*.png
-data/
 target/
-mona.json
-.idea/
 captures/
+dumps/
 .vscode/
+.idea/
+/*.json
+**/*.png

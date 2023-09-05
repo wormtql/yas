@@ -3,14 +3,14 @@ use std::path::Path;
 use std::time::SystemTime;
 
 #[cfg(target_os = "macos")]
-use yas_scanner::common::utils::get_pid_and_ui;
-use yas_scanner::common::{utils, UI};
-use yas_scanner::common::{PixelRect, RawImage};
-use yas_scanner::expo::march7th::March7thFormat;
+use yas::common::utils::get_pid_and_ui;
+use yas::common::{utils, UI};
+use yas::common::{PixelRect, RawImage};
+use yas::expo::march7th::March7thFormat;
 
-use yas_scanner::inference::pre_process::image_to_raw;
-use yas_scanner::info::info_starrail;
-use yas_scanner::scanner::yas_scanner_starrail::{YasScanner, YasScannerConfig};
+use yas::inference::pre_process::image_to_raw;
+use yas::info::info_starrail;
+use yas::scanner::starrail::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
 use env_logger::Builder;
@@ -266,7 +266,10 @@ fn main() {
     info.left += offset_x;
     info.top += offset_y;
 
-    let mut scanner = YasScanner::new(info.clone(), config, is_cloud);
+    let model = include_bytes!("../models/model_training.onnx");
+    let content = String::from(include_str!("../models/index_2_word.json"));
+
+    let mut scanner = YasScanner::new(info.clone(), config, is_cloud, model, content);
 
     let now = SystemTime::now();
     #[cfg(target_os = "macos")]

@@ -261,11 +261,6 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
 impl ArtifactSetName {
     #[rustfmt::skip]
     pub fn from_zh_cn(s: &str) -> Option<ArtifactSetName> {
-        // let s = match get_real_artifact_name_chs(s) {
-        //     Some(v) => v,
-        //     None => return None,
-        // };
-        // println!("name: {}", s);
         match s {
             "磐陀裂生之花" => Some(ArtifactSetName::ArchaicPetra),
             "嵯峨群峰之翼" => Some(ArtifactSetName::ArchaicPetra),
@@ -456,10 +451,6 @@ impl ArtifactSetName {
 
 impl ArtifactSlot {
     pub fn from_zh_cn(s: &str) -> Option<ArtifactSlot> {
-        // let s = match get_real_artifact_name_chs(s) {
-        //     Some(v) => v,
-        //     None => return None,
-        // };
         match s {
             "磐陀裂生之花" => Some(ArtifactSlot::Flower),
             "嵯峨群峰之翼" => Some(ArtifactSlot::Feather),

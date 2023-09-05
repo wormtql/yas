@@ -1,40 +1,48 @@
 use super::*;
 
+/// Scale the position.
 pub trait Scalable {
-    fn scale(&mut self, ratio: f64);
+    fn scale(self, ratio: f64) -> Self;
 }
 
 impl Scalable for i32 {
-    fn scale(&mut self, ratio: f64) {
-        *self = (*self as f64 * ratio).round() as i32;
+    fn scale(self, ratio: f64) -> Self {
+        (self as f64 * ratio).round() as i32
     }
 }
 
 impl Scalable for u32 {
-    fn scale(&mut self, ratio: f64) {
-        *self = (*self as f64 * ratio).round() as u32;
+    fn scale(self, ratio: f64) -> Self {
+        (self as f64 * ratio).round() as u32
     }
 }
 
 impl Scalable for f32 {
-    fn scale(&mut self, ratio: f64) {
-        *self = (*self as f64 * ratio) as f32;
+    fn scale(self, ratio: f64) -> Self {
+        (self as f64 * ratio) as f32
     }
 }
 
 impl Scalable for f64 {
-    fn scale(&mut self, ratio: f64) {
-        *self *= ratio;
+    fn scale(self, ratio: f64) -> Self {
+        self * ratio
     }
 }
 
-impl<T> Scalable for Size<T>
+/// Scale the rectangle with width and height ratio.
+pub trait RectScalable {
+    fn rect_scale(self, width_ratio: f64, height_ratio: f64) -> Self;
+}
+
+impl<T> RectScalable for Pos<T>
 where
     T: Scalable,
 {
-    fn scale(&mut self, ratio: f64) {
-        self.width.scale(ratio);
-        self.height.scale(ratio);
+    fn rect_scale(self, width_ratio: f64, height_ratio: f64) -> Self {
+        Self {
+            x: self.x.scale(width_ratio),
+            y: self.y.scale(height_ratio),
+        }
     }
 }
 
@@ -42,9 +50,45 @@ impl<T> Scalable for Pos<T>
 where
     T: Scalable,
 {
-    fn scale(&mut self, ratio: f64) {
-        self.x.scale(ratio);
-        self.y.scale(ratio);
+    fn scale(self, ratio: f64) -> Self {
+        Self {
+            x: self.x.scale(ratio),
+            y: self.y.scale(ratio),
+        }
+    }
+}
+
+impl<T> RectScalable for Size<T>
+where
+    T: Scalable,
+{
+    fn rect_scale(self, width_ratio: f64, height_ratio: f64) -> Self {
+        Self {
+            width: self.width.scale(width_ratio),
+            height: self.height.scale(height_ratio),
+        }
+    }
+}
+
+impl<T> Scalable for Size<T>
+where
+    T: Scalable,
+{
+    fn scale(self, ratio: f64) -> Self {
+        self.rect_scale(ratio, ratio)
+    }
+}
+
+impl<P, S> RectScalable for Rect<P, S>
+where
+    P: Scalable,
+    S: Scalable,
+{
+    fn rect_scale(self, width_ratio: f64, height_ratio: f64) -> Self {
+        Self {
+            origin: self.origin.rect_scale(width_ratio, height_ratio),
+            size: self.size.rect_scale(width_ratio, height_ratio),
+        }
     }
 }
 
@@ -53,9 +97,22 @@ where
     P: Scalable,
     S: Scalable,
 {
-    fn scale(&mut self, ratio: f64) {
-        self.origin.scale(ratio);
-        self.size.scale(ratio);
+    fn scale(self, ratio: f64) -> Self {
+        self.rect_scale(ratio, ratio)
+    }
+}
+
+impl<T> RectScalable for RectBound<T>
+where
+    T: Scalable,
+{
+    fn rect_scale(self, width_ratio: f64, height_ratio: f64) -> Self {
+        Self {
+            left: self.left.scale(width_ratio),
+            top: self.top.scale(height_ratio),
+            right: self.right.scale(width_ratio),
+            bottom: self.bottom.scale(height_ratio),
+        }
     }
 }
 
@@ -63,11 +120,8 @@ impl<T> Scalable for RectBound<T>
 where
     T: Scalable,
 {
-    fn scale(&mut self, ratio: f64) {
-        self.left.scale(ratio);
-        self.top.scale(ratio);
-        self.right.scale(ratio);
-        self.bottom.scale(ratio);
+    fn scale(self, ratio: f64) -> Self {
+        self.rect_scale(ratio, ratio)
     }
 }
 
@@ -77,39 +131,21 @@ mod tests {
 
     #[test]
     fn test_scale() {
-        let mut pos = Pos::new(100, 200);
-        pos.scale(0.5);
-        assert_eq!(pos, Pos::new(50, 100));
-
-        let mut size = Size::new(100, 200);
-        size.scale(0.5);
-        assert_eq!(size, Size::new(50, 100));
-
-        let mut rect = Rect::new(100, 200, 300, 400);
-        rect.scale(0.5);
-        assert_eq!(rect, Rect::new(50, 100, 150, 200));
-
-        let mut bound = RectBound::new(100, 200, 300, 400);
-        bound.scale(0.5);
-        assert_eq!(bound, RectBound::new(50, 100, 150, 200));
+        assert_eq!(Pos::new(100, 100).scale(0.5), Pos::new(50, 50));
+        assert_eq!(Size::new(100, 100).scale(0.5), Size::new(50, 50));
+        assert_eq!(
+            Rect::new(100, 100, 100, 100).scale(0.5),
+            Rect::new(50, 50, 50, 50)
+        );
     }
 
     #[test]
     fn test_float_scale() {
-        let mut pos = Pos::new(100.0, 200.0);
-        pos.scale(0.5);
-        assert_eq!(pos, Pos::new(50.0, 100.0));
-
-        let mut size = Size::new(100.0, 200.0);
-        size.scale(0.5);
-        assert_eq!(size, Size::new(50.0, 100.0));
-
-        let mut rect = Rect::new(100.0, 200.0, 300.0, 400.0);
-        rect.scale(0.5);
-        assert_eq!(rect, Rect::new(50.0, 100.0, 150.0, 200.0));
-
-        let mut bound = RectBound::new(100.0, 200.0, 300.0, 400.0);
-        bound.scale(0.5);
-        assert_eq!(bound, RectBound::new(50.0, 100.0, 150.0, 200.0));
+        assert_eq!(Pos::new(100.0, 100.0).scale(0.5), Pos::new(50.0, 50.0));
+        assert_eq!(Size::new(100.0, 100.0).scale(0.5), Size::new(50.0, 50.0));
+        assert_eq!(
+            Rect::new(100.0, 100.0, 100.0, 100.0).scale(0.5),
+            Rect::new(50.0, 50.0, 50.0, 50.0)
+        );
     }
 }

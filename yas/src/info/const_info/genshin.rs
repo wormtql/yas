@@ -1,67 +1,6 @@
 use crate::common::RectBound;
 use super::*;
 
-pub struct WindowInfo {
-    pub shared: SharedWindowInfo,
-
-    pub sub_stat1_pos: FloatRect,
-    pub sub_stat2_pos: FloatRect,
-    pub sub_stat3_pos: FloatRect,
-    pub sub_stat4_pos: FloatRect,
-}
-
-impl WindowInfo {
-    pub fn to_scan_info(&self, h: f64, w: f64, left: i32, top: i32) -> ScanInfo {
-        let convert_rect = |rect: &Rect| {
-            let top = rect.0 / self.height * h;
-            let right = rect.1 / self.width * w;
-            let bottom = rect.2 / self.height * h;
-            let left = rect.3 / self.width * w;
-
-            RectBound {
-                left: left as i32,
-                top: top as i32,
-                right: right as i32,
-                bottom: bottom as i32,
-            }
-        };
-
-        let convert_x = |x: f64| x / self.width * w;
-
-        let convert_y = |y: f64| y / self.height * h;
-
-        ScanInfo {
-            title_position: convert_rect(&self.title_pos),
-            main_stat_name_position: convert_rect(&self.main_stat_name_pos),
-            main_stat_value_position: convert_rect(&self.main_stat_value_pos),
-            level_position: convert_rect(&self.level_pos),
-            panel_position: convert_rect(&self.panel_pos),
-            sub_stat1_position: convert_rect(&self.sub_stat1_pos),
-            sub_stat2_position: convert_rect(&self.sub_stat2_pos),
-            sub_stat3_position: convert_rect(&self.sub_stat3_pos),
-            sub_stat4_position: convert_rect(&self.sub_stat4_pos),
-            equip_position: convert_rect(&self.equip_pos),
-            art_count_position: convert_rect(&self.art_count_pos),
-            art_width: convert_x(self.art_width) as u32,
-            art_height: convert_y(self.art_height) as u32,
-            art_gap_x: convert_x(self.art_gap_x) as u32,
-            art_gap_y: convert_y(self.art_gap_y) as u32,
-            art_row: self.art_row as u32,
-            art_col: self.art_col as u32,
-            left_margin: convert_x(self.left_margin) as u32,
-            top_margin: convert_y(self.top_margin) as u32,
-            width: w as u32,
-            height: h as u32,
-            left,
-            top,
-            flag_x: convert_x(self.flag_x) as u32,
-            flag_y: convert_y(self.flag_y) as u32,
-            star_x: convert_x(self.star_x) as u32,
-            star_y: convert_y(self.star_y) as u32,
-            pool_position: convert_rect(&self.pool_pos),
-        }
-    }
-}
 
 pub const WINDOW_43_18: WindowInfo = WindowInfo {
     width: 3440.0,

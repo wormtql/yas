@@ -1,7 +1,7 @@
 use image::imageops::{overlay, resize};
 use image::{GenericImageView, GrayImage, ImageBuffer, Luma, RgbImage};
 
-use crate::common::RawImage;
+use crate::common::{RawImage, Size};
 pub type GrayImageFloat = ImageBuffer<Luma<f32>, Vec<f32>>;
 
 pub trait ImageConvExt {
@@ -144,8 +144,7 @@ pub fn crop(im: &GrayImageFloat) -> GrayImageFloat {
 }
 
 pub fn raw_to_img(im: &RawImage) -> GrayImage {
-    let width = im.w;
-    let height = im.h;
+    let (width, height) = *im.size;
     let data = &im.data;
 
     let img = ImageBuffer::from_fn(width, height, |x, y| {
@@ -166,8 +165,7 @@ pub fn raw_to_img(im: &RawImage) -> GrayImage {
 }
 
 pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
-    let width = im.w;
-    let height = im.h;
+    let (width, height) = *im.size;
     let data = &im.data;
 
     let img = ImageBuffer::from_fn(width, height, |x, y| {
@@ -253,5 +251,5 @@ pub fn image_to_raw(im: GrayImage) -> RawImage {
         }
     }
 
-    RawImage { data, w, h }
+    RawImage { data, size: Size::new(w, h) }
 }

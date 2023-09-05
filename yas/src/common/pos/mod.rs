@@ -7,38 +7,25 @@ pub use ops::*;
 pub use scale::*;
 
 #[derive(Debug, Clone, PartialEq, Default, Copy)]
-pub struct Pos<T = i32>
-{
+pub struct Pos<T = i32> {
     pub x: T,
     pub y: T,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Copy)]
-pub struct Size<T = u32>
-{
+pub struct Size<T = u32> {
     pub width: T,
     pub height: T,
 }
 
-impl<T> Size<T> {
-    pub fn area(&self) -> T
-    where
-        T: Mul<Output = T> + Copy,
-    {
-        self.width * self.height
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Default, Copy)]
-pub struct Rect<P = i32, S = u32>
-{
+pub struct Rect<P = i32, S = u32> {
     pub origin: Pos<P>,
     pub size: Size<S>,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Copy)]
-pub struct RectBound<T = i32>
-{
+pub struct RectBound<T = i32> {
     pub left: T,
     pub top: T,
     pub right: T,
@@ -55,6 +42,13 @@ impl<T> Size<T> {
     pub fn new(width: T, height: T) -> Size<T> {
         Size { width, height }
     }
+
+    pub fn area(&self) -> T
+    where
+        T: Mul<Output = T> + Copy,
+    {
+        self.width * self.height
+    }
 }
 
 impl<P, S> Rect<P, S> {
@@ -63,6 +57,28 @@ impl<P, S> Rect<P, S> {
             origin: Pos::new(x, y),
             size: Size::new(width, height),
         }
+    }
+}
+
+impl<T> Deref for Size<T>
+where
+    T: Copy,
+{
+    type Target = (T, T);
+
+    fn deref(&self) -> &Self::Target {
+        &(self.width, self.height)
+    }
+}
+
+impl<T> Deref for Pos<T>
+where
+    T: Copy,
+{
+    type Target = (T, T);
+
+    fn deref(&self) -> &Self::Target {
+        &(self.x, self.y)
     }
 }
 

@@ -5,11 +5,11 @@ use std::io::prelude::*;
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
 use crate::item::starrail_relic::{
-    RelicSetName, RelicSlot, RelicStat, RelicStatName, InternalRelic,
+    RelicSetName, RelicSlot, RelicStat, RelicStatName, StarrailRelic,
 };
 
 
-type March7thRelic = InternalRelic;
+type March7thRelic = StarrailRelic;
 
 impl RelicStatName {
     pub fn to_march7th(&self) -> String {
@@ -172,7 +172,7 @@ impl<'a> Serialize for March7thFormat<'a> {
 }
 
 impl<'a> March7thFormat<'a> {
-    pub fn new(results: &Vec<InternalRelic>) -> March7thFormat {
+    pub fn new(results: &Vec<StarrailRelic>) -> March7thFormat {
         let mut head: Vec<&March7thRelic> = Vec::new();
         let mut hands: Vec<&March7thRelic> = Vec::new();
         let mut body: Vec<&March7thRelic> = Vec::new();

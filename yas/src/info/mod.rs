@@ -1,10 +1,13 @@
 mod convert;
+use std::ops::Deref;
+
 pub use convert::*;
 
 mod const_info;
 
 mod genshin;
 mod starrail;
+pub mod ui;
 
 use crate::common::*;
 
@@ -61,7 +64,7 @@ pub type SharedWindowInfo = SharedScanInfo<WindowInfoType>;
 
 impl SharedScanInfo<f64> {
     pub fn get_radio(&self, size: Size<f64>) -> (f64, f64) {
-        (size.width / self.size.width, size.height/ self.size.height)
+        (size.width / self.size.width, size.height / self.size.height)
     }
 
     pub fn move_to(&mut self, pos: Pos<f64>) {
@@ -69,9 +72,16 @@ impl SharedScanInfo<f64> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum WindowInfo {
     StarRail(starrail::StarRailWindowInfo),
     Genshin(genshin::GenshinWindowInfo),
+}
+
+#[derive(Clone, Debug)]
+pub enum ScanInfo {
+    StarRail(starrail::StarRailScanInfo),
+    Genshin(genshin::GenshinScanInfo),
 }
 
 pub trait ScanInfoConvert {
@@ -79,31 +89,14 @@ pub trait ScanInfoConvert {
     fn from_mobile(width: u32, height: u32, left: i32, top: i32) -> Self;
 }
 
-// impl ScanInfo for SharedScanInfo {
-//     fn from_pc(width: u32, height: u32, left: i32, top: i32) -> SharedScanInfo {
-//         if height * 43 == width * 18 {
-//             WINDOW_43_18.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 16 == width * 9 {
-//             WINDOW_16_9.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 8 == width * 5 {
-//             WINDOW_8_5.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 4 == width * 3 {
-//             WINDOW_4_3.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 7 == width * 3 {
-//             WINDOW_7_3.to_scan_info(height as f64, width as f64, left, top)
-//         } else {
-//             // 不支持的分辨率
-//             panic!("不支持的分辨率");
-//         }
-//     }
+impl Deref for ScanInfo {
+    type Target = SharedScanInfo;
 
-//     fn from_mobile(width: u32, height: u32, left: i32, top: i32) -> SharedScanInfo {
-//         if (height as i32 * 8 - width as i32 * 5).abs() < 20 {
-//             // 窗口状态下的 playcover 分辨率长宽无法整除
-//             WINDOW_MAC_8_5.to_scan_info(height as f64, width as f64, left, top)
-//         } else {
-//             // 不支持的分辨率
-//             panic!("不支持的分辨率");
-//         }
-//     }
-// }
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        match self {
+            ScanInfo::StarRail(info) => &info.shared,
+            ScanInfo::Genshin(info) => &info.shared,
+        }
+    }
+}

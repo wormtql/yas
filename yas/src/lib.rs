@@ -3,7 +3,6 @@ use env_logger::Builder;
 use log::{warn, LevelFilter};
 
 pub mod item;
-pub mod capture;
 pub mod common;
 pub mod dto;
 pub mod expo;

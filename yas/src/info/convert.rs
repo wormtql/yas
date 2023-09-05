@@ -83,7 +83,7 @@ macro_rules! scan_info_convert {
         pub struct $name<T = ScanInfoType> {
             $(#[$inner])*
             $(
-                $field: $type,
+                pub $field: $type,
             )*
         }
 

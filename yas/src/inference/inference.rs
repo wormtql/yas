@@ -29,11 +29,8 @@ impl CRNNModel {
 
         let mut index_2_word: Vec<String> = Vec::new();
         let mut i = 0;
-        loop {
-            let word = match json.get(i.to_string()) {
-                Some(x) => x,
-                None => break,
-            };
+
+        while let Some(word) = json.get(i.to_string()) {
             index_2_word.push(word.as_str().unwrap().to_string());
             i += 1;
         }

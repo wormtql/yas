@@ -1,5 +1,5 @@
 use crate::info::genshin::GenshinWindowInfo;
-
+use super::ui::WindowSize;
 use super::*;
 
 pub fn get_window_info(size: WindowSize) -> &'static GenshinWindowInfo {
@@ -95,7 +95,7 @@ pub const WINDOW_16_9: GenshinWindowInfo = GenshinWindowInfo {
     //     sub_stat2_pos: Rect(427.3, 1343.0, 458.2, 1130.2),
     //     sub_stat3_pos: Rect(458.2, 1343.0, 490.9, 1130.2),
     //     sub_stat4_pos: Rect(490.9, 1343.0, 523.0, 1130.2),
-    
+
     sub_stat_pos: [
         R::new(398.1, 1343.0, 427.3, 1130.2),
         R::new(427.3, 1343.0, 458.2, 1130.2),

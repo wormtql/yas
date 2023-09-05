@@ -75,7 +75,7 @@ pub struct RelicStat {
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub struct InternalRelic {
+pub struct StarrailRelic {
     pub set_name: RelicSetName,
     pub slot: RelicSlot,
     pub star: u32,

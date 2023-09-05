@@ -13,7 +13,7 @@ use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 
 use crate::item::starrail_relic::{
-    RelicSetName, RelicSlot, RelicStat, InternalRelic,
+    RelicSetName, RelicSlot, RelicStat, StarrailRelic,
 };
 use crate::capture::{self};
 use crate::common::color::Color;
@@ -30,53 +30,9 @@ use crate::common::utils::mac_scroll;
 
 use super::YasScannerConfig;
 
-pub struct YasScanner {
-    model: Arc<CRNNModel>,
-    enigo: Enigo,
-
-    info: ScanInfoStarRail,
-    config: YasScannerConfig,
-
-    row: u32,
-    col: u32,
-
-    pool: f64,
-
-    initial_color: Color,
-
-    // for scrolls
-    scrolled_rows: u32,
-    avg_scroll_one_row: f64,
-
-    avg_switch_time: f64,
-    scanned_count: u32,
-
-    is_cloud: bool,
-}
-
-enum ScrollResult {
-    TimeLimitExceeded,
-    Interrupt,
-    Success,
-    Skip,
-}
-
-#[derive(Debug)]
-pub struct YasScanResult {
-    name: String,
-    main_stat_name: String,
-    main_stat_value: String,
-    sub_stat_1: String,
-    sub_stat_2: String,
-    sub_stat_3: String,
-    sub_stat_4: String,
-    level: String,
-    equip: String,
-    star: u32,
-}
 
 impl YasScanResult {
-    pub fn to_internal_relic(&self) -> Option<InternalRelic> {
+    pub fn to_internal_relic(&self) -> Option<StarrailRelic> {
         let set_name = RelicSetName::from_zh_cn(&self.name)?;
         let slot = RelicSlot::from_zh_cn(&self.name)?;
         let star = self.star;
@@ -100,7 +56,7 @@ impl YasScanResult {
 
         let equip = None;
 
-        let relic = InternalRelic {
+        let relic = StarrailRelic {
             set_name,
             slot,
             star,
@@ -125,35 +81,6 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
     }
     // pool /= len as f64;
     pool
-}
-
-impl YasScanner {
-    pub fn new(info: ScanInfoStarRail, is_cloud: bool, model: &[u8], content: String) -> YasScanner {
-        let row = info.art_row;
-        let col = info.art_col;
-
-        let model = CRNNModel::new(model, content).expect("Err");
-
-        YasScanner {
-            enigo: Enigo::new(),
-            model: Arc::new(model),
-            info,
-            config: YasScannerConfig::parse(),
-
-            row,
-            col,
-
-            pool: -1.0,
-            initial_color: Color::new(),
-            scrolled_rows: 0,
-            avg_scroll_one_row: 0.0,
-
-            avg_switch_time: 0.0,
-            scanned_count: 0,
-
-            is_cloud,
-        }
-    }
 }
 
 impl YasScanner {
@@ -375,7 +302,7 @@ impl YasScanner {
         ScrollResult::Success
     }
 
-    pub fn start(&mut self) -> Vec<InternalRelic> {
+    pub fn start(&mut self) -> Vec<StarrailRelic> {
         let count = match self.get_relic_count() {
             Ok(v) => v,
             Err(_) => 1500,
@@ -401,7 +328,7 @@ impl YasScanner {
         let model = self.model.clone();
 
         let handle = thread::spawn(move || {
-            let mut results: Vec<InternalRelic> = Vec::new();
+            let mut results: Vec<StarrailRelic> = Vec::new();
             let mut error_count = 0;
             let mut dup_count = 0;
             let mut hash = HashSet::new();
@@ -635,7 +562,7 @@ impl YasScanner {
         tx.send(None).unwrap();
 
         info!("扫描结束，等待识别线程结束，请勿关闭程序");
-        let results: Vec<InternalRelic> = handle.join().unwrap();
+        let results: Vec<StarrailRelic> = handle.join().unwrap();
         info!("count: {}", results.len());
         results
     }

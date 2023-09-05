@@ -1,4 +1,10 @@
+use std::sync::Arc;
+use crate::info::*;
+use crate::common::color::Color;
+use crate::inference::inference::CRNNModel;
+
 use clap::Parser;
+use enigo::Enigo;
 
 pub mod genshin;
 pub mod starrail;
@@ -45,4 +51,74 @@ pub struct YasScannerConfig {
     /// TODO
     #[arg(short, long, default_value_t = 300)]
     cloud_wait_switch_item: u32,
+}
+
+enum ScrollResult {
+    TimeLimitExceeded,
+    Interrupt,
+    Success,
+    Skip,
+}
+
+
+#[derive(Debug)]
+pub struct ScanResult {
+    name: String,
+    main_stat_name: String,
+    main_stat_value: String,
+    sub_stat: [String; 4],
+    level: String,
+    equip: String,
+    star: u32,
+}
+
+
+pub struct YasScanner {
+    model: Arc<CRNNModel>,
+    enigo: Enigo,
+
+    info: ScanInfo,
+    config: YasScannerConfig,
+
+    row: usize,
+    col: usize,
+
+    pool: f64,
+
+    initial_color: Color,
+
+    // for scrolls
+    scrolled_rows: u32,
+    avg_scroll_one_row: f64,
+
+    avg_switch_time: f64,
+    scanned_count: u32,
+
+    is_cloud: bool,
+}
+
+impl YasScanner {
+    pub fn new(info: ScanInfo, is_cloud: bool, model: &[u8], content: String) -> Self {
+        let model = CRNNModel::new(model, content).expect("Err");
+
+        YasScanner {
+            enigo: Enigo::new(),
+            model: Arc::new(model),
+            info,
+            config: YasScannerConfig::parse(),
+
+            row: info.item_row,
+            col: info.item_col,
+
+            pool: -1.0,
+            initial_color: Color::default(),
+            scrolled_rows: 0,
+            avg_scroll_one_row: 0.0,
+
+            avg_switch_time: 0.0,
+            scanned_count: 0,
+
+            is_cloud,
+        }
+    }
 }

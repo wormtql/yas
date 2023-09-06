@@ -1,4 +1,5 @@
 #![allow(clippy::missing_safety_doc)]
+#![allow(clippy::single_match)]
 
 use clap::Parser;
 use env_logger::Builder;
@@ -34,14 +35,16 @@ pub fn init_env(game: Game) {
     }
 }
 
-pub fn get_scanner(model: &[u8], content: &str) -> Scanner {
-    let config = YasScannerConfig::parse();
+pub fn get_config() -> YasScannerConfig {
+    YasScannerConfig::parse()
+}
 
+pub fn get_scanner(model: &[u8], content: &str, config: &YasScannerConfig) -> Scanner {
     let game_info = core::ui::get_game_info();
     let window_info = core::get_window_info(game_info.resolution);
     let scan_info = window_info.get_scan_info(game_info.window.size);
 
-    Scanner::new(scan_info, config, game_info, model, content)
+    Scanner::new(scan_info, config.clone(), game_info, model, content)
 }
 
 pub fn map_results_to<'a, T>(results: &'a [ScanResult]) -> Vec<T>
@@ -51,7 +54,6 @@ where
     results
         .iter()
         .map(|r| T::try_from(r))
-        .filter(|r| r.is_ok())
-        .map(|r| r.unwrap())
+        .filter_map(|r| r.ok())
         .collect::<Vec<_>>()
 }

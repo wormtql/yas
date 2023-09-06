@@ -5,7 +5,7 @@ use crate::export::ExportFormat;
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Yas Scanner Config
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
 pub struct YasScannerConfig {
     /// Max rows to scan
@@ -51,6 +51,10 @@ pub struct YasScannerConfig {
     /// TODO
     #[arg(value_enum, default_value_t = ExportFormat::None)]
     pub export_format: ExportFormat,
+
+    /// Output directory
+    #[arg(short, long, default_value = ".")]
+    pub output_dir: String,
 }
 
 // App::new("YAS - 原神圣遗物导出器")

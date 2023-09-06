@@ -13,6 +13,7 @@ license = "GPL-2.0-or-later"
 [dependencies]
 yas = { path = "../yas",  package="yas_scanner_lib" }
 anyhow = "1.0"
+log = "0.4"
 
 [build-dependencies]
 winres = "0.1"

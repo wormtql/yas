@@ -2838,6 +2838,7 @@ name = "yas_scanner_genshin"
 version = "0.1.14"
 dependencies = [
  "anyhow",
+ "log",
  "winres",
  "yas_scanner_lib",
 ]
@@ -2878,6 +2879,7 @@ name = "yas_scanner_starrail"
 version = "0.1.14"
 dependencies = [
  "anyhow",
+ "log",
  "winres",
  "yas_scanner_lib",
 ]

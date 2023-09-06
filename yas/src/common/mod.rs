@@ -1,4 +1,3 @@
-pub mod buffer;
 pub mod capture;
 pub mod character_name;
 pub mod color;

@@ -3,6 +3,9 @@ use log::error;
 use regex::Regex;
 use std::hash::{Hash, Hasher};
 use strum_macros::Display;
+use tract_onnx::prelude::tract_itertools::Itertools;
+
+use crate::{common::character_name::CHARACTER_NAMES, core::ScanResult};
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum ArtifactStatName {
@@ -255,6 +258,61 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         None
     } else {
         Some(String::from(all_artifact_chs[min_index]))
+    }
+}
+
+impl Into<Option<GenshinArtifact>> for ScanResult {
+    fn into(self) -> Option<GenshinArtifact> {
+        let set_name = ArtifactSetName::from_zh_cn(&self.name)?;
+        let slot = ArtifactSlot::from_zh_cn(&self.name)?;
+        let star = self.star;
+
+        if !self.level.contains('+') {
+            return None;
+        }
+
+        let level = self
+            .level
+            .chars()
+            .skip(1)
+            .collect::<String>()
+            .parse::<u32>()
+            .ok()?;
+
+        let main_stat = ArtifactStat::from_zh_cn_raw(
+            (self.main_stat_name.clone() + "+" + self.main_stat_value.as_str()).as_str(),
+        )?;
+
+        let sub1 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[0]);
+        let sub2 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[1]);
+        let sub3 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[2]);
+        let sub4 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[3]);
+
+        let equip = if self.equip.ends_with("已装备") {
+            let chars = self.equip.chars().collect_vec();
+            let equip_name = chars[..chars.len() - 3].iter().collect::<String>();
+
+            if CHARACTER_NAMES.contains(equip_name.as_str()) {
+                Some(equip_name)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        Some(GenshinArtifact {
+            set_name,
+            slot,
+            star,
+            level,
+            main_stat,
+            sub_stat_1: sub1,
+            sub_stat_2: sub2,
+            sub_stat_3: sub3,
+            sub_stat_4: sub4,
+            equip,
+        })
     }
 }
 

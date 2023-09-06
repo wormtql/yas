@@ -2,6 +2,7 @@ use super::*;
 mod const_info;
 mod relic;
 mod scanner;
+pub use const_info::get_window_info;
 pub use relic::*;
 
 #[derive(Clone, Debug)]

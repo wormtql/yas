@@ -25,7 +25,6 @@ pub fn sleep(ms: u32) {
 }
 
 pub fn read_file_to_string(path: String) -> String {
-    
     fs::read_to_string(path).unwrap()
 }
 

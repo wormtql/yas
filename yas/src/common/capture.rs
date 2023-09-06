@@ -4,7 +4,6 @@ use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Trian
 
 use anyhow::Result;
 
-
 pub trait Capturable<T> {
     fn capture(&self) -> Result<T>;
 }

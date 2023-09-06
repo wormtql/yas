@@ -3,6 +3,7 @@ mod artifact;
 mod const_info;
 mod scanner;
 pub use artifact::*;
+pub use const_info::get_window_info;
 
 #[derive(Clone, Debug)]
 pub struct GenshinScanInfo<T = ScanInfoType> {

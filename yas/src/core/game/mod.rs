@@ -1,3 +1,5 @@
+use std::fmt::*;
+
 use super::*;
 
 pub mod genshin;
@@ -39,11 +41,28 @@ impl Deref for ScanInfo {
 
 #[derive(Debug)]
 pub struct ScanResult {
-    name: String,
-    main_stat_name: String,
-    main_stat_value: String,
-    sub_stat: [String; 4],
-    level: String,
-    equip: String,
-    star: u32,
+    pub name: String,
+    pub main_stat_name: String,
+    pub main_stat_value: String,
+    pub sub_stat: [String; 4],
+    pub level: String,
+    pub equip: String,
+    pub star: u32,
+}
+
+#[derive(Debug)]
+pub enum Game {
+    Genshin,
+    StarRail,
+    Unknown,
+}
+
+impl Display for Game {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Game::Genshin => write!(f, "原神"),
+            Game::StarRail => write!(f, "崩坏：星穹铁道"),
+            Game::Unknown => write!(f, "未知"),
+        }
+    }
 }

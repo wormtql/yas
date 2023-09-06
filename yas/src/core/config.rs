@@ -2,6 +2,8 @@ use clap::{command, Parser};
 
 use crate::export::ExportFormat;
 
+pub static VERSION: &str = env!("CARGO_PKG_VERSION");
+
 /// Yas Scanner Config
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]

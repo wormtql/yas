@@ -1,6 +1,8 @@
+#![allow(clippy::missing_safety_doc)]
+
+use clap::Parser;
 use env_logger::Builder;
 use once_cell::sync::OnceCell;
-use clap::Parser;
 
 #[macro_use]
 extern crate log;
@@ -13,11 +15,7 @@ pub mod export;
 
 use common::utils;
 
-pub use core::{
-    Game,
-    Scanner,
-    YasScannerConfig
-};
+pub use core::{Game, Scanner, YasScannerConfig};
 
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
@@ -36,9 +34,9 @@ pub fn init_env(game: Game) {
     }
 }
 
-pub fn get_scanner(model: &[u8], content: String) -> Scanner {
+pub fn get_scanner(model: &[u8], content: &str) -> Scanner {
     let config = YasScannerConfig::parse();
-    
+
     let game_info = core::ui::get_game_info();
     let window_info = core::get_window_info(game_info.resolution);
     let scan_info = window_info.get_scan_info(game_info.window.size);

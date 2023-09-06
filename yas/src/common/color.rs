@@ -1,5 +1,4 @@
-#[derive(Debug, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Color(pub u8, pub u8, pub u8);
 
 impl Color {
@@ -16,5 +15,3 @@ impl Color {
         Color(r, g, b)
     }
 }
-
-

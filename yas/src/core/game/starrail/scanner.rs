@@ -1,6 +1,6 @@
-use anyhow::Result;
-use crate::core::*;
 use crate::core::scanner::*;
+use crate::core::*;
+use anyhow::Result;
 
 pub struct YasStarRailScanner(pub ScannerCore);
 

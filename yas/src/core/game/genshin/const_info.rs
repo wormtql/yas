@@ -222,7 +222,6 @@ pub const WINDOW_MAC_8_5: GenshinWindowInfo = GenshinWindowInfo {
     //     sub_stat2_pos: Rect(417. - 28., 1050., 446. - 28., 791.),
     //     sub_stat3_pos: Rect(446. - 28., 1050., 475. - 28., 791.),
     //     sub_stat4_pos: Rect(475. - 28., 1050., 504. - 28., 791.),
-
     sub_stat_pos: [
         R::new(387.0 - 28.0, 1050.0, 417.0 - 28.0, 791.0),
         R::new(417.0 - 28.0, 1050.0, 446.0 - 28.0, 791.0),
@@ -253,7 +252,6 @@ pub const WINDOW_MAC_8_5: GenshinWindowInfo = GenshinWindowInfo {
     //     star_x: 1060.,
     //     star_y: 140. - 28.,
     //     pool_pos: Rect(390. - 28., 1010., 504. - 28., 792.), //检测平均颜色是否相同，判断圣遗物有没有切换
-
     shared: SharedScanInfo {
         size: S::new(1164.0, 755.0 - 28.),
         origin: P::new(0.0, 0.0),
@@ -278,6 +276,6 @@ pub const WINDOW_MAC_8_5: GenshinWindowInfo = GenshinWindowInfo {
         flag: P::new(170.0, 223.0 - 28.0),
         star: P::new(1060.0, 140.0 - 28.0),
 
-        pool_pos: R::new(390.0 - 28.0, 1010.0, 504.0 - 28.0, 792.0)
-    }
+        pool_pos: R::new(390.0 - 28.0, 1010.0, 504.0 - 28.0, 792.0),
+    },
 };

@@ -1,4 +1,7 @@
-use super::{scanner::{ScannerCore, ItemScanner}, *};
+use super::{
+    scanner::{ItemScanner, ScannerCore},
+    *,
+};
 use std::{fmt::*, ops::DerefMut};
 
 pub mod genshin;
@@ -56,7 +59,6 @@ pub fn parse_level(str_level: &str) -> u32 {
     str_level[0..pos.unwrap()].parse::<u32>().unwrap()
 }
 
-
 impl WindowInfo {
     pub fn get_scan_info(&self, size: Size) -> ScanInfo {
         let float_size = Size::<f64> {
@@ -77,7 +79,7 @@ impl Scanner {
         config: YasScannerConfig,
         game_info: GameInfo,
         model: &[u8],
-        content: String,
+        content: &str,
     ) -> Self {
         let core = ScannerCore::new(scan_info, config, game_info, model, content);
 
@@ -155,7 +157,6 @@ impl Deref for Scanner {
         }
     }
 }
-
 
 impl DerefMut for Scanner {
     #[inline]

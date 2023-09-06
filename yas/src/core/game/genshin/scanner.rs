@@ -42,17 +42,15 @@ impl ItemScanner for YasGenshinScanner {
             let mut consecutive_dup_count = 0;
             let panel_origin = Rect::<u32, u32>::from(info.panel_pos).origin;
 
-            let mut cnt = 0;
             if is_dump_mode {
                 fs::create_dir("dumps").unwrap();
             }
 
-            for i in rx {
-                if i.is_none() {
-                    break;
-                }
-
-                let (capture, star) = i.unwrap();
+            for (cnt, i) in rx.into_iter().enumerate() {
+                let (capture, star) = match i {
+                    Some((capture, star)) => (capture, star),
+                    None => break,
+                };
 
                 //info!("raw capture image: width = {}, height = {}", capture.width(), capture.height());
                 let _now = SystemTime::now();
@@ -60,7 +58,7 @@ impl ItemScanner for YasGenshinScanner {
                 let model_inference = |pos: &RectBound<u32>,
                                        name: &str,
                                        captured_img: &RgbImage,
-                                       cnt: i32|
+                                       cnt: usize|
                  -> String {
                     let rect = &Rect::<u32, u32>::from(*pos) - &panel_origin;
                     let raw_img = to_gray(captured_img)
@@ -120,8 +118,6 @@ impl ItemScanner for YasGenshinScanner {
 
                 let str_level = model_inference(&info.level_pos, "level", &capture, cnt);
                 let str_equip = model_inference(&info.item_equip_pos, "equip", &capture, cnt);
-
-                cnt += 1;
 
                 // let predict_time = now.elapsed().unwrap().as_millis();
                 // println!("predict time: {}ms", predict_time);
@@ -258,7 +254,6 @@ impl ItemScanner for YasGenshinScanner {
         Ok(results)
     }
 }
-
 
 impl Deref for YasGenshinScanner {
     type Target = ScannerCore;

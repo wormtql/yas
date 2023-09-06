@@ -56,9 +56,13 @@ impl ScannerCore {
         config: YasScannerConfig,
         game_info: GameInfo,
         model: &[u8],
-        content: String,
+        content: &str,
     ) -> Self {
-        let model = CRNNModel::new(model, content).expect("Failed to load model");
+        let model = match CRNNModel::new(model, content) {
+            Ok(v) => v,
+            Err(e) => crate::error_and_quit!("模型加载失败, 错误信息：{}", e),
+        };
+
         let row = scan_info.item_row;
         let col = scan_info.item_col;
 

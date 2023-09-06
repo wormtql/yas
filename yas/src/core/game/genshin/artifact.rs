@@ -1,6 +1,7 @@
 use edit_distance;
 use log::error;
 use regex::Regex;
+use std::cmp::Ordering::*;
 use std::hash::{Hash, Hasher};
 use strum_macros::Display;
 use tract_onnx::prelude::tract_itertools::Itertools;
@@ -245,12 +246,21 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
     let mut same_flag = false;
     for (i, &val) in all_artifact_chs.iter().enumerate().skip(1) {
         let dis = edit_distance::edit_distance(val, raw);
-        if dis < min_dis {
-            min_dis = dis;
-            min_index = i;
-            same_flag = false;
-        } else if dis == min_dis {
-            same_flag = true;
+        // if dis < min_dis {
+        //     min_dis = dis;
+        //     min_index = i;
+        //     same_flag = false;
+        // } else if dis == min_dis {
+        //     same_flag = true;
+        // }
+        match dis.cmp(&min_dis) {
+            Less => {
+                min_dis = dis;
+                min_index = i;
+                same_flag = false;
+            },
+            Equal => same_flag = true,
+            Greater => {},
         }
     }
 
@@ -261,23 +271,26 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
     }
 }
 
-impl Into<Option<GenshinArtifact>> for ScanResult {
-    fn into(self) -> Option<GenshinArtifact> {
-        let set_name = ArtifactSetName::from_zh_cn(&self.name)?;
-        let slot = ArtifactSlot::from_zh_cn(&self.name)?;
-        let star = self.star;
+impl TryFrom<ScanResult> for GenshinArtifact {
+    type Error = ();
+
+    fn try_from(value: ScanResult) -> Result<Self, Self::Error> {
+        let set_name = ArtifactSetName::from_zh_cn(&value.name).ok_or(())?;
+        let slot = ArtifactSlot::from_zh_cn(&value.name).ok_or(())?;
+        let star = value.star;
 
         let main_stat = ArtifactStat::from_zh_cn_raw(
-            (self.main_stat_name.clone() + "+" + self.main_stat_value.as_str()).as_str(),
-        )?;
+            (value.main_stat_name.clone() + "+" + value.main_stat_value.as_str()).as_str(),
+        )
+        .ok_or(())?;
 
-        let sub1 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[0]);
-        let sub2 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[1]);
-        let sub3 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[2]);
-        let sub4 = ArtifactStat::from_zh_cn_raw(&self.sub_stat[3]);
+        let sub1 = ArtifactStat::from_zh_cn_raw(&value.sub_stat[0]);
+        let sub2 = ArtifactStat::from_zh_cn_raw(&value.sub_stat[1]);
+        let sub3 = ArtifactStat::from_zh_cn_raw(&value.sub_stat[2]);
+        let sub4 = ArtifactStat::from_zh_cn_raw(&value.sub_stat[3]);
 
-        let equip = if self.equip.ends_with("已装备") {
-            let chars = self.equip.chars().collect_vec();
+        let equip = if value.equip.ends_with("已装备") {
+            let chars = value.equip.chars().collect_vec();
             let equip_name = chars[..chars.len() - 3].iter().collect::<String>();
 
             if CHARACTER_NAMES.contains(equip_name.as_str()) {
@@ -289,11 +302,11 @@ impl Into<Option<GenshinArtifact>> for ScanResult {
             None
         };
 
-        Some(GenshinArtifact {
+        Ok(GenshinArtifact {
             set_name,
             slot,
             star,
-            level: self.level,
+            level: value.level,
             main_stat,
             sub_stat_1: sub1,
             sub_stat_2: sub2,

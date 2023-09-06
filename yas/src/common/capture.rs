@@ -62,7 +62,8 @@ pub fn get_color(pos: Pos<u32>) -> Result<Color> {
     let image: RgbImage = Rect {
         origin: pos,
         size: UNIT_SIZE,
-    }.capture()?;
+    }
+    .capture()?;
 
     let pixel = image.get_pixel(0, 0);
     Ok(Color::new(pixel[0], pixel[1], pixel[2]))

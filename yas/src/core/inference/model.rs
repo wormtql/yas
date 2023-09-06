@@ -15,30 +15,29 @@ pub struct CRNNModel {
 }
 
 impl CRNNModel {
-    pub fn new(model: &[u8], content: String) -> Result<CRNNModel> {
+    pub fn new(model: &[u8], content: &str) -> Result<CRNNModel> {
         let model = tract_onnx::onnx()
             .model_for_read(&mut model.as_bytes())?
-            .with_input_fact(
-                0,
-                InferenceFact::dt_shape(f32::datum_type(), tvec!(1, 1, 32, 384)),
-            )?
+            .with_input_fact(0, f32::fact([1, 1, 32, 384]).into())?
             .into_optimized()?
             .into_runnable()?;
 
-        let json = serde_json::from_str::<Value>(content.as_str())?;
+        let json = serde_json::from_str::<Value>(content)?;
 
-        let mut index_2_word: Vec<String> = Vec::new();
-        let mut i = 0;
+        let mut index_2_word = json
+            .as_object()
+            .unwrap()
+            .iter()
+            .map(|(k, v)| (k.parse::<usize>().unwrap(), v.as_str().unwrap().to_string()))
+            .collect::<Vec<(usize, String)>>();
 
-        while let Some(word) = json.get(i.to_string()) {
-            index_2_word.push(word.as_str().unwrap().to_string());
-            i += 1;
-        }
+        index_2_word.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+
+        let index_2_word = index_2_word.into_iter().map(|(_, v)| v).collect();
 
         Ok(CRNNModel {
             model,
             index_2_word,
-
             avg_inference_time: 0.0,
         })
     }

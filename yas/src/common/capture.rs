@@ -1,5 +1,5 @@
 use super::{color::Color, *};
-use crate::core::inference::pre_process::{pre_process, to_gray, GrayImageFloat};
+use crate::core::inference::{pre_process, to_gray, GrayImageFloat};
 use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, RgbImage};
 
 use anyhow::Result;
@@ -27,8 +27,8 @@ impl Capturable<RgbImage> for Rect {
         let screen = screenshots::Screen::all()?[0];
         let mut rgb_img: RgbImage = screen
             .capture_area(
-                self.origin.x,
-                self.origin.y,
+                self.origin.x as i32,
+                self.origin.y as i32,
                 self.size.width,
                 self.size.height,
             )?
@@ -58,12 +58,11 @@ const UNIT_SIZE: Size = Size {
     height: 1,
 };
 
-pub fn get_color(pos: Pos) -> Result<Color> {
+pub fn get_color(pos: Pos<u32>) -> Result<Color> {
     let image: RgbImage = Rect {
         origin: pos,
         size: UNIT_SIZE,
-    }
-    .capture()?;
+    }.capture()?;
 
     let pixel = image.get_pixel(0, 0);
     Ok(Color::new(pixel[0], pixel[1], pixel[2]))

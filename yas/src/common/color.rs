@@ -1,4 +1,5 @@
 #[derive(Debug, PartialEq)]
+#[derive(Default)]
 pub struct Color(pub u8, pub u8, pub u8);
 
 impl Color {
@@ -16,8 +17,4 @@ impl Color {
     }
 }
 
-impl Default for Color {
-    fn default() -> Self {
-        Color(0, 0, 0)
-    }
-}
+

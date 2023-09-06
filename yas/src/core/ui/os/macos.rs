@@ -2,7 +2,7 @@ use crate::{common::utils::*, core::ui::Resolution};
 
 use super::GameInfo;
 
-pub fn get_game_window() -> GameInfo {
+pub fn get_game_info() -> GameInfo {
     let (pid, ui) = get_pid_and_ui();
 
     let (rect, window_title) = unsafe { find_window_by_pid(pid).unwrap() };

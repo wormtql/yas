@@ -1,8 +1,8 @@
 use super::*;
-use std::ops::{Add, AddAssign};
+use std::ops::*;
 
-macro_rules! impl_add {
-    ( $i:ty, $u:ty ) => {
+macro_rules! impl_ops {
+    ( $i:ty ) => {
         impl<'a, 'b> Add<&'b Pos<$i>> for &'a Pos<$i> {
             type Output = Pos<$i>;
 
@@ -14,13 +14,13 @@ macro_rules! impl_add {
             }
         }
 
-        impl<'a, 'b> Add<&'b Pos<$i>> for &'a Rect<$i, $u> {
-            type Output = Rect<$i, $u>;
+        impl<'a, 'b> Sub<&'b Pos<$i>> for &'a Pos<$i> {
+            type Output = Pos<$i>;
 
-            fn add(self, rhs: &Pos<$i>) -> Rect<$i, $u> {
-                Rect {
-                    origin: &self.origin + rhs,
-                    size: self.size,
+            fn sub(self, rhs: &Pos<$i>) -> Pos<$i> {
+                Pos {
+                    x: self.x - rhs.x,
+                    y: self.y - rhs.y,
                 }
             }
         }
@@ -38,6 +38,19 @@ macro_rules! impl_add {
             }
         }
 
+        impl<'a, 'b> Sub<&'b Pos<$i>> for &'a RectBound<$i> {
+            type Output = RectBound<$i>;
+
+            fn sub(self, rhs: &Pos<$i>) -> RectBound<$i> {
+                RectBound {
+                    left: self.left - rhs.x,
+                    top: self.top - rhs.y,
+                    right: self.right - rhs.x,
+                    bottom: self.bottom - rhs.y,
+                }
+            }
+        }
+
         impl ops::AddAssign<Pos<$i>> for Pos<$i> {
             fn add_assign(&mut self, rhs: Pos<$i>) {
                 self.x += rhs.x;
@@ -45,9 +58,10 @@ macro_rules! impl_add {
             }
         }
 
-        impl ops::AddAssign<Pos<$i>> for Rect<$i, $u> {
-            fn add_assign(&mut self, rhs: Pos<$i>) {
-                self.origin += rhs;
+        impl ops::SubAssign<Pos<$i>> for Pos<$i> {
+            fn sub_assign(&mut self, rhs: Pos<$i>) {
+                self.x -= rhs.x;
+                self.y -= rhs.y;
             }
         }
 
@@ -59,12 +73,62 @@ macro_rules! impl_add {
                 self.bottom += rhs.y;
             }
         }
+
+        impl ops::SubAssign<Pos<$i>> for RectBound<$i> {
+            fn sub_assign(&mut self, rhs: Pos<$i>) {
+                self.left -= rhs.x;
+                self.top -= rhs.y;
+                self.right -= rhs.x;
+                self.bottom -= rhs.y;
+            }
+        }
     };
 }
 
-impl_add!(i32, u32);
-impl_add!(f32, f32);
-impl_add!(f64, f64);
+macro_rules! impl_rect_ops {
+    ( $i:ty, $u:ty ) => {
+        impl<'a, 'b> Add<&'b Pos<$i>> for &'a Rect<$i, $u> {
+            type Output = Rect<$i, $u>;
+
+            fn add(self, rhs: &Pos<$i>) -> Rect<$i, $u> {
+                Rect {
+                    origin: &self.origin + rhs,
+                    size: self.size,
+                }
+            }
+        }
+
+        impl<'a, 'b> Sub<&'b Pos<$i>> for &'a Rect<$i, $u> {
+            type Output = Rect<$i, $u>;
+
+            fn sub(self, rhs: &Pos<$i>) -> Rect<$i, $u> {
+                Rect {
+                    origin: &self.origin - rhs,
+                    size: self.size,
+                }
+            }
+        }
+
+        impl ops::AddAssign<Pos<$i>> for Rect<$i, $u> {
+            fn add_assign(&mut self, rhs: Pos<$i>) {
+                self.origin += rhs;
+            }
+        }
+
+        impl ops::SubAssign<Pos<$i>> for Rect<$i, $u> {
+            fn sub_assign(&mut self, rhs: Pos<$i>) {
+                self.origin -= rhs;
+            }
+        }
+    };
+}
+
+impl_ops!(i32);
+impl_ops!(u32);
+impl_ops!(f32);
+impl_ops!(f64);
+impl_rect_ops!(i32, u32);
+impl_rect_ops!(u32, u32);
 
 #[cfg(test)]
 mod test {

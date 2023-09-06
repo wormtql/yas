@@ -4,12 +4,12 @@ pub mod color;
 pub mod pos;
 pub mod utils;
 
-use crate::core::inference::pre_process::{raw_to_img, uint8_raw_to_img};
+use crate::core::inference::{raw_to_img, uint8_raw_to_img};
 use image::{GrayImage, ImageBuffer};
 pub use pos::*;
 use serde::Deserialize;
 
-pub enum Ui {
+pub enum UI {
     Desktop,
     Mobile,
 }
@@ -33,6 +33,7 @@ pub enum ScrollResult {
     TimeLimitExceeded,
     Interrupt,
     Success,
+    Failed,
     Skip,
 }
 

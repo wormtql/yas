@@ -227,16 +227,6 @@ impl Into<Option<StarrailRelic>> for ScanResult {
         let set_name = RelicSetName::from_zh_cn(&self.name)?;
         let slot = RelicSlot::from_zh_cn(&self.name)?;
         let star = self.star;
-        if !self.level.contains("+") {
-            return None;
-        }
-        let level = self
-            .level
-            .chars()
-            .skip(1)
-            .collect::<String>()
-            .parse::<u32>()
-            .ok()?;
 
         let main_stat = RelicStat::from_zh_cn_raw(
             (self.main_stat_name.clone() + "+" + self.main_stat_value.as_str()).as_str(),
@@ -252,7 +242,7 @@ impl Into<Option<StarrailRelic>> for ScanResult {
             set_name,
             slot,
             star,
-            level,
+            level: self.level,
             main_stat,
             sub_stat_1: sub1,
             sub_stat_2: sub2,

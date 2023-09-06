@@ -41,7 +41,7 @@ fn get_window() -> (HWND, bool) {
     window_not_found()
 }
 
-pub fn get_game_window() -> GameInfo {
+pub fn get_game_info() -> GameInfo {
     use winapi::um::winuser::{SetForegroundWindow, ShowWindow, SW_RESTORE};
 
     utils::set_dpi_awareness();

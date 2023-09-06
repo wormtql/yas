@@ -148,7 +148,7 @@ pub struct MingyuLabFormat<'a> {
 }
 
 impl<'a> MingyuLabFormat<'a> {
-    pub fn new(results: &'a Vec<GenshinArtifact>) -> MingyuLabFormat {
+    pub fn new(results: &'a [GenshinArtifact]) -> MingyuLabFormat {
         let artifacts: Vec<MingyuLabArtifact<'a>> = results
             .iter()
             .filter(|artifact| {

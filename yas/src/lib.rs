@@ -38,8 +38,8 @@ pub fn init_env(game: Game) {
 
 pub fn get_scanner(model: &[u8], content: String) -> Scanner {
     let config = YasScannerConfig::parse();
-    let game_info = core::ui::get_game_window();
-
+    
+    let game_info = core::ui::get_game_info();
     let window_info = core::get_window_info(game_info.resolution);
     let scan_info = window_info.get_scan_info(game_info.window.size);
 

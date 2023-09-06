@@ -167,7 +167,7 @@ impl<'a> Serialize for March7thFormat<'a> {
 }
 
 impl<'a> March7thFormat<'a> {
-    pub fn new(results: &Vec<StarrailRelic>) -> March7thFormat {
+    pub fn new(results: &[StarrailRelic]) -> March7thFormat {
         let mut head: Vec<&March7thRelic> = Vec::new();
         let mut hands: Vec<&March7thRelic> = Vec::new();
         let mut body: Vec<&March7thRelic> = Vec::new();
@@ -205,9 +205,8 @@ impl<'a> March7thFormat<'a> {
         };
         let s = serde_json::to_string(&self).unwrap();
 
-        match file.write_all(s.as_bytes()) {
-            Err(why) => panic!("couldn't write to {}: {}", path, why),
-            _ => {},
+        if let Err(why) = file.write_all(s.as_bytes()) {
+            panic!("couldn't write to {}: {}", path, why)
         }
     }
 }

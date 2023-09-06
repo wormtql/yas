@@ -45,7 +45,7 @@ pub fn get_titlebar_height() -> f64 {
     unsafe { ns_size.height - ns_window.contentRectForFrameRect_(ns_rect).size.height }
 }
 
-pub fn get_pid_and_ui() -> (i32, Ui) {
+pub fn get_pid_and_ui() -> (i32, UI) {
     let pid_str_playcover = unsafe {
         String::from_utf8_unchecked(
             std::process::Command::new("sh")
@@ -69,9 +69,9 @@ pub fn get_pid_and_ui() -> (i32, Ui) {
     };
 
     match pid_str_playcover.trim().parse::<i32>() {
-        Ok(pid) => (pid, Ui::Mobile),
+        Ok(pid) => (pid, UI::Mobile),
         Err(_) => match pid_str_genshin_wine.trim().parse::<i32>() {
-            Ok(pid) => (pid, Ui::Desktop),
+            Ok(pid) => (pid, UI::Desktop),
             Err(_) => panic!("No genshin program found"),
         },
     }
@@ -139,7 +139,7 @@ pub unsafe fn find_window_by_pid(pid: i32) -> Result<(Rect, String), String> {
             if cg_rect.size.height > 200. {
                 mrect = if cg_rect.origin.y > 0. {
                     // Window Mode
-                    Rect::from(cg_rect).with_titlebar(get_titlebar_height() as i32)
+                    Rect::from(cg_rect).with_titlebar(get_titlebar_height() as u32)
                 } else {
                     Rect::from(cg_rect)
                 };

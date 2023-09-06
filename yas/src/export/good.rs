@@ -170,7 +170,7 @@ pub struct GOODFormat<'a> {
 }
 
 impl<'a> GOODFormat<'a> {
-    pub fn new(results: &'a Vec<GenshinArtifact>) -> GOODFormat {
+    pub fn new(results: &'a [GenshinArtifact]) -> GOODFormat {
         let artifacts: Vec<GOODArtifact<'a>> = results
             .iter()
             .map(|artifact| GOODArtifact { artifact })
@@ -189,9 +189,9 @@ impl<'a> GOODFormat<'a> {
             Ok(file) => file,
         };
         let s = serde_json::to_string(&self).unwrap();
-        match file.write_all(s.as_bytes()) {
-            Err(why) => panic!("couldn't write to {}: {}", path, why),
-            _ => {},
+
+        if let Err(why) = file.write_all(s.as_bytes()) {
+            panic!("couldn't write to {}: {}", path, why)
         }
     }
 }

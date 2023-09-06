@@ -6,7 +6,7 @@ pub struct GameInfo {
     pub window: Rect,
     pub resolution: Resolution,
     pub is_cloud: bool,
-    pub ui: Ui,
+    pub ui: UI,
 }
 
 #[cfg(windows)]

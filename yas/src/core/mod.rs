@@ -75,3 +75,14 @@ impl SharedScanInfo<f64> {
         self.origin = pos;
     }
 }
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+pub struct ScanResult {
+    pub name: String,
+    pub main_stat_name: String,
+    pub main_stat_value: String,
+    pub sub_stat: [String; 4],
+    pub equip: String,
+    pub level: u32,
+    pub star: u32,
+}

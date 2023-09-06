@@ -10,47 +10,47 @@ pub static VERSION: &str = env!("CARGO_PKG_VERSION");
 pub struct YasScannerConfig {
     /// Max rows to scan
     #[arg(long, default_value_t = 1000)]
-    max_row: u32,
+    pub max_row: usize,
 
     /// Will the scanner capture only?
     #[arg(long, default_value_t = false)]
-    capture_only: bool,
+    pub capture_only: bool,
 
     /// Items with stars less than this will be ignored
     #[arg(long, default_value_t = 4)]
-    min_star: u32,
+    pub min_star: u32,
 
     /// Items with level less than this will be ignored
     #[arg(long, default_value_t = 0)]
-    min_level: u32,
+    pub min_level: u32,
 
     /// TODO
     #[arg(long, default_value_t = 80)]
-    scroll_stop: u32,
+    pub scroll_delay: u32,
 
     /// TODO
     #[arg(long, default_value_t = 0)]
-    number: u32,
+    pub number: u32,
 
     /// Show verbose output
     #[arg(short, long, default_value_t = false)]
-    verbose: bool,
+    pub verbose: bool,
 
     /// Dump the captured image
     #[arg(id = "dump", long, default_value_t = false)]
-    dump_mode: bool,
+    pub dump_mode: bool,
 
     /// The time to wait for switching to the next item
     #[arg(long, default_value_t = 800)]
-    max_wait_switch_item: u32,
+    pub max_wait_switch_item: u32,
 
     /// TODO
     #[arg(long, default_value_t = 300)]
-    cloud_wait_switch_item: u32,
+    pub cloud_wait_switch_item: u32,
 
     /// TODO
     #[arg(value_enum, default_value_t = ExportFormat::None)]
-    export_format: ExportFormat,
+    pub export_format: ExportFormat,
 }
 
 // App::new("YAS - 原神圣遗物导出器")

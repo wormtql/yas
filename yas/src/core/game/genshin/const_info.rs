@@ -4,11 +4,11 @@ use super::*;
 pub fn get_window_info(size: Resolution) -> &'static GenshinWindowInfo {
     match size {
         Resolution::Windows43x18 => &WINDOW_43_18,
-        // WindowSize::WIndows7x3 => &WINDOW_7_3,
+        // Resolution::WIndows7x3 => &WINDOW_7_3,
         Resolution::Windows16x9 => &WINDOW_16_9,
-        // WindowSize::Windows8x5 => &WINDOW_8_5,
-        // WindowSize::Windows4x3 => &WINDOW_4_3,
-        // WindowSize::MacOS8x5 => &WINDOW_MAC_8_5,
+        // Resolution::Windows8x5 => &WINDOW_8_5,
+        // Resolution::Windows4x3 => &WINDOW_4_3,
+        Resolution::MacOS8x5 => &WINDOW_MAC_8_5,
         _ => crate::error_and_quit!("不支持的分辨率"),
     }
 }
@@ -217,32 +217,67 @@ pub const WINDOW_16_9: GenshinWindowInfo = GenshinWindowInfo {
 //     pool_pos: Rect(93.2, 912.7 + 15.0, 412.4, 912.7),
 // };
 
-// //top, right, bottom, left
-// pub const WINDOW_MAC_8_5: GenshinWindowInfo = GenshinWindowInfo {
-//     width: 1164.0,
-//     height: 755.0 - 28.,
-//     title_pos: Rect(122.0 - 28., 1090.0, 157.0 - 28., 770.0),
-//     main_stat_name_pos: Rect(230. - 28., 925., 254. - 28., 765.),
-//     main_stat_value_pos: Rect(253. - 28., 911., 294. - 28., 767.),
-//     level_pos: Rect(353. - 28., 813., 372. - 28., 781.),
-//     panel_pos: Rect(117. - 28., 1127., 666. - 28., 756.),
-//     sub_stat1_pos: Rect(387. - 28., 1050., 417. - 28., 791.),
-//     sub_stat2_pos: Rect(417. - 28., 1050., 446. - 28., 791.),
-//     sub_stat3_pos: Rect(446. - 28., 1050., 475. - 28., 791.),
-//     sub_stat4_pos: Rect(475. - 28., 1050., 504. - 28., 791.),
-//     equip_pos: Rect(627. - 28., 1090., 659. - 28., 815.),
-//     art_count_pos: Rect(51. - 28., 1076., 80. - 28., 924.),
-//     art_width: 250. - 155.,
-//     art_height: 234. - 118.,
-//     art_gap_x: 266. - 250.,
-//     art_gap_y: 250. - 234.,
-//     art_row: 4,
-//     art_col: 5,
-//     left_margin: 155.,
-//     top_margin: 118. - 28.,
-//     flag_x: 170., //检测颜色出现重复，则判定换行完成
-//     flag_y: 223. - 28.,
-//     star_x: 1060.,
-//     star_y: 140. - 28.,
-//     pool_pos: Rect(390. - 28., 1010., 504. - 28., 792.), //检测平均颜色是否相同，判断圣遗物有没有切换
-// };
+pub const WINDOW_MAC_8_5: GenshinWindowInfo = GenshinWindowInfo {
+    //     sub_stat1_pos: Rect(387. - 28., 1050., 417. - 28., 791.),
+    //     sub_stat2_pos: Rect(417. - 28., 1050., 446. - 28., 791.),
+    //     sub_stat3_pos: Rect(446. - 28., 1050., 475. - 28., 791.),
+    //     sub_stat4_pos: Rect(475. - 28., 1050., 504. - 28., 791.),
+
+    sub_stat_pos: [
+        R::new(387.0 - 28.0, 1050.0, 417.0 - 28.0, 791.0),
+        R::new(417.0 - 28.0, 1050.0, 446.0 - 28.0, 791.0),
+        R::new(446.0 - 28.0, 1050.0, 475.0 - 28.0, 791.0),
+        R::new(475.0 - 28.0, 1050.0, 504.0 - 28.0, 791.0),
+    ],
+
+    //     width: 1164.0,
+    //     height: 755.0 - 28.,
+    //     title_pos: Rect(122.0 - 28., 1090.0, 157.0 - 28., 770.0),
+    //     main_stat_name_pos: Rect(230. - 28., 925., 254. - 28., 765.),
+    //     main_stat_value_pos: Rect(253. - 28., 911., 294. - 28., 767.),
+    //     level_pos: Rect(353. - 28., 813., 372. - 28., 781.),
+    //     panel_pos: Rect(117. - 28., 1127., 666. - 28., 756.),
+
+    //     equip_pos: Rect(627. - 28., 1090., 659. - 28., 815.),
+    //     art_count_pos: Rect(51. - 28., 1076., 80. - 28., 924.),
+    //     art_width: 250. - 155.,
+    //     art_height: 234. - 118.,
+    //     art_gap_x: 266. - 250.,
+    //     art_gap_y: 250. - 234.,
+    //     art_row: 4,
+    //     art_col: 5,
+    //     left_margin: 155.,
+    //     top_margin: 118. - 28.,
+    //     flag_x: 170., //检测颜色出现重复，则判定换行完成
+    //     flag_y: 223. - 28.,
+    //     star_x: 1060.,
+    //     star_y: 140. - 28.,
+    //     pool_pos: Rect(390. - 28., 1010., 504. - 28., 792.), //检测平均颜色是否相同，判断圣遗物有没有切换
+
+    shared: SharedScanInfo {
+        size: S::new(1164.0, 755.0 - 28.),
+        origin: P::new(0.0, 0.0),
+
+        title_pos: R::new(122.0 - 28., 1090.0, 157.0 - 28., 770.0),
+        main_stat_name_pos: R::new(230.0 - 28., 925.0, 254.0 - 28., 765.0),
+        main_stat_value_pos: R::new(253.0 - 28., 911.0, 294.0 - 28., 767.0),
+        level_pos: R::new(353.0 - 28., 813.0, 372.0 - 28., 781.0),
+        panel_pos: R::new(117.0 - 28., 1127.0, 666.0 - 28., 756.0),
+
+        item_equip_pos: R::new(627.0 - 28., 1090.0, 659.0 - 28., 815.0),
+        item_count_pos: R::new(51.0 - 28., 1076.0, 80.0 - 28., 924.0),
+
+        item_row: 4,
+        item_col: 5,
+
+        item_size: S::new(250.0 - 155.0, 234.0 - 118.0),
+        item_gap: S::new(266.0 - 250.0, 250.0 - 234.0),
+
+        scan_margin: S::new(155.0, 118.0 - 28.0),
+
+        flag: P::new(170.0, 223.0 - 28.0),
+        star: P::new(1060.0, 140.0 - 28.0),
+
+        pool_pos: R::new(390.0 - 28.0, 1010.0, 504.0 - 28.0, 792.0)
+    }
+};

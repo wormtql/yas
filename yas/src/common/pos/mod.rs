@@ -7,7 +7,7 @@ pub use ops::*;
 pub use scale::*;
 
 #[derive(Debug, Clone, PartialEq, Default, Copy)]
-pub struct Pos<T = i32> {
+pub struct Pos<T = u32> {
     pub x: T,
     pub y: T,
 }
@@ -19,7 +19,7 @@ pub struct Size<T = u32> {
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Copy)]
-pub struct Rect<P = i32, S = u32> {
+pub struct Rect<P = u32, S = u32> {
     pub origin: Pos<P>,
     pub size: Size<S>,
 }
@@ -118,7 +118,7 @@ mod macos {
 
     impl From<CGPoint> for Pos {
         fn from(point: CGPoint) -> Pos {
-            Pos::new(point.x as i32, point.y as i32)
+            Pos::new(point.x as u32, point.y as u32)
         }
     }
 
@@ -138,9 +138,9 @@ mod macos {
     }
 
     impl Rect {
-        pub fn with_titlebar(mut self, height: i32) -> Self {
+        pub fn with_titlebar(mut self, height: u32) -> Self {
             self.origin.y += height;
-            self.size.height -= height as u32;
+            self.size.height -= height;
             self
         }
     }

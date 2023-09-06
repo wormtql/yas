@@ -32,17 +32,6 @@ pub enum Scanner {
 }
 
 #[derive(Debug)]
-pub struct ScanResult {
-    pub name: String,
-    pub main_stat_name: String,
-    pub main_stat_value: String,
-    pub sub_stat: [String; 4],
-    pub level: String,
-    pub equip: String,
-    pub star: u32,
-}
-
-#[derive(Debug)]
 pub enum Game {
     Genshin,
     StarRail,
@@ -56,6 +45,17 @@ pub fn get_window_info(resolution: Resolution) -> WindowInfo {
         _ => crate::error_and_quit!("不支持的游戏类型"),
     }
 }
+
+pub fn parse_level(str_level: &str) -> u32 {
+    let pos = str_level.find('+');
+
+    if pos.is_none() {
+        return str_level.parse::<u32>().unwrap();
+    }
+
+    str_level[0..pos.unwrap()].parse::<u32>().unwrap()
+}
+
 
 impl WindowInfo {
     pub fn get_scan_info(&self, size: Size) -> ScanInfo {
@@ -106,6 +106,22 @@ impl Display for Game {
     }
 }
 
+impl ScanInfo {
+    pub fn inner_genshin(&self) -> &genshin::GenshinScanInfo {
+        match self {
+            ScanInfo::Genshin(info) => info,
+            _ => crate::error_and_quit!("ScanInfo is not genshin"),
+        }
+    }
+
+    pub fn inner_starrail(&self) -> &starrail::StarRailScanInfo {
+        match self {
+            ScanInfo::StarRail(info) => info,
+            _ => crate::error_and_quit!("ScanInfo is not starrail"),
+        }
+    }
+}
+
 impl Deref for ScanInfo {
     type Target = SharedScanInfo;
 
@@ -114,6 +130,16 @@ impl Deref for ScanInfo {
         match self {
             ScanInfo::StarRail(info) => &info.shared,
             ScanInfo::Genshin(info) => &info.shared,
+        }
+    }
+}
+
+impl DerefMut for ScanInfo {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        match self {
+            ScanInfo::StarRail(info) => &mut info.shared,
+            ScanInfo::Genshin(info) => &mut info.shared,
         }
     }
 }

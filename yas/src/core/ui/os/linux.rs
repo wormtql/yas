@@ -2,7 +2,7 @@ use crate::common::utils::*;
 
 use super::GameInfo;
 
-pub fn get_game_window() -> GameInfo {
+pub fn get_game_info() -> GameInfo {
     let window_id = unsafe {
         String::from_utf8_unchecked(
             std::process::Command::new("sh")

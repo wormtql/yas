@@ -5,7 +5,7 @@ edition = "2021"
 description = "Mihoyo game item scanner library"
 repository = "https://github.com/wormtql/yas"
 authors = ["wormtql <584130248@qq.com>"]
-keywords = ["GenshinImpact", "artifacts", "scanner", "ocr"]
+keywords = ["GenshinImpact", "HonkaiStarRail", "artifact", "relic", "scanner", "ocr"]
 license = "GPL-2.0-or-later"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

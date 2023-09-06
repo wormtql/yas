@@ -1,8 +1,16 @@
 use super::ui::Resolution;
 use super::*;
 
-pub fn get_window_info(_size: Resolution) -> &'static StarRailWindowInfo {
-    crate::error_and_quit!("不支持的分辨率")
+pub fn get_window_info(size: Resolution) -> &'static StarRailWindowInfo {
+    match size {
+        // Resolution::Windows43x18 => &WINDOW_43_18,
+        // Resolution::WIndows7x3 => &WINDOW_7_3,
+        Resolution::Windows16x9 => &WINDOW_16_9,
+        // Resolution::Windows8x5 => &WINDOW_8_5,
+        // Resolution::Windows4x3 => &WINDOW_4_3,
+        // Resolution::MacOS8x5 => &MACOS_8_5,
+        _ => unimplemented!(),
+    }
 }
 
 // pub const WINDOW_43_18: StarRailWindowInfo = StarRailWindowInfo {
@@ -90,47 +98,48 @@ pub fn get_window_info(_size: Resolution) -> &'static StarRailWindowInfo {
 //     pool_pos: Rect(118.2, 1584.0 + 15.0, 510.3, 1584.0),
 // };
 
-// pub const WINDOW_16_9: StarRailWindowInfo = StarRailWindowInfo {
-//     width: 1600.0,
-//     height: 900.0,
+pub const WINDOW_16_9: StarRailWindowInfo = StarRailWindowInfo {
+    sub_stat_name_pos: [
+        R::new(370.0, 1369.0, 390.0, 1204.0),
+        R::new(402.0, 1369.0, 423.0, 1204.0),
+        R::new(435.0, 1369.0, 456.0, 1204.0),
+        R::new(467.0, 1369.0, 487.0, 1204.0),
+    ],
 
-//     title_pos: Rect(111.0, 1400.0, 132.0, 1169.0),
-//     main_stat_name_pos: Rect(335.0, 1379.0, 355.0, 1207.0),
-//     main_stat_value_pos: Rect(335.0, 1535.0, 355.0, 1465.0),
-//     level_pos: Rect(258.0, 1240.0, 285.0, 1170.0),
-//     panel_pos: Rect(100.0, 1550.0, 800.0, 1150.0),
+    sub_stat_value_pos: [
+        R::new(370.0, 1534.0, 390.0, 1369.0),
+        R::new(402.0, 1534.0, 423.0, 1369.0),
+        R::new(435.0, 1534.0, 456.0, 1369.0),
+        R::new(467.0, 1534.0, 487.0, 1369.0),
+    ],
 
-//     sub_stat1_name_pos: Rect(370.0, 1369.0, 390.0, 1204.0),
-//     sub_stat1_value_pos: Rect(370.0, 1534.0, 390.0, 1369.0),
-//     sub_stat2_name_pos: Rect(402.0, 1369.0, 423.0, 1204.0),
-//     sub_stat2_value_pos: Rect(402.0, 1534.0, 423.0, 1369.0),
-//     sub_stat3_name_pos: Rect(435.0, 1369.0, 456.0, 1204.0),
-//     sub_stat3_value_pos: Rect(435.0, 1534.0, 456.0, 1369.0),
-//     sub_stat4_name_pos: Rect(467.0, 1369.0, 487.0, 1204.0),
-//     sub_stat4_value_pos: Rect(467.0, 1534.0, 487.0, 1369.0),
+    shared: SharedScanInfo {
+        size: S::new(1600.0, 900.0),
+        origin: P::new(0.0, 0.0),
 
-//     equip_pos: Rect(762.6, 1389.4, 787.8, 1154.9),
-//     art_count_pos: Rect(813.0, 960.0, 836.0, 753.0),
+        title_pos: R::new(111.0, 1400.0, 132.0, 1169.0),
+        main_stat_name_pos: R::new(335.0, 1379.0, 355.0, 1207.0),
+        main_stat_value_pos: R::new(335.0, 1535.0, 355.0, 1465.0),
+        level_pos: R::new(258.0, 1240.0, 285.0, 1170.0),
+        panel_pos: R::new(100.0, 1550.0, 800.0, 1150.0),
 
-//     art_width: 197.5 - 112.5,
-//     art_height: 379.2 - 295.8,
-//     art_gap_x: 217.5 - 197.5,
-//     art_gap_y: 420.0 - 379.2,
+        item_equip_pos: R::new(762.6, 1389.4, 787.8, 1154.9),
+        item_count_pos: R::new(813.0, 960.0, 836.0, 753.0),
 
-//     art_row: 5,
-//     art_col: 9,
+        item_row: 5,
+        item_col: 9,
 
-//     left_margin: 113.0,
-//     top_margin: 172.0,
+        item_size: S::new(197.5 - 112.5, 379.2 - 295.8),
+        item_gap: S::new(217.5 - 197.5, 420.0 - 379.2),
 
-//     flag_x: 271.1,
-//     flag_y: 158.0,
+        scan_margin: S::new(113.0, 172.0),
 
-//     star_x: 1500.0,
-//     star_y: 208.0,
+        flag: P::new(271.1, 158.0),
+        star: P::new(1500.0, 208.0),
 
-//     pool_pos: Rect(118.2, 1218.7 + 15.0, 510.3, 1218.7),
-// };
+        pool_pos: R::new(118.2, 1218.7 + 15.0, 510.3, 1218.7),
+    },
+};
 
 // pub const WINDOW_8_5: StarRailWindowInfo = StarRailWindowInfo {
 //     width: 1440.0,

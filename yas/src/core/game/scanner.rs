@@ -1,10 +1,10 @@
 use anyhow::Result;
 use enigo::{MouseButton, MouseControllable};
 use std::ops::DerefMut;
+use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 use std::{collections::HashSet, fs};
-use std::path::Path;
 
 use super::genshin::GenshinScanner;
 use super::starrail::StarRailScanner;

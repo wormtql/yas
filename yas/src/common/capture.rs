@@ -24,6 +24,9 @@ where
 impl Capturable<RgbImage> for Rect {
     fn capture(&self) -> Result<RgbImage> {
         let screen = screenshots::Screen::all()?[0];
+
+        debug!("Capture rect: {:?}", self);
+
         let mut rgb_img: RgbImage = screen
             .capture_area(
                 self.origin.x as i32,

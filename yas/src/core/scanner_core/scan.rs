@@ -1,10 +1,10 @@
-use super::inference::pre_process::{GrayImageFloat, ImageConvExt};
 use super::inference::{pre_process, to_gray};
 use super::*;
 use crate::common::color::Color;
 use crate::TARGET_GAME;
 use anyhow::Result;
-use image::{GenericImageView, RgbImage};
+use image::*;
+use pre_process::ImageConvExt;
 use std::fmt::Display;
 use std::fs;
 use std::path::Path;
@@ -111,7 +111,11 @@ pub fn get_model_inference_func(
                                 captured_img: &RgbImage,
                                 cnt: usize|
           -> Result<String> {
+        if dump_mode {
+            captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
+        }
         let rect = &Rect::from(pos) - &panel_origin;
+
         let raw_img = to_gray(captured_img)
             .view(
                 rect.origin.x,
@@ -122,10 +126,9 @@ pub fn get_model_inference_func(
             .to_image();
 
         if dump_mode {
-            dump_image(
-                &raw_img,
-                Path::new("dumps").join(format!("{}_{}.png", name, cnt)),
-            );
+            raw_img
+                .to_common_grayscale()
+                .save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
         }
 
         let processed_img = match pre_process(raw_img) {
@@ -134,10 +137,9 @@ pub fn get_model_inference_func(
         };
 
         if dump_mode {
-            dump_image(
-                &processed_img,
-                Path::new("dumps").join(format!("p_{}_{}.png", name, cnt)),
-            );
+            processed_img
+                .to_common_grayscale()
+                .save(Path::new("dumps").join(format!("{}_{}.pp.png", name, cnt)))?;
         }
 
         let inference_result = model.inference_string(&processed_img)?;
@@ -145,7 +147,7 @@ pub fn get_model_inference_func(
         if dump_mode {
             dump_text(
                 &inference_result,
-                Path::new("dumps").join(format!("t_{}_{}.txt", name, cnt)),
+                Path::new("dumps").join(format!("{}_{}.txt", name, cnt)),
             );
         }
 
@@ -153,19 +155,6 @@ pub fn get_model_inference_func(
     };
 
     Box::new(model_inference)
-}
-
-fn dump_image<Q>(image: &GrayImageFloat, path: Q)
-where
-    Q: AsRef<Path>,
-{
-    if let Err(e) = image.to_common_grayscale().save(&path) {
-        error!(
-            "Error when dumping image to {}: {}",
-            &path.as_ref().display(),
-            e
-        );
-    }
 }
 
 fn dump_text<Q, C>(contents: C, path: Q)

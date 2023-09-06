@@ -2,13 +2,11 @@
 #![allow(clippy::single_match)]
 
 use clap::Parser;
-use env_logger::Builder;
+use env_logger::{Builder, Env};
 use once_cell::sync::OnceCell;
 
 #[macro_use]
 extern crate log;
-
-use log::LevelFilter;
 
 pub mod common;
 pub mod core;
@@ -21,7 +19,7 @@ use core::ScanResult;
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
 pub fn init_env(game: Game) {
-    Builder::new().filter_level(LevelFilter::Info).init();
+    Builder::from_env(Env::default().default_filter_or("info")).init();
 
     TARGET_GAME.set(game).ok();
 

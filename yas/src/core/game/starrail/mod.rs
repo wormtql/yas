@@ -1,4 +1,6 @@
 use super::*;
+mod const_info;
+mod scanner;
 
 #[derive(Clone, Debug)]
 pub struct StarRailScanInfo<T = ScanInfoType> {

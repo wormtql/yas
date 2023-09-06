@@ -1,6 +1,5 @@
-use crate::info::starrail::StarRailWindowInfo;
+use super::*;
 use super::ui::WindowSize;
-// use super::*;
 
 pub fn get_window_info(size: WindowSize) -> &'static StarRailWindowInfo {
     match size {

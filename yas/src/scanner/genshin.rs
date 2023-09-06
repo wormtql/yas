@@ -1,8 +1,8 @@
+use super::*;
+use anyhow::Result;
 use std::collections::HashSet;
 use std::convert::From;
 use std::fs;
-use super::*;
-use anyhow::Result;
 
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -14,9 +14,6 @@ use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 use tract_onnx::prelude::tract_itertools::Itertools;
 
-use crate::item::genshin_artifact::{
-    ArtifactSetName, ArtifactSlot, ArtifactStat, GenshinArtifact,
-};
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 #[cfg(target_os = "macos")]
@@ -24,7 +21,8 @@ use crate::common::utils::get_pid_and_ui;
 use crate::common::*;
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
-use crate::info::ScanInfo;
+use crate::core::ScanInfo;
+use crate::item::genshin_artifact::{ArtifactSetName, ArtifactSlot, ArtifactStat, GenshinArtifact};
 
 // Playcover only, wine should not need this.
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
@@ -189,28 +187,27 @@ impl YasScanner {
         let color = capture::get_color(
             (self.info.star_x as i32 + self.info.left) as u32,
             (self.info.star_y as i32 + self.info.top) as u32,
-        );
+        )
+        .unwrap();
 
-        let color_1 = Color::from(113, 119, 139);
-        let color_2 = Color::from(42, 143, 114);
-        let color_3 = Color::from(81, 127, 203);
-        let color_4 = Color::from(161, 86, 224);
-        let color_5 = Color::from(188, 105, 50);
+        let color_1 = Color::new(113, 119, 139);
+        let color_2 = Color::new(42, 143, 114);
+        let color_3 = Color::new(81, 127, 203);
+        let color_4 = Color::new(161, 86, 224);
+        let color_5 = Color::new(188, 105, 50);
 
-        let min_dis: u32 = color_1.dis_2(&color);
-        let mut star = 1_u32;
-        if color_2.dis_2(&color) < min_dis {
-            star = 2;
-        }
-        if color_3.dis_2(&color) < min_dis {
-            star = 3;
-        }
-        if color_4.dis_2(&color) < min_dis {
-            star = 4;
-        }
-        if color_5.dis_2(&color) < min_dis {
-            star = 5;
-        }
+        let min_dis: u32 = color_1.distance(&color);
+        let star = if color_2.distance(&color) < min_dis {
+            2
+        } else if color_3.distance(&color) < min_dis {
+            3
+        } else if color_4.distance(&color) < min_dis {
+            4
+        } else if color_5.distance(&color) < min_dis {
+            5
+        } else {
+            1
+        };
 
         star
     }

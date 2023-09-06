@@ -7,7 +7,7 @@ pub mod common;
 pub mod dto;
 pub mod expo;
 pub mod inference;
-pub mod info;
+pub mod core;
 pub mod scanner;
 
 use common::utils;

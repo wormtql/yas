@@ -1,15 +1,15 @@
-mod convert;
+use crate::common::*;
 use std::ops::Deref;
-
-pub use convert::*;
-
-mod const_info;
-
-mod genshin;
-mod starrail;
 pub mod ui;
 
-use crate::common::*;
+mod config;
+pub use config::*;
+
+mod convert;
+pub use convert::*;
+
+mod game;
+pub use game::*;
 
 crate::scan_info_convert! {
     pub type ScanInfoType = u32;
@@ -72,31 +72,7 @@ impl SharedScanInfo<f64> {
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum WindowInfo {
-    StarRail(starrail::StarRailWindowInfo),
-    Genshin(genshin::GenshinWindowInfo),
-}
-
-#[derive(Clone, Debug)]
-pub enum ScanInfo {
-    StarRail(starrail::StarRailScanInfo),
-    Genshin(genshin::GenshinScanInfo),
-}
-
 pub trait ScanInfoConvert {
     fn from_pc(width: u32, height: u32, left: i32, top: i32) -> Self;
     fn from_mobile(width: u32, height: u32, left: i32, top: i32) -> Self;
-}
-
-impl Deref for ScanInfo {
-    type Target = SharedScanInfo;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        match self {
-            ScanInfo::StarRail(info) => &info.shared,
-            ScanInfo::Genshin(info) => &info.shared,
-        }
-    }
 }

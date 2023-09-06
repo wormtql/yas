@@ -22,7 +22,7 @@ use crate::common::utils::get_pid_and_ui;
 use crate::common::{utils, Rect, PixelRectBound};
 use crate::inference::inference::CRNNModel;
 use crate::inference::pre_process::{pre_process, to_gray, ImageConvExt};
-use crate::info::starrail::ScanInfoStarRail;
+use crate::core::starrail::ScanInfoStarRail;
 
 // Playcover only, wine should not need this.
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
@@ -181,18 +181,18 @@ impl YasScanner {
         let color_4 = Color::from(155, 117, 206);
         let color_5 = Color::from(194, 159, 112);
 
-        let min_dis: u32 = color_1.dis_2(&color);
+        let min_dis: u32 = color_1.distance(&color);
         let mut star = 1_u32;
-        if color_2.dis_2(&color) < min_dis {
+        if color_2.distance(&color) < min_dis {
             star = 2;
         }
-        if color_3.dis_2(&color) < min_dis {
+        if color_3.distance(&color) < min_dis {
             star = 3;
         }
-        if color_4.dis_2(&color) < min_dis {
+        if color_4.distance(&color) < min_dis {
             star = 4;
         }
-        if color_5.dis_2(&color) < min_dis {
+        if color_5.distance(&color) < min_dis {
             star = 5;
         }
 

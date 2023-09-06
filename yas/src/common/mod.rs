@@ -78,3 +78,10 @@ impl RawCaptureImage {
         }
     }
 }
+
+enum ScrollResult {
+    TimeLimitExceeded,
+    Interrupt,
+    Success,
+    Skip,
+}

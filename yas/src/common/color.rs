@@ -2,7 +2,7 @@
 pub struct Color(pub u8, pub u8, pub u8);
 
 impl Color {
-    pub fn dis_2(&self, other: &Color) -> u32 {
+    pub fn distance(&self, other: &Color) -> u32 {
         let r = self.0 as i32 - other.0 as i32;
         let g = self.1 as i32 - other.1 as i32;
         let b = self.2 as i32 - other.2 as i32;

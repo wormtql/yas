@@ -11,7 +11,7 @@ use yas::expo::mingyu_lab::MingyuLabFormat;
 use yas::expo::mona_uranai::MonaFormat;
 
 use yas::inference::pre_process::image_to_raw;
-use yas::info::info;
+use yas::core::info;
 use yas::scanner::genshin::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};

@@ -1,6 +1,5 @@
-use crate::info::genshin::GenshinWindowInfo;
-use super::ui::WindowSize;
 use super::*;
+use super::ui::WindowSize;
 
 pub fn get_window_info(size: WindowSize) -> &'static GenshinWindowInfo {
     match size {

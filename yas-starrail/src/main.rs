@@ -9,7 +9,7 @@ use yas::common::{Rect, RawImage};
 use yas::expo::march7th::March7thFormat;
 
 use yas::inference::pre_process::image_to_raw;
-use yas::info::starrail;
+use yas::core::starrail;
 use yas::scanner::starrail::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};

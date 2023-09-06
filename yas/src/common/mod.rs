@@ -5,8 +5,9 @@ pub mod color;
 pub mod pos;
 pub mod utils;
 
-use crate::inference::pre_process::{raw_to_img, uint8_raw_to_img};
+use crate::core::inference::pre_process::{raw_to_img, uint8_raw_to_img};
 use image::{GrayImage, ImageBuffer};
+use serde::Deserialize;
 pub use pos::*;
 
 pub enum UI {
@@ -22,6 +23,19 @@ pub struct RawImage {
 pub struct RawCaptureImage {
     pub data: Vec<u8>,
     pub size: Size,
+}
+
+
+#[derive(Deserialize)]
+pub struct GithubTag {
+    pub name: String,
+}
+
+pub enum ScrollResult {
+    TimeLimitExceeded,
+    Interrupt,
+    Success,
+    Skip,
 }
 
 impl RawImage {
@@ -77,11 +91,4 @@ impl RawCaptureImage {
             size: rect.size
         }
     }
-}
-
-enum ScrollResult {
-    TimeLimitExceeded,
-    Interrupt,
-    Success,
-    Skip,
 }

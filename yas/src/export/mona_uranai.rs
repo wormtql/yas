@@ -4,7 +4,7 @@ use std::io::prelude::*;
 
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
-use crate::item::genshin_artifact::{
+use crate::core::genshin::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
 

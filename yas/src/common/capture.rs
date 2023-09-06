@@ -1,5 +1,5 @@
 use super::{*, color::Color};
-use crate::inference::pre_process::{pre_process, to_gray, GrayImageFloat};
+use crate::core::inference::pre_process::{pre_process, to_gray, GrayImageFloat};
 use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, RgbImage};
 
 use std::ops::Add;

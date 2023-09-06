@@ -11,6 +11,8 @@ pub use convert::*;
 mod game;
 pub use game::*;
 
+pub mod inference;
+
 crate::scan_info_convert! {
     pub type ScanInfoType = u32;
     pub type WindowInfoType = f64;

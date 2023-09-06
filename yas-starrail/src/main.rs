@@ -6,7 +6,7 @@ use std::time::SystemTime;
 use yas::common::utils::get_pid_and_ui;
 use yas::common::{utils, UI};
 use yas::common::{Rect, RawImage};
-use yas::expo::march7th::March7thFormat;
+use yas::export::march7th::March7thFormat;
 
 use yas::inference::pre_process::image_to_raw;
 use yas::core::starrail;

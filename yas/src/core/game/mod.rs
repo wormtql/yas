@@ -19,6 +19,12 @@ pub enum ScanInfo {
     Genshin(genshin::GenshinScanInfo),
 }
 
+#[derive(Clone, Debug)]
+pub enum Item {
+    GenshinArtifact(genshin::GenshinArtifact),
+    StarrailRelic(starrail::StarrailRelic),
+}
+
 impl Deref for ScanInfo {
     type Target = SharedScanInfo;
 

@@ -1,6 +1,8 @@
 use super::*;
 mod const_info;
 mod scanner;
+mod artifact;
+pub use artifact::*;
 
 #[derive(Clone, Debug)]
 pub struct GenshinScanInfo<T = ScanInfoType> {

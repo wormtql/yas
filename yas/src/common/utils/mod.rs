@@ -4,9 +4,9 @@ use std::process;
 use std::thread;
 use std::time::Duration;
 
-use log::error;
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderValue, USER_AGENT};
+use super::*;
 
 #[cfg(target_os = "macos")]
 mod macos;
@@ -18,7 +18,6 @@ mod windows;
 #[cfg(windows)]
 pub use windows::*;
 
-use crate::dto::GithubTag;
 
 pub fn sleep(ms: u32) {
     let time = Duration::from_millis(ms as u64);

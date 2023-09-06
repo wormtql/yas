@@ -3,7 +3,7 @@ use image::EncodableLayout;
 use serde_json::Value;
 use tract_onnx::prelude::*;
 
-use crate::inference::pre_process::GrayImageFloat;
+use super::pre_process::GrayImageFloat;
 
 type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
 

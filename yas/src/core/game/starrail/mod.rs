@@ -1,6 +1,8 @@
 use super::*;
 mod const_info;
 mod scanner;
+mod relic;
+pub use relic::*;
 
 #[derive(Clone, Debug)]
 pub struct StarRailScanInfo<T = ScanInfoType> {

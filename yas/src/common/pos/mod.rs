@@ -96,7 +96,7 @@ where
 {
     fn from(bound: RectBound<I>) -> Rect<I, U> {
         if bound.left > bound.right || bound.top > bound.bottom {
-            panic!("Invalid bound value");
+            crate::error_and_quit!("Invalid bound value");
         }
 
         Rect::new(

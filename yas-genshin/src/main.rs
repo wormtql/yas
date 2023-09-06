@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     let results = scanner.scan()?;
 
-    println!("{:?}", results);
+    println!("{:#?}", results);
 
     Ok(())
 }

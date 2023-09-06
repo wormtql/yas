@@ -72,7 +72,7 @@ pub fn get_pid_and_ui() -> (i32, UI) {
         Ok(pid) => (pid, UI::Mobile),
         Err(_) => match pid_str_genshin_wine.trim().parse::<i32>() {
             Ok(pid) => (pid, UI::Desktop),
-            Err(_) => panic!("No genshin program found"),
+            Err(_) => crate::error_and_quit!("No genshin program found"),
         },
     }
 }

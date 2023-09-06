@@ -1,6 +1,5 @@
 use std::fmt::Arguments;
 use std::fs;
-use std::io::stdin;
 use std::process;
 use std::thread;
 use std::time::Duration;
@@ -30,9 +29,7 @@ pub fn read_file_to_string(path: String) -> String {
 
 #[doc(hidden)]
 pub fn error_and_quit_internal(args: Arguments) -> ! {
-    eprintln!("{}，按任意键退出。", args);
-    let mut s: String = String::new();
-    stdin().read_line(&mut s).unwrap();
+    error!("Error: {}", args);
     process::exit(0);
 }
 

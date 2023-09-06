@@ -163,12 +163,12 @@ impl<'a> MingyuLabFormat<'a> {
 
     pub fn save(&self, path: String) {
         let mut file = match File::create(&path) {
-            Err(why) => panic!("couldn't create {}: {}", path, why),
+            Err(why) => crate::error_and_quit!("couldn't create {}: {}", path, why),
             Ok(file) => file,
         };
         let s = serde_json::to_string(&self.artifacts).unwrap();
         if let Err(why) = file.write_all(s.as_bytes()) {
-            panic!("couldn't write to {}: {}", path, why)
+            crate::error_and_quit!("couldn't write to {}: {}", path, why)
         }
     }
 }

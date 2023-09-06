@@ -6,3 +6,4 @@ dumps/
 /*.json
 **/*.png
 tmp/
+**/.DS_Store

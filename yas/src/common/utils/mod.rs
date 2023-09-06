@@ -4,6 +4,8 @@ use std::process;
 use std::thread;
 use std::time::Duration;
 
+use crate::core::VERSION;
+
 use super::*;
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderValue, USER_AGENT};
@@ -19,8 +21,7 @@ mod windows;
 pub use windows::*;
 
 pub fn sleep(ms: u32) {
-    let time = Duration::from_millis(ms as u64);
-    thread::sleep(time);
+    thread::sleep(Duration::from_millis(ms as u64));
 }
 
 pub fn read_file_to_string(path: String) -> String {
@@ -44,8 +45,6 @@ macro_rules! error_and_quit {
 pub fn is_rmb_down() -> bool {
     false
 }
-
-pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn check_update() -> Option<String> {
     let client = Client::new();

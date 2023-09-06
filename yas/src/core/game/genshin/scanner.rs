@@ -40,7 +40,7 @@ impl ItemScanner for YasGenshinScanner {
             let mut dup_count = 0;
             let mut hash = HashSet::new();
             let mut consecutive_dup_count = 0;
-            let panel_origin = Rect::<u32, u32>::from(info.panel_pos).origin;
+            let panel_origin = Rect::from(&info.panel_pos).origin;
 
             if is_dump_mode {
                 fs::create_dir("dumps").unwrap();
@@ -60,7 +60,7 @@ impl ItemScanner for YasGenshinScanner {
                                        captured_img: &RgbImage,
                                        cnt: usize|
                  -> String {
-                    let rect = &Rect::<u32, u32>::from(*pos) - &panel_origin;
+                    let rect = &Rect::from(pos) - &panel_origin;
                     let raw_img = to_gray(captured_img)
                         .view(
                             rect.origin.x,
@@ -209,12 +209,13 @@ impl ItemScanner for YasGenshinScanner {
                     utils::sleep(20);
 
                     self.wait_until_switched();
-                    let capture = self.capture_panel().unwrap();
+                    let capture = self.capture_panel()?;
                     let star = self.get_star();
                     if star < self.config.min_star {
                         break 'outer;
                     }
-                    tx.send(Some((capture, star))).unwrap();
+
+                    tx.send(Some((capture, star)))?;
 
                     scanned_count += 1;
                 } // end 'col

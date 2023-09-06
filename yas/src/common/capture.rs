@@ -8,19 +8,18 @@ pub trait Capturable<T> {
     fn capture(&self) -> Result<T>;
 }
 
-pub trait RelativeCapturable<T> {
-    fn capture_relative(&self, pos: &Pos) -> Result<T>;
+pub trait RelativeCapturable<'a, T> {
+    fn capture_relative(&self, offset: &'a Pos) -> Result<T>;
 }
 
-// impl<'a, 'b, T: 'a> RelativeCapturable<T> for dyn Capturable<T>
-// where
-//     dyn Capturable<T>: Sized + Clone,
-//     &'a dyn Capturable<T>: Add<&'b Pos, Output = dyn Capturable<T>>,
-// {
-//     fn capture_relative(&self, pos: &Pos) -> Result<T> {
-//         (self + pos).capture()
-//     }
-// }
+impl<'a, T> RelativeCapturable<'a, T> for Rect
+where
+    Rect: Capturable<T>,
+{
+    fn capture_relative(&self, offset: &'a Pos) -> Result<T> {
+        (self + offset).capture()
+    }
+}
 
 impl Capturable<RgbImage> for Rect {
     fn capture(&self) -> Result<RgbImage> {

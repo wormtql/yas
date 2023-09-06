@@ -74,12 +74,12 @@ where
     }
 }
 
-impl<I, U> From<Rect<I, U>> for RectBound<I>
+impl<I, U> From<&Rect<I, U>> for RectBound<I>
 where
     I: PartialOrd + Add<I, Output = I> + Copy,
-    U: PartialOrd + Into<I>,
+    U: PartialOrd + Into<I> + Copy,
 {
-    fn from(rect: Rect<I, U>) -> RectBound<I> {
+    fn from(rect: &Rect<I, U>) -> RectBound<I> {
         RectBound::new(
             rect.origin.x,
             rect.origin.y,
@@ -89,12 +89,11 @@ where
     }
 }
 
-impl<I, U> From<RectBound<I>> for Rect<I, U>
+impl<I> From<&RectBound<I>> for Rect<I, I>
 where
-    I: PartialOrd + Sub<I, Output = I> + Into<U> + Copy,
-    U: PartialOrd,
+    I: PartialOrd + Sub<I, Output = I> + Copy,
 {
-    fn from(bound: RectBound<I>) -> Rect<I, U> {
+    fn from(bound: &RectBound<I>) -> Rect<I, I> {
         if bound.left > bound.right || bound.top > bound.bottom {
             crate::error_and_quit!("Invalid bound value");
         }
@@ -102,8 +101,8 @@ where
         Rect::new(
             bound.left,
             bound.top,
-            (bound.right - bound.left).into(),
-            (bound.bottom - bound.top).into(),
+            bound.right - bound.left,
+            bound.bottom - bound.top,
         )
     }
 }

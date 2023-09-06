@@ -4,6 +4,8 @@ pub mod color;
 pub mod pos;
 pub mod utils;
 
+pub use capture::{Capturable, RelativeCapturable};
+
 use crate::core::inference::{raw_to_img, uint8_raw_to_img};
 use image::{GrayImage, ImageBuffer};
 pub use pos::*;

@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::{capture::Capturable, color::Color};
+use crate::common::color::Color;
 use crate::core::inference::CRNNModel;
 use crate::TARGET_GAME;
 use anyhow::Result;
@@ -130,9 +130,7 @@ impl ScannerCore {
     }
 
     pub fn capture_panel(&mut self) -> Result<RgbImage> {
-        let mut rect: Rect<u32, u32> = Rect::from(self.scan_info.panel_pos);
-        rect += self.scan_info.origin;
-        rect.capture()
+        Rect::from(&self.scan_info.panel_pos).capture_relative(&self.scan_info.origin)
     }
 
     pub fn move_to(&mut self, row: usize, col: usize) {
@@ -283,7 +281,7 @@ impl ScannerCore {
         };
 
         if let 0 = count {
-            let mut rect: Rect<u32, u32> = Rect::from(self.scan_info.item_count_pos);
+            let mut rect = Rect::from(&self.scan_info.item_count_pos);
             rect += self.scan_info.origin;
 
             if let Ok(s) = self.model.inference_string(&rect.capture()?) {
@@ -325,9 +323,9 @@ impl ScannerCore {
             //     height: self.info.pool_position.bottom - self.info.pool_position.top,
             // };
             // let im = capture::capture_absolute(&rect).unwrap();
-            let rect: Rect<u32, u32> =
-                &Rect::from(self.scan_info.pool_pos) + &self.scan_info.origin;
-            let im: RgbImage = rect.capture().unwrap();
+            let im: RgbImage = Rect::from(&self.scan_info.pool_pos)
+                .capture_relative(&self.scan_info.origin)
+                .unwrap();
 
             let pool = calc_pool(im.as_raw()) as f64;
             // info!("pool: {}", pool);

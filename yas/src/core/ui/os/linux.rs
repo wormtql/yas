@@ -1,6 +1,5 @@
-use crate::common::utils::*;
-
-use super::GameInfo;
+use crate::common::*;
+use super::*;
 
 pub fn get_game_info() -> GameInfo {
     let window_id = unsafe {
@@ -33,16 +32,11 @@ pub fn get_game_info() -> GameInfo {
     let width = info.next().unwrap().parse().unwrap();
     let height = info.next().unwrap().parse().unwrap();
 
-    rect = Rect {
-        left,
-        top,
-        width,
-        height,
-    };
+    let rect = Rect::new(left, top, width, height);
 
     GameInfo {
-        window_pos: rect,
-        size: WindowSize::new(rect.size),
+        window: rect,
+        resolution: Resolution::new(rect.size),
         is_cloud: false,
         ui: UI::Desktop,
     }

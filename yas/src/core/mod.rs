@@ -12,8 +12,10 @@ pub use convert::*;
 mod game;
 pub use game::*;
 
+mod scanner_core;
+pub use scanner_core::*;
+
 pub mod inference;
-pub mod scanner;
 
 crate::scan_info_convert! {
     pub type ScanInfoType = u32;
@@ -83,6 +85,6 @@ pub struct ScanResult {
     pub main_stat_value: String,
     pub sub_stat: [String; 4],
     pub equip: String,
-    pub level: u32,
-    pub star: u32,
+    pub level: u8,
+    pub star: u8,
 }

@@ -18,11 +18,11 @@ pub struct YasScannerConfig {
 
     /// Items with stars less than this will be ignored
     #[arg(long, default_value_t = 4)]
-    pub min_star: u32,
+    pub min_star: u8,
 
     /// Items with level less than this will be ignored
     #[arg(long, default_value_t = 0)]
-    pub min_level: u32,
+    pub min_level: u8,
 
     /// TODO
     #[arg(long, default_value_t = 80)]
@@ -30,7 +30,7 @@ pub struct YasScannerConfig {
 
     /// TODO
     #[arg(long, default_value_t = 0)]
-    pub number: u32,
+    pub number: usize,
 
     /// Show verbose output
     #[arg(short, long, default_value_t = false)]

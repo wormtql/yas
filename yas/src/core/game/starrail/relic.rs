@@ -80,8 +80,8 @@ pub struct RelicStat {
 pub struct StarrailRelic {
     pub set_name: RelicSetName,
     pub slot: RelicSlot,
-    pub star: u32,
-    pub level: u32,
+    pub star: u8,
+    pub level: u8,
     pub main_stat: RelicStat,
     pub sub_stat_1: Option<RelicStat>,
     pub sub_stat_2: Option<RelicStat>,

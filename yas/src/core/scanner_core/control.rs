@@ -1,105 +1,18 @@
 use super::*;
-use crate::common::color::Color;
-use crate::core::inference::CRNNModel;
-use crate::TARGET_GAME;
-use anyhow::Result;
-use enigo::{Enigo, MouseControllable};
+use enigo::MouseControllable;
 use image::RgbImage;
-use std::sync::Arc;
 use std::time::SystemTime;
 
 #[cfg(target_os = "macos")]
 use crate::common::utils::*;
 
-pub struct ScannerCore {
-    pool: f64,
-
-    initial_color: Color,
-
-    // for scrolls
-    scrolled_rows: u32,
-    avg_scroll_one_row: f64,
-
-    avg_switch_time: f64,
-    scanned_count: u32,
-
-    is_cloud: bool,
-
-    pub row: usize,
-    pub col: usize,
-
-    pub model: Arc<CRNNModel>,
-    pub scan_info: Arc<ScanInfo>,
-    pub config: YasScannerConfig,
-
-    pub enigo: Enigo,
-}
-
-pub trait ItemScanner {
-    fn scan(&mut self) -> Result<Vec<ScanResult>>;
-}
-
-pub fn calc_pool(row: &Vec<u8>) -> f32 {
-    let len = row.len() / 3;
-    let mut pool: f32 = 0.0;
-
-    for i in 0..len {
-        pool += row[i * 3] as f32;
-    }
-
-    pool
-}
-
 impl ScannerCore {
-    pub fn new(
-        scan_info: ScanInfo,
-        config: YasScannerConfig,
-        game_info: GameInfo,
-        model: &[u8],
-        content: &str,
-    ) -> Self {
-        let model = match CRNNModel::new(model, content) {
-            Ok(v) => v,
-            Err(e) => crate::error_and_quit!("模型加载失败, 错误信息：{}", e),
-        };
-
-        let row = scan_info.item_row;
-        let col = scan_info.item_col;
-
-        Self {
-            model: Arc::new(model),
-            enigo: Enigo::new(),
-
-            scan_info: Arc::new(scan_info),
-            config,
-
-            row,
-            col,
-
-            pool: 0.0,
-
-            initial_color: Color::new(0, 0, 0),
-
-            scrolled_rows: 0,
-            avg_scroll_one_row: 0.0,
-
-            avg_switch_time: 0.0,
-            scanned_count: 0,
-
-            is_cloud: game_info.is_cloud,
-        }
-    }
-
-    fn get_flag_color(&self) -> Result<Color> {
-        let target = &self.scan_info.flag + &self.scan_info.origin;
-
-        capture::get_color(target)
-    }
-
     pub fn align_row(&mut self) {
         #[cfg(target_os = "macos")]
         let (_, ui) = get_pid_and_ui();
+
         let mut count = 0;
+
         while count < 10 {
             if self.get_flag_color().unwrap() == self.initial_color {
                 return;
@@ -129,10 +42,6 @@ impl ScannerCore {
         }
     }
 
-    pub fn capture_panel(&mut self) -> Result<RgbImage> {
-        Rect::from(&self.scan_info.panel_pos).capture_relative(&self.scan_info.origin)
-    }
-
     pub fn move_to(&mut self, row: usize, col: usize) {
         // let left = info.left
         //     + (info.left_margin + (info.art_width + info.art_gap_x) * col + info.art_width / 2)
@@ -156,13 +65,10 @@ impl ScannerCore {
         utils::sleep(20);
     }
 
-    pub fn sample_initial_color(&mut self) {
-        self.initial_color = self.get_flag_color().unwrap();
-    }
-
     pub fn scroll_one_row(&mut self) -> ScrollResult {
         #[cfg(target_os = "macos")]
         let (_, ui) = get_pid_and_ui();
+        
         let mut state = 0;
         let mut count = 0;
         let max_scroll = 25;
@@ -246,63 +152,6 @@ impl ScannerCore {
         }
 
         ScrollResult::Success
-    }
-
-    pub fn get_star(&self) -> u32 {
-        let color = capture::get_color(&self.scan_info.origin + &self.scan_info.star).unwrap();
-
-        let match_colors = [
-            Color::new(113, 119, 139),
-            Color::new(42, 143, 114),
-            Color::new(81, 127, 203),
-            Color::new(161, 86, 224),
-            Color::new(188, 105, 50),
-        ];
-
-        let mut min_dis: u32 = 0xdeadbeef;
-        let mut ret: usize = 1;
-        for (i, match_color) in match_colors.iter().enumerate() {
-            let dis = match_color.distance(&color);
-            if dis < min_dis {
-                min_dis = dis;
-                ret = i + 1;
-            }
-        }
-
-        ret as u32
-    }
-
-    pub fn get_item_count(&self) -> Result<u32> {
-        let count = self.config.number;
-        let item_name = match TARGET_GAME.get().unwrap() {
-            Game::Genshin => "圣遗物",
-            Game::StarRail => "遗器数量",
-            _ => unimplemented!("不支持的游戏"),
-        };
-
-        if let 0 = count {
-            let mut rect = Rect::from(&self.scan_info.item_count_pos);
-            rect += self.scan_info.origin;
-
-            if let Ok(s) = self.model.inference_string(&rect.capture()?) {
-                info!("raw count string: {}", s);
-                if s.starts_with(item_name) {
-                    let chars = s.chars().collect::<Vec<char>>();
-                    let count_str = chars[4..chars.len() - 5].iter().collect::<String>();
-                    let count = match count_str.parse::<u32>() {
-                        Ok(v) => v,
-                        Err(_) => {
-                            return Err(anyhow::anyhow!("无法识别物品数量"));
-                        },
-                    };
-                    return Ok(count);
-                }
-            }
-
-            Err(anyhow::anyhow!("无法识别物品数量"))
-        } else {
-            Ok(count)
-        }
     }
 
     pub fn wait_until_switched(&mut self) -> bool {

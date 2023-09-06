@@ -101,8 +101,8 @@ pub struct ArtifactStat {
 pub struct GenshinArtifact {
     pub set_name: ArtifactSetName,
     pub slot: ArtifactSlot,
-    pub star: u32,
-    pub level: u32,
+    pub star: u8,
+    pub level: u8,
     pub main_stat: ArtifactStat,
     pub sub_stat_1: Option<ArtifactStat>,
     pub sub_stat_2: Option<ArtifactStat>,

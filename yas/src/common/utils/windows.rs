@@ -29,7 +29,10 @@ pub fn encode_lpcstr(s: &str) -> Vec<i8> {
 }
 
 fn encode_wide_with_null(s: impl AsRef<str>) -> Vec<u16> {
-    let wide: Vec<u16> = OsStr::new(s.as_ref()).encode_wide().chain(once(0)).collect();
+    let wide: Vec<u16> = OsStr::new(s.as_ref())
+        .encode_wide()
+        .chain(once(0))
+        .collect();
     wide
 }
 

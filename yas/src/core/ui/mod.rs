@@ -1,3 +1,5 @@
+use crate::common::pos::Size;
+
 pub mod os;
 
 pub enum WindowSize {
@@ -11,33 +13,22 @@ pub enum WindowSize {
     MacOS8x5,
 }
 
-// pub fn from_pc(size: Size, pos: Pos) {}
-
-// impl ScanInfo for SharedScanInfo {
-//     fn from_pc(width: u32, height: u32, left: i32, top: i32) -> SharedScanInfo {
-//         if height * 43 == width * 18 {
-//             WINDOW_43_18.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 16 == width * 9 {
-//             WINDOW_16_9.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 8 == width * 5 {
-//             WINDOW_8_5.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 4 == width * 3 {
-//             WINDOW_4_3.to_scan_info(height as f64, width as f64, left, top)
-//         } else if height * 7 == width * 3 {
-//             WINDOW_7_3.to_scan_info(height as f64, width as f64, left, top)
-//         } else {
-//             // 不支持的分辨率
-//             panic!("不支持的分辨率");
-//         }
-//     }
-
-//     fn from_mobile(width: u32, height: u32, left: i32, top: i32) -> SharedScanInfo {
-//         if (height as i32 * 8 - width as i32 * 5).abs() < 20 {
-//             // 窗口状态下的 playcover 分辨率长宽无法整除
-//             WINDOW_MAC_8_5.to_scan_info(height as f64, width as f64, left, top)
-//         } else {
-//             // 不支持的分辨率
-//             panic!("不支持的分辨率");
-//         }
-//     }
-// }
+impl WindowSize {
+    pub fn new(size: Size) -> Self {
+        if size.height * 43 == size.width * 18 {
+            WindowSize::Windows43x18
+        } else if size.height * 16 == size.width * 9 {
+            WindowSize::Windows16x9
+        } else if size.height * 8 == size.width * 5 {
+            WindowSize::Windows8x5
+        } else if size.height * 4 == size.width * 3 {
+            WindowSize::Windows4x3
+        } else if size.height * 7 == size.width * 3 {
+            WindowSize::WIndows7x3
+        } else if (size.height as i32 * 8 - size.width as i32 * 5).abs() < 20 {
+            WindowSize::MacOS8x5
+        } else {
+            crate::error_and_quit!("不支持的分辨率");
+        }
+    }
+}

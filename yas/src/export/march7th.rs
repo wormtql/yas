@@ -4,10 +4,7 @@ use std::io::prelude::*;
 
 use serde::ser::{Serialize, SerializeMap, Serializer};
 
-use crate::core::starrail::{
-    RelicSetName, RelicSlot, RelicStat, RelicStatName, StarrailRelic,
-};
-
+use crate::core::starrail::{RelicSetName, RelicSlot, RelicStat, RelicStatName, StarrailRelic};
 
 type March7thRelic = StarrailRelic;
 
@@ -42,7 +39,6 @@ impl RelicStatName {
 
 impl RelicSetName {
     pub fn to_march7th(&self) -> String {
-        let same = self.to_string();
         let temp = match self {
             RelicSetName::PasserbyofWanderingCloud => "PasserbyofWanderingCloud",
             RelicSetName::MusketeerofWildWheat => "MusketeerofWildWheat",
@@ -68,7 +64,6 @@ impl RelicSetName {
             RelicSetName::BrokenKeel => "BrokenKeel",
             RelicSetName::LongevousDisciple => "LongevousDisciple",
             RelicSetName::MessengerTraversingHackerspace => "MessengerTraversingHackerspace",
-            _ => same.as_str(),
         };
         String::from(temp)
     }
@@ -177,7 +172,6 @@ impl<'a> March7thFormat<'a> {
         let mut hands: Vec<&March7thRelic> = Vec::new();
         let mut body: Vec<&March7thRelic> = Vec::new();
         let mut feet: Vec<&March7thRelic> = Vec::new();
-        let mut head: Vec<&March7thRelic> = Vec::new();
         let mut sphere: Vec<&March7thRelic> = Vec::new();
         let mut rope: Vec<&March7thRelic> = Vec::new();
 

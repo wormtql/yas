@@ -8,9 +8,9 @@ use enigo::*;
 
 pub fn mac_scroll(enigo: &mut Enigo, count: i32) {
     utils::sleep(10);
-    for j in 0..count {
+    for _j in 0..count {
         enigo.mouse_down(MouseButton::Left);
-        for i in 0..5 {
+        for _i in 0..5 {
             enigo.mouse_move_relative(0, -2);
             utils::sleep(10);
         }
@@ -50,7 +50,7 @@ pub fn get_pid_and_ui() -> (i32, UI) {
         String::from_utf8_unchecked(
             std::process::Command::new("sh")
                 .arg("-c")
-                .arg(&format!(r#"ps -Aj | grep [Y]uanshen | cut -f 2 -w"#))
+                .arg(r#"ps -Aj | grep [Y]uanshen | cut -f 2 -w"#)
                 .output()
                 .unwrap()
                 .stdout,
@@ -61,9 +61,7 @@ pub fn get_pid_and_ui() -> (i32, UI) {
         String::from_utf8_unchecked(
             std::process::Command::new("sh")
                 .arg("-c")
-                .arg(&format!(
-                    r#"top -l 1 -o mem | grep wine64-preloader | head -n 1 | sed 's/^[ ]*//' | cut -d ' ' -f 1"#
-                ))
+                .arg(r#"top -l 1 -o mem | grep wine64-preloader | head -n 1 | sed 's/^[ ]*//' | cut -d ' ' -f 1"#)
                 .output()
                 .unwrap()
                 .stdout,

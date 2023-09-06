@@ -10,13 +10,13 @@ pub trait ImageConvExt {
 
 impl ImageConvExt for GrayImageFloat {
     fn to_common_grayscale(&self) -> GrayImage {
-        let img = ImageBuffer::from_fn(self.width(), self.height(), |x, y| {
+        
+        ImageBuffer::from_fn(self.width(), self.height(), |x, y| {
             let pv = self.get_pixel(x, y)[0];
             let pixel = (pv * 255.0) as u32;
             let pixel: u8 = if pixel > 255 { 255 } else { pixel as _ };
             image::Luma([pixel])
-        });
-        img
+        })
     }
 }
 
@@ -144,44 +144,40 @@ pub fn crop(im: &GrayImageFloat) -> GrayImageFloat {
 }
 
 pub fn raw_to_img(im: &RawImage) -> GrayImage {
-    let (width, height) = *im.size;
+    let (width, height) = (im.size.width, im.size.height);
     let data = &im.data;
 
-    let img = ImageBuffer::from_fn(width, height, |x, y| {
+    
+
+    ImageBuffer::from_fn(width, height, |x, y| {
         let index = get_index(width, x, y);
         let p = data[index];
         let pixel = (p * 255.0) as u32;
         let pixel: u8 = if pixel > 255 {
             255
-        } else if pixel < 0 {
-            0
         } else {
             pixel as u8
         };
         Luma([pixel])
-    });
-
-    img
+    })
 }
 
 pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
-    let (width, height) = *im.size;
+    let (width, height) = (im.size.width, im.size.height);
     let data = &im.data;
 
-    let img = ImageBuffer::from_fn(width, height, |x, y| {
+    
+
+    ImageBuffer::from_fn(width, height, |x, y| {
         let index = get_index(width, x, y);
         let pixel = data[index] as u32;
         let pixel: u8 = if pixel > 255 {
             255
-        } else if pixel < 0 {
-            0
         } else {
             pixel as u8
         };
         Luma([pixel])
-    });
-
-    img
+    })
 }
 
 pub fn resize_and_pad(im: &GrayImageFloat) -> GrayImageFloat {
@@ -251,5 +247,8 @@ pub fn image_to_raw(im: GrayImage) -> RawImage {
         }
     }
 
-    RawImage { data, size: Size::new(w, h) }
+    RawImage {
+        data,
+        size: Size::new(w, h),
+    }
 }

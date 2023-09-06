@@ -7,8 +7,8 @@ pub mod utils;
 
 use crate::core::inference::pre_process::{raw_to_img, uint8_raw_to_img};
 use image::{GrayImage, ImageBuffer};
-use serde::Deserialize;
 pub use pos::*;
+use serde::Deserialize;
 
 pub enum UI {
     Desktop,
@@ -25,7 +25,6 @@ pub struct RawCaptureImage {
     pub size: Size,
 }
 
-
 #[derive(Deserialize)]
 pub struct GithubTag {
     pub name: String,
@@ -40,11 +39,11 @@ pub enum ScrollResult {
 
 impl RawImage {
     pub fn to_gray_image(&self) -> GrayImage {
-        raw_to_img(&self)
+        raw_to_img(self)
     }
 
     pub fn grayscale_to_gray_image(&self) -> GrayImage {
-        uint8_raw_to_img(&self)
+        uint8_raw_to_img(self)
     }
 }
 
@@ -81,14 +80,14 @@ impl RawCaptureImage {
                 let r: u8 = self.data[(j * w + x) * 4 + 2];
 
                 let gray = r as f32 * 0.2989 + g as f32 * 0.5870 + b as f32 * 0.1140;
-                let new_index = ((j - y) * w + i - x) as usize;
+                let new_index = (j - y) * w + i - x;
                 data[new_index] = gray;
             }
         }
 
         RawImage {
             data,
-            size: rect.size
+            size: rect.size,
         }
     }
 }

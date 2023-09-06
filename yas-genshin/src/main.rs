@@ -5,13 +5,13 @@ use std::time::SystemTime;
 #[cfg(target_os = "macos")]
 use yas::common::utils::get_pid_and_ui;
 use yas::common::{utils, UI};
-use yas::common::{Rect, RawImage};
+use yas::common::{RawImage, Rect};
 use yas::export::good::GOODFormat;
 use yas::export::mingyu_lab::MingyuLabFormat;
 use yas::export::mona_uranai::MonaFormat;
 
-use yas::inference::pre_process::image_to_raw;
 use yas::core::info;
+use yas::inference::pre_process::image_to_raw;
 use yas::scanner::genshin::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};
@@ -165,12 +165,8 @@ fn main() -> Result<()> {
     match ui {
         UI::Desktop => {
             info!("desktop ui");
-            info = info::ScanInfo::from_pc(
-                rect.width as u32,
-                rect.height as u32,
-                rect.left,
-                rect.top,
-            );
+            info =
+                info::ScanInfo::from_pc(rect.width as u32, rect.height as u32, rect.left, rect.top);
         },
         UI::Mobile => {
             info!("mobile ui");
@@ -183,15 +179,9 @@ fn main() -> Result<()> {
         },
     }
 
-    let offset_x = matches
-        .value_of("offset-x")
-        .unwrap_or("0")
-        .parse::<i32>()?;
+    let offset_x = matches.value_of("offset-x").unwrap_or("0").parse::<i32>()?;
 
-    let offset_y = matches
-        .value_of("offset-y")
-        .unwrap_or("0")
-        .parse::<i32>()?;
+    let offset_y = matches.value_of("offset-y").unwrap_or("0").parse::<i32>()?;
 
     info.left += offset_x;
     info.top += offset_y;

@@ -1,5 +1,5 @@
-use super::*;
 use super::ui::WindowSize;
+use super::*;
 
 pub fn get_window_info(size: WindowSize) -> &'static StarRailWindowInfo {
     match size {
@@ -9,10 +9,9 @@ pub fn get_window_info(size: WindowSize) -> &'static StarRailWindowInfo {
         // WindowSize::Windows8x5 => &WINDOW_8_5,
         // WindowSize::Windows4x3 => &WINDOW_4_3,
         // WindowSize::MacOS8x5 => &WINDOW_MAC_8_5,
-        _ => unimplemented!()
+        _ => unimplemented!(),
     }
 }
-
 
 // pub const WINDOW_43_18: StarRailWindowInfo = StarRailWindowInfo {
 //     width: 3440.0,
@@ -141,7 +140,6 @@ pub fn get_window_info(size: WindowSize) -> &'static StarRailWindowInfo {
 //     pool_pos: Rect(118.2, 1218.7 + 15.0, 510.3, 1218.7),
 // };
 
-
 // pub const WINDOW_8_5: StarRailWindowInfo = StarRailWindowInfo {
 //     width: 1440.0,
 //     height: 900.0,
@@ -176,7 +174,6 @@ pub fn get_window_info(size: WindowSize) -> &'static StarRailWindowInfo {
 //     pool_pos: Rect(103.6, 1025.8 + 15.0, 460.7, 1028.5),
 // };
 
-
 // pub const WINDOW_4_3: StarRailWindowInfo = StarRailWindowInfo {
 //     width: 1280.0,
 //     height: 960.0,
@@ -210,7 +207,6 @@ pub fn get_window_info(size: WindowSize) -> &'static StarRailWindowInfo {
 //     star_y: 95.8,
 //     pool_pos: Rect(93.2, 912.7 + 15.0, 412.4, 912.7),
 // };
-
 
 // pub const WINDOW_MAC_8_5: StarRailWindowInfo = StarRailWindowInfo {
 //     width: 1164.0,

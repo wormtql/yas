@@ -1,6 +1,7 @@
-use std::sync::Arc;
+use super::*;
 use crate::common::color::Color;
-use crate::inference::inference::CRNNModel;
+use crate::core::inference::inference::CRNNModel;
+use std::sync::Arc;
 
 use enigo::Enigo;
 
@@ -27,3 +28,9 @@ pub struct YasScanner {
 
     is_cloud: bool,
 }
+
+pub trait Scanner {
+    fn scan(&mut self) -> ScanResult;
+}
+
+impl YasScanner {}

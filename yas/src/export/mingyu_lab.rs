@@ -150,7 +150,7 @@ pub struct MingyuLabFormat<'a> {
 impl<'a> MingyuLabFormat<'a> {
     pub fn new(results: &'a Vec<GenshinArtifact>) -> MingyuLabFormat {
         let artifacts: Vec<MingyuLabArtifact<'a>> = results
-            .into_iter()
+            .iter()
             .filter(|artifact| {
                 artifact.set_name != ArtifactSetName::Adventurer
                     && artifact.set_name != ArtifactSetName::LuckyDog
@@ -167,9 +167,8 @@ impl<'a> MingyuLabFormat<'a> {
             Ok(file) => file,
         };
         let s = serde_json::to_string(&self.artifacts).unwrap();
-        match file.write_all(s.as_bytes()) {
-            Err(why) => panic!("couldn't write to {}: {}", path, why),
-            _ => {},
+        if let Err(why) = file.write_all(s.as_bytes()) {
+            panic!("couldn't write to {}: {}", path, why)
         }
     }
 }

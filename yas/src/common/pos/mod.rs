@@ -33,13 +33,13 @@ pub struct RectBound<T = i32> {
 }
 
 impl<T> Pos<T> {
-    pub fn new(x: T, y: T) -> Pos<T> {
+    pub const fn new(x: T, y: T) -> Pos<T> {
         Pos { x, y }
     }
 }
 
 impl<T> Size<T> {
-    pub fn new(width: T, height: T) -> Size<T> {
+    pub const fn new(width: T, height: T) -> Size<T> {
         Size { width, height }
     }
 
@@ -52,7 +52,7 @@ impl<T> Size<T> {
 }
 
 impl<P, S> Rect<P, S> {
-    pub fn new(x: P, y: P, width: S, height: S) -> Rect<P, S> {
+    pub const fn new(x: P, y: P, width: S, height: S) -> Rect<P, S> {
         Rect {
             origin: Pos::new(x, y),
             size: Size::new(width, height),
@@ -60,37 +60,11 @@ impl<P, S> Rect<P, S> {
     }
 }
 
-impl<T> Deref for Size<T>
-where
-    T: Copy,
-{
-    type Target = (T, T);
-
-    fn deref(&self) -> &Self::Target {
-        &(self.width, self.height)
-    }
-}
-
-impl<T> Deref for Pos<T>
-where
-    T: Copy,
-{
-    type Target = (T, T);
-
-    fn deref(&self) -> &Self::Target {
-        &(self.x, self.y)
-    }
-}
-
 impl<T> RectBound<T>
 where
     T: PartialOrd,
 {
-    pub fn new(left: T, top: T, right: T, bottom: T) -> RectBound<T> {
-        if left > right || top > bottom {
-            panic!("Invalid bound value");
-        }
-
+    pub const fn new(left: T, top: T, right: T, bottom: T) -> RectBound<T> {
         RectBound {
             left,
             top,
@@ -102,7 +76,7 @@ where
 
 impl<I, U> From<Rect<I, U>> for RectBound<I>
 where
-    I: PartialOrd + Add<I, Output = I>,
+    I: PartialOrd + Add<I, Output = I> + Copy,
     U: PartialOrd + Into<I>,
 {
     fn from(rect: Rect<I, U>) -> RectBound<I> {
@@ -117,7 +91,7 @@ where
 
 impl<I, U> From<RectBound<I>> for Rect<I, U>
 where
-    I: PartialOrd + Sub<I, Output = I> + Into<U>,
+    I: PartialOrd + Sub<I, Output = I> + Into<U> + Copy,
     U: PartialOrd,
 {
     fn from(bound: RectBound<I>) -> Rect<I, U> {

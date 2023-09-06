@@ -1,7 +1,7 @@
 use super::*;
+mod artifact;
 mod const_info;
 mod scanner;
-mod artifact;
 pub use artifact::*;
 
 #[derive(Clone, Debug)]

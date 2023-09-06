@@ -158,12 +158,12 @@ impl ArtifactStatName {
 impl ArtifactStat {
     // e.g "生命值+4,123", "暴击率+10%"
     pub fn from_zh_cn_raw(s: &str) -> Option<ArtifactStat> {
-        let temp: Vec<&str> = s.split("+").collect();
+        let temp: Vec<&str> = s.split('+').collect();
         if temp.len() != 2 {
             return None;
         }
 
-        let is_percentage = temp[1].contains("%");
+        let is_percentage = temp[1].contains('%');
         let stat_name = match ArtifactStatName::from_zh_cn(temp[0], is_percentage) {
             Some(v) => v,
             None => return None,

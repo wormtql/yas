@@ -172,7 +172,7 @@ pub struct GOODFormat<'a> {
 impl<'a> GOODFormat<'a> {
     pub fn new(results: &'a Vec<GenshinArtifact>) -> GOODFormat {
         let artifacts: Vec<GOODArtifact<'a>> = results
-            .into_iter()
+            .iter()
             .map(|artifact| GOODArtifact { artifact })
             .collect();
         GOODFormat {

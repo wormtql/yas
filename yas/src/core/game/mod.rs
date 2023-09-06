@@ -9,14 +9,14 @@ type S = Size<WindowInfoType>;
 
 #[derive(Clone, Debug)]
 pub enum WindowInfo {
-    StarRail(starrail::StarRailWindowInfo),
     Genshin(genshin::GenshinWindowInfo),
+    StarRail(starrail::StarRailWindowInfo),
 }
 
 #[derive(Clone, Debug)]
 pub enum ScanInfo {
-    StarRail(starrail::StarRailScanInfo),
     Genshin(genshin::GenshinScanInfo),
+    StarRail(starrail::StarRailScanInfo),
 }
 
 #[derive(Clone, Debug)]

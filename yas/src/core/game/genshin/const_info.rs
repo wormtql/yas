@@ -1,5 +1,5 @@
-use super::*;
 use super::ui::WindowSize;
+use super::*;
 
 pub fn get_window_info(size: WindowSize) -> &'static GenshinWindowInfo {
     match size {
@@ -9,7 +9,7 @@ pub fn get_window_info(size: WindowSize) -> &'static GenshinWindowInfo {
         // WindowSize::Windows8x5 => &WINDOW_8_5,
         // WindowSize::Windows4x3 => &WINDOW_4_3,
         // WindowSize::MacOS8x5 => &WINDOW_MAC_8_5,
-        _ => unimplemented!()
+        _ => unimplemented!(),
     }
 }
 
@@ -45,7 +45,7 @@ pub const WINDOW_43_18: GenshinWindowInfo = GenshinWindowInfo {
         star: P::new(3130.0, 200.0),
 
         pool_pos: R::new(170.0, 2610.0 + 30.0, 900.0, 2610.0),
-    }
+    },
 };
 
 // pub const WINDOW_7_3: GenshinWindowInfo = GenshinWindowInfo {
@@ -94,7 +94,6 @@ pub const WINDOW_16_9: GenshinWindowInfo = GenshinWindowInfo {
     //     sub_stat2_pos: Rect(427.3, 1343.0, 458.2, 1130.2),
     //     sub_stat3_pos: Rect(458.2, 1343.0, 490.9, 1130.2),
     //     sub_stat4_pos: Rect(490.9, 1343.0, 523.0, 1130.2),
-
     sub_stat_pos: [
         R::new(398.1, 1343.0, 427.3, 1130.2),
         R::new(427.3, 1343.0, 458.2, 1130.2),
@@ -132,7 +131,6 @@ pub const WINDOW_16_9: GenshinWindowInfo = GenshinWindowInfo {
     //     star_y: 123.9,
 
     //     pool_pos: Rect(118.2, 1144.7 + 15.0, 510.3, 1144.7),
-
     shared: SharedScanInfo {
         size: S::new(1600.0, 900.0),
         origin: P::new(0.0, 0.0),
@@ -158,8 +156,7 @@ pub const WINDOW_16_9: GenshinWindowInfo = GenshinWindowInfo {
         star: P::new(1469.4, 123.9),
 
         pool_pos: R::new(118.2, 1144.7 + 15.0, 510.3, 1144.7),
-    }
-
+    },
 };
 
 // pub const WINDOW_8_5: GenshinWindowInfo = GenshinWindowInfo {

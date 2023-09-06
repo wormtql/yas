@@ -12,6 +12,7 @@ mod game;
 pub use game::*;
 
 pub mod inference;
+pub mod scanner;
 
 crate::scan_info_convert! {
     pub type ScanInfoType = u32;

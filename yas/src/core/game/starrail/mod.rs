@@ -1,7 +1,7 @@
 use super::*;
 mod const_info;
-mod scanner;
 mod relic;
+mod scanner;
 pub use relic::*;
 
 #[derive(Clone, Debug)]

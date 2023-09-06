@@ -5,11 +5,11 @@ use std::time::SystemTime;
 #[cfg(target_os = "macos")]
 use yas::common::utils::get_pid_and_ui;
 use yas::common::{utils, UI};
-use yas::common::{Rect, RawImage};
+use yas::common::{RawImage, Rect};
 use yas::export::march7th::March7thFormat;
 
-use yas::inference::pre_process::image_to_raw;
 use yas::core::starrail;
+use yas::inference::pre_process::image_to_raw;
 use yas::scanner::starrail::{YasScanner, YasScannerConfig};
 
 use clap::{App, Arg};

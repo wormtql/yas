@@ -181,7 +181,7 @@ impl<'a> Serialize for MonaFormat<'a> {
 }
 
 impl<'a> MonaFormat<'a> {
-    pub fn new(results: &Vec<GenshinArtifact>) -> MonaFormat {
+    pub fn new(results: &[GenshinArtifact]) -> MonaFormat {
         let mut flower: Vec<&MonaArtifact> = Vec::new();
         let mut feather: Vec<&MonaArtifact> = Vec::new();
         let mut cup: Vec<&MonaArtifact> = Vec::new();
@@ -216,9 +216,8 @@ impl<'a> MonaFormat<'a> {
         };
         let s = serde_json::to_string(&self).unwrap();
 
-        match file.write_all(s.as_bytes()) {
-            Err(why) => panic!("couldn't write to {}: {}", path, why),
-            _ => {},
+        if let Err(why) = file.write_all(s.as_bytes()) {
+            panic!("couldn't write to {}: {}", path, why)
         }
     }
 }

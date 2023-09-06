@@ -13,8 +13,9 @@ pub mod common;
 pub mod core;
 pub mod export;
 
+pub use crate::core::{Game, Scanner, YasScannerConfig};
 use common::*;
-pub use core::{Game, Scanner, YasScannerConfig};
+use core::ScanResult;
 
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
@@ -41,4 +42,16 @@ pub fn get_scanner(model: &[u8], content: &str) -> Scanner {
     let scan_info = window_info.get_scan_info(game_info.window.size);
 
     Scanner::new(scan_info, config, game_info, model, content)
+}
+
+pub fn map_results_to<'a, T>(results: &'a [ScanResult]) -> Vec<T>
+where
+    T: TryFrom<&'a ScanResult, Error = ()>,
+{
+    results
+        .iter()
+        .map(|r| T::try_from(r))
+        .filter(|r| r.is_ok())
+        .map(|r| r.unwrap())
+        .collect::<Vec<_>>()
 }

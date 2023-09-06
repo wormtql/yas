@@ -1,4 +1,5 @@
 use anyhow::Result;
+use yas::core::starrail::StarrailRelic;
 
 const MODEL: &[u8] = include_bytes!("../models/model_training.onnx");
 const CONTENT: &str = include_str!("../models/index_2_word.json");
@@ -10,7 +11,9 @@ fn main() -> Result<()> {
 
     let results = scanner.scan()?;
 
-    println!("{:#?}", results);
+    let relics = yas::map_results_to::<StarrailRelic>(&results);
+
+    println!("{:#?}", relics);
 
     Ok(())
 }

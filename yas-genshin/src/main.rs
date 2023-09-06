@@ -1,4 +1,5 @@
 use anyhow::Result;
+use yas::core::genshin::GenshinArtifact;
 
 const MODEL: &[u8] = include_bytes!("../models/model_training.onnx");
 const CONTENT: &str = include_str!("../models/index_2_word.json");
@@ -10,7 +11,9 @@ fn main() -> Result<()> {
 
     let results = scanner.scan()?;
 
-    println!("{:#?}", results);
+    let artifacts = yas::map_results_to::<GenshinArtifact>(&results);
+
+    println!("{:#?}", artifacts);
 
     Ok(())
 }

@@ -271,10 +271,10 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
     }
 }
 
-impl TryFrom<ScanResult> for GenshinArtifact {
+impl TryFrom<&ScanResult> for GenshinArtifact {
     type Error = ();
 
-    fn try_from(value: ScanResult) -> Result<Self, Self::Error> {
+    fn try_from(value: &ScanResult) -> Result<Self, Self::Error> {
         let set_name = ArtifactSetName::from_zh_cn(&value.name).ok_or(())?;
         let slot = ArtifactSlot::from_zh_cn(&value.name).ok_or(())?;
         let star = value.star;

@@ -225,10 +225,10 @@ pub fn get_real_relic_name_chs(raw: &str) -> Option<String> {
     }
 }
 
-impl TryFrom<ScanResult> for StarrailRelic {
+impl TryFrom<&ScanResult> for StarrailRelic {
     type Error = ();
 
-    fn try_from(value: ScanResult) -> Result<Self, Self::Error> {
+    fn try_from(value: &ScanResult) -> Result<Self, Self::Error> {
         let set_name = RelicSetName::from_zh_cn(&value.name).ok_or(())?;
         let slot = RelicSlot::from_zh_cn(&value.name).ok_or(())?;
         let star = value.star;

@@ -7,8 +7,8 @@ use image::RgbImage;
 use std::ops::*;
 use std::sync::Arc;
 
-mod scan;
 mod control;
+mod scan;
 
 pub use scan::get_model_inference_func;
 

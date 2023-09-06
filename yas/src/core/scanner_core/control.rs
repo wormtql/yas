@@ -68,7 +68,7 @@ impl ScannerCore {
     pub fn scroll_one_row(&mut self) -> ScrollResult {
         #[cfg(target_os = "macos")]
         let (_, ui) = get_pid_and_ui();
-        
+
         let mut state = 0;
         let mut count = 0;
         let max_scroll = 25;

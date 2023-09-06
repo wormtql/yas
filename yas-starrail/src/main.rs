@@ -18,7 +18,7 @@ fn main() -> Result<()> {
     let now = SystemTime::now();
     #[cfg(target_os = "macos")]
     {
-        info!("初始化完成，请切换到崩坏：星穹铁道窗口，Yas 将在10s后开始扫描遗器");
+        info!("初始化完成，请切换到崩坏：星穹铁道窗口，Yas 将在10s后开始扫描");
         yas::common::utils::sleep(10000);
     }
 

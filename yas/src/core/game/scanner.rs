@@ -4,6 +4,7 @@ use std::ops::DerefMut;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 use std::{collections::HashSet, fs};
+use std::path::Path;
 
 use super::genshin::GenshinScanner;
 use super::starrail::StarRailScanner;
@@ -185,8 +186,9 @@ impl Scanner {
             let mut consecutive_dup_count = 0;
             let model_inference = get_model_inference_func(dump_mode, model, panel_origin);
 
-            if is_dump_mode {
-                fs::create_dir("dumps").unwrap();
+            let dump_path = Path::new("dumps");
+            if is_dump_mode && !dump_path.exists() {
+                fs::create_dir(dump_path).unwrap();
             }
 
             for (cnt, item) in rx.into_iter().enumerate() {

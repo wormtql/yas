@@ -61,7 +61,7 @@ impl ScannerCore {
         let max_count = match crate::TARGET_GAME.get().unwrap() {
             Game::Genshin => 1800,
             Game::StarRail => 1500,
-            _ => crate::error_and_quit!("不支持的游戏类型"),
+            _ => unimplemented!("不支持的游戏"),
         };
 
         if count > 0 {
@@ -122,7 +122,10 @@ pub fn get_model_inference_func(
             .to_image();
 
         if dump_mode {
-            dump_image(&raw_img, format!("dumps/{}_{}.png", name, cnt));
+            dump_image(
+                &raw_img,
+                Path::new("dumps").join(format!("{}_{}.png", name, cnt)),
+            );
         }
 
         let processed_img = match pre_process(raw_img) {
@@ -131,13 +134,19 @@ pub fn get_model_inference_func(
         };
 
         if dump_mode {
-            dump_image(&processed_img, format!("dumps/p_{}_{}.png", name, cnt));
+            dump_image(
+                &processed_img,
+                Path::new("dumps").join(format!("p_{}_{}.png", name, cnt)),
+            );
         }
 
         let inference_result = model.inference_string(&processed_img)?;
 
         if dump_mode {
-            dump_text(&inference_result, format!("dumps/t_{}_{}.txt", name, cnt));
+            dump_text(
+                &inference_result,
+                Path::new("dumps").join(format!("t_{}_{}.txt", name, cnt)),
+            );
         }
 
         Ok(inference_result)
@@ -148,19 +157,28 @@ pub fn get_model_inference_func(
 
 fn dump_image<Q>(image: &GrayImageFloat, path: Q)
 where
-    Q: AsRef<Path> + Display,
+    Q: AsRef<Path>,
 {
     if let Err(e) = image.to_common_grayscale().save(&path) {
-        error!("Error when dumping image to {}: {}", &path, e);
+        error!(
+            "Error when dumping image to {}: {}",
+            &path.as_ref().display(),
+            e
+        );
     }
 }
 
 fn dump_text<Q, C>(contents: C, path: Q)
 where
-    Q: AsRef<Path> + Display,
+    Q: AsRef<Path>,
     C: AsRef<[u8]> + Display,
 {
     if let Err(e) = fs::write(&path, &contents) {
-        error!("Error when dumping text to {}: {}\n{}", &path, e, &contents);
+        error!(
+            "Error when dumping text to {}: {}\n{}",
+            &path.as_ref().display(),
+            e,
+            &contents
+        );
     }
 }

@@ -1,6 +1,5 @@
 use std::fmt::Arguments;
 use std::fs;
-use std::process;
 use std::thread;
 use std::time::Duration;
 
@@ -30,8 +29,7 @@ pub fn read_file_to_string(path: String) -> String {
 
 #[doc(hidden)]
 pub fn error_and_quit_internal(args: Arguments) -> ! {
-    error!("Error: {}", args);
-    process::exit(0);
+    panic!("Error: {}", args);
 }
 
 #[macro_export]

@@ -1,6 +1,7 @@
 mod ops;
 mod scale;
 
+use std::fmt::Debug;
 use std::ops::*;
 
 pub use ops::*;
@@ -64,7 +65,7 @@ impl<T> RectBound<T>
 where
     T: PartialOrd,
 {
-    pub const fn new(left: T, top: T, right: T, bottom: T) -> RectBound<T> {
+    pub const fn new(top: T, right: T, bottom: T, left: T) -> RectBound<T> {
         RectBound {
             left,
             top,
@@ -91,11 +92,11 @@ where
 
 impl<I> From<&RectBound<I>> for Rect<I, I>
 where
-    I: PartialOrd + Sub<I, Output = I> + Copy,
+    I: PartialOrd + Sub<I, Output = I> + Copy + Debug,
 {
     fn from(bound: &RectBound<I>) -> Rect<I, I> {
         if bound.left > bound.right || bound.top > bound.bottom {
-            crate::error_and_quit!("Invalid bound value");
+            crate::error_and_quit!("Invalid bound value: {:?}", &bound);
         }
 
         Rect::new(

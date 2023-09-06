@@ -4,6 +4,7 @@ mod relic;
 mod scanner;
 pub use const_info::get_window_info;
 pub use relic::*;
+pub use scanner::*;
 
 #[derive(Clone, Debug)]
 pub struct StarRailScanInfo<T = ScanInfoType> {

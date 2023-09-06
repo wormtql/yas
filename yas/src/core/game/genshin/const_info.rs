@@ -1,15 +1,15 @@
-use super::ui::WindowSize;
+use super::ui::Resolution;
 use super::*;
 
-pub fn get_window_info(size: WindowSize) -> &'static GenshinWindowInfo {
+pub fn get_window_info(size: Resolution) -> &'static GenshinWindowInfo {
     match size {
-        WindowSize::Windows43x18 => &WINDOW_43_18,
+        Resolution::Windows43x18 => &WINDOW_43_18,
         // WindowSize::WIndows7x3 => &WINDOW_7_3,
-        WindowSize::Windows16x9 => &WINDOW_16_9,
+        Resolution::Windows16x9 => &WINDOW_16_9,
         // WindowSize::Windows8x5 => &WINDOW_8_5,
         // WindowSize::Windows4x3 => &WINDOW_4_3,
         // WindowSize::MacOS8x5 => &WINDOW_MAC_8_5,
-        _ => unimplemented!(),
+        _ => crate::error_and_quit!("不支持的分辨率"),
     }
 }
 

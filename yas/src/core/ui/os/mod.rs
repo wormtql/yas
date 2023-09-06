@@ -1,9 +1,12 @@
 use crate::common::*;
 
+use super::Resolution;
+
 pub struct GameInfo {
-    pub window_pos: Rect,
+    pub window: Rect,
+    pub resolution: Resolution,
     pub is_cloud: bool,
-    pub ui: UI,
+    pub ui: Ui,
 }
 
 #[cfg(windows)]

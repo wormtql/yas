@@ -1,6 +1,7 @@
 use crate::common::*;
 use std::ops::Deref;
 pub mod ui;
+pub use ui::*;
 
 mod config;
 pub use config::*;
@@ -73,9 +74,4 @@ impl SharedScanInfo<f64> {
     pub fn move_to(&mut self, pos: Pos<f64>) {
         self.origin = pos;
     }
-}
-
-pub trait ScanInfoConvert {
-    fn from_pc(width: u32, height: u32, left: i32, top: i32) -> Self;
-    fn from_mobile(width: u32, height: u32, left: i32, top: i32) -> Self;
 }

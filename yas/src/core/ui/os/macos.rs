@@ -1,4 +1,4 @@
-use crate::common::utils::*;
+use crate::{common::utils::*, core::ui::Resolution};
 
 use super::GameInfo;
 
@@ -10,7 +10,8 @@ pub fn get_game_window() -> GameInfo {
     info!("Found genshin pid: {}, window name: {}", pid, window_title);
 
     GameInfo {
-        window_pos: rect,
+        window: rect,
+        resolution: Resolution::new(rect.size),
         is_cloud: false,
         ui,
     }

@@ -9,7 +9,7 @@ use image::{GrayImage, ImageBuffer};
 pub use pos::*;
 use serde::Deserialize;
 
-pub enum UI {
+pub enum Ui {
     Desktop,
     Mobile,
 }

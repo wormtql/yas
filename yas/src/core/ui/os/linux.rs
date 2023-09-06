@@ -42,6 +42,7 @@ pub fn get_game_window() -> GameInfo {
 
     GameInfo {
         window_pos: rect,
+        size: WindowSize::new(rect.size),
         is_cloud: false,
         ui: UI::Desktop,
     }

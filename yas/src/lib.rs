@@ -1,7 +1,6 @@
-use core::Game;
-
 use env_logger::Builder;
 use once_cell::sync::OnceCell;
+use clap::Parser;
 
 #[macro_use]
 extern crate log;
@@ -13,6 +12,12 @@ pub mod core;
 pub mod export;
 
 use common::utils;
+
+pub use core::{
+    Game,
+    Scanner,
+    YasScannerConfig
+};
 
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
@@ -29,4 +34,14 @@ pub fn init_env(game: Game) {
     if let Some(v) = utils::check_update() {
         warn!("检测到新版本，请手动更新：{}", v);
     }
+}
+
+pub fn get_scanner(model: &[u8], content: String) -> Scanner {
+    let config = YasScannerConfig::parse();
+    let game_info = core::ui::get_game_window();
+
+    let window_info = core::get_window_info(game_info.resolution);
+    let scan_info = window_info.get_scan_info(game_info.window.size);
+
+    Scanner::new(scan_info, config, game_info, model, content)
 }

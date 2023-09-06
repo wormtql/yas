@@ -4,6 +4,7 @@ version = "0.1.14"
 edition = "2021"
 description = "Mihoyo game item scanner library"
 repository = "https://github.com/wormtql/yas"
+authors = ["wormtql <584130248@qq.com>"]
 keywords = ["GenshinImpact", "artifacts", "scanner", "ocr"]
 license = "GPL-2.0-or-later"
 

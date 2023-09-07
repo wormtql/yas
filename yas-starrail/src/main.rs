@@ -10,7 +10,7 @@ const MODEL: &[u8] = include_bytes!("../models/model_training.onnx");
 const CONTENT: &str = include_str!("../models/index_2_word.json");
 
 fn main() -> Result<()> {
-    yas::init_env(yas::Game::StarRail);
+    yas::init_env(yas::Game::StarRail)?;
 
     let mut scanner = yas::get_scanner(MODEL, CONTENT)?;
 
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn test() {
-        yas::init_env(yas::Game::Genshin);
+        yas::init_env(yas::Game::Genshin).unwrap();
 
         CRNNModel::new(MODEL, CONTENT).expect("Failed to load model");
     }

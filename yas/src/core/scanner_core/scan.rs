@@ -84,7 +84,7 @@ impl ScannerCore {
             },
         };
 
-        info!("raw count string: {}", s);
+        info!("物品信息: {}", s);
 
         if s.starts_with(item_name) {
             let chars = s.chars().collect::<Vec<char>>();

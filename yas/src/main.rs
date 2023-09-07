@@ -13,7 +13,7 @@ const STARRAIL_MODEL: &[u8] = include_bytes!("../../yas-starrail/models/model_tr
 const STARRAIL_CONTENT: &str = include_str!("../../yas-starrail/models/index_2_word.json");
 
 fn main() -> Result<()> {
-    yas::init_env(yas::CONFIG.game);
+    yas::init_env(yas::CONFIG.game)?;
 
     let (model, content) = match yas::CONFIG.game {
         yas::Game::Genshin => (GENSHIN_MODEL, GENSHIN_CONTENT),

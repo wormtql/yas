@@ -1,11 +1,13 @@
 use anyhow::Result;
 use enigo::{MouseButton, MouseControllable};
+use indicatif::ProgressBar;
 use std::collections::HashSet;
 use std::ops::DerefMut;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 
 use crate::common::cancel::CancellationToken;
+use crate::*;
 
 use super::genshin::GenshinScanner;
 use super::starrail::StarRailScanner;
@@ -56,7 +58,7 @@ impl Scanner {
         let (tx, rx) = mpsc::channel::<Option<ItemImage>>();
         let token = self.cancellation_token.clone();
 
-        let worker = self.worker(rx, token);
+        let worker = self.worker(rx, count, token);
 
         self.send(&tx, count);
 
@@ -71,6 +73,11 @@ impl Scanner {
     }
 
     fn send(&mut self, tx: &Sender<Option<ItemImage>>, count: usize) {
+        let progress_bar = ProgressBar::new(count as u64)
+            .with_prefix("扫描物品")
+            .with_style(PROGRESS_STYLE.clone());
+        let progress_bar = MULTI_PROGRESS.add(progress_bar);
+
         let mut scanned_row = 0;
         let mut scanned_count = 0;
         let mut start_row = 0;
@@ -82,9 +89,10 @@ impl Scanner {
             count % self.col
         };
 
-        info!("Detected count: {}", count);
-        info!("Total row: {}", total_row);
-        info!("Last column: {}", last_row_col);
+        info!(
+            "开始扫描，共 {} 个物品 {} 行，尾行 {} 个",
+            count, total_row, last_row_col
+        );
 
         self.move_to(0, 0);
 
@@ -130,6 +138,17 @@ impl Scanner {
                         break 'outer;
                     }
 
+                    if self.cancellation_token.cancelled() {
+                        break 'outer;
+                    }
+
+                    progress_bar.inc(1);
+                    progress_bar.set_message(format!(
+                        "[{:>2},{:>2}] {} 星",
+                        scanned_row + row,
+                        col,
+                        star
+                    ));
                     tx.send(Some(ItemImage { image, star })).ok();
 
                     scanned_count += 1;
@@ -163,11 +182,15 @@ impl Scanner {
 
             utils::sleep(100);
         }
+
+        progress_bar.finish_with_message(format!("扫描结束，共扫描 {} 个物品", scanned_count));
+        MULTI_PROGRESS.remove(&progress_bar);
     }
 
     fn worker(
         &self,
         rx: Receiver<Option<ItemImage>>,
+        count: usize,
         token: CancellationToken,
     ) -> JoinHandle<Vec<ScanResult>> {
         let is_verbose = self.config.verbose;
@@ -180,10 +203,13 @@ impl Scanner {
             Scanner::Genshin(_) => GenshinScanner::scan_item_image,
             Scanner::StarRail(_) => StarRailScanner::scan_item_image,
         };
+        let progress_bar = ProgressBar::new(count as u64)
+            .with_prefix("识别属性")
+            .with_style(PROGRESS_STYLE.clone());
+        let progress_bar = MULTI_PROGRESS.add(progress_bar);
 
         thread::spawn(move || {
-            let mut results: Vec<ScanResult> = Vec::new();
-            let mut dup_count = 0;
+            let mut results = Vec::new();
             let mut hash = HashSet::new();
             let mut consecutive_dup_count = 0;
             let model_inference = get_model_inference_func(dump_mode, model, panel_origin);
@@ -197,16 +223,20 @@ impl Scanner {
                 let result = match scan_item_image(&model_inference, &info, item, cnt) {
                     Ok(v) => v,
                     Err(e) => {
-                        error!("扫描错误: {}", e);
+                        error!("识别错误: {}", e);
                         continue;
                     },
                 };
 
                 if is_verbose {
                     info!("{:?}", result);
-                } else {
-                    info!("[{:>3}] {}({}): {}", cnt, result.name, result.level, result.main_stat_name);
                 }
+
+                progress_bar.inc(1);
+                progress_bar.set_message(format!(
+                    "[{:>5}] {}({}): {}",
+                    cnt, result.name, result.level, result.main_stat_name
+                ));
 
                 if result.level <= min_level {
                     info!("找到满足最低等级要求的物品，准备退出……");
@@ -215,9 +245,8 @@ impl Scanner {
                 }
 
                 if hash.contains(&result) {
-                    dup_count += 1;
                     consecutive_dup_count += 1;
-                    warn!("监测到重复物品: {:#?}", result);
+                    warn!("识别到重复物品: {:#?}", result);
                 } else {
                     consecutive_dup_count = 0;
                     hash.insert(result.clone());
@@ -225,7 +254,7 @@ impl Scanner {
                 }
 
                 if consecutive_dup_count >= info.item_row && !CONFIG.ignore_dup {
-                    error!("检测到连续多个重复物品，可能为翻页错误，或者为非背包顶部开始扫描");
+                    error!("识别到连续多个重复物品，可能为翻页错误，或者为非背包顶部开始扫描");
                     token.cancel();
                     break;
                 }
@@ -236,7 +265,10 @@ impl Scanner {
                 }
             }
 
-            info!("重复物品数量: {}", dup_count);
+            info!("识别结束，非重复物品数量: {}", hash.len());
+
+            progress_bar.finish();
+            MULTI_PROGRESS.remove(&progress_bar);
 
             results
         })

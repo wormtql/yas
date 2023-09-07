@@ -33,6 +33,8 @@ screenshots = "0.8"
 png = "0.17"
 anyhow = "1.0"
 once_cell = "1.18"
+indicatif-log-bridge = "0.2.2"
+indicatif = "0.17.6"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3", features = [

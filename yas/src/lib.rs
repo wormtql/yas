@@ -3,6 +3,8 @@
 
 use anyhow::Result;
 use env_logger::{Builder, Env};
+use indicatif::{MultiProgress, ProgressStyle};
+use indicatif_log_bridge::LogWrapper;
 use once_cell::sync::OnceCell;
 
 #[macro_use]
@@ -23,8 +25,20 @@ use core::ScanResult;
 
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
-pub fn init_env(game: Game) {
-    Builder::from_env(Env::default().default_filter_or("info")).init();
+lazy_static! {
+    pub static ref MULTI_PROGRESS: MultiProgress = MultiProgress::new();
+    pub static ref PROGRESS_STYLE: ProgressStyle = ProgressStyle::default_bar()
+        .template("{spinner:.green} [{elapsed_precise}] {prefix} [{bar:48.cyan/blue}] {pos:>4}/{len:4} | {msg}")
+        .unwrap()
+        .progress_chars("#>-");
+}
+
+pub fn init_env(game: Game) -> Result<()> {
+    LogWrapper::new(
+        MULTI_PROGRESS.clone(),
+        Builder::from_env(Env::default().default_filter_or("info")).build(),
+    )
+    .try_init()?;
 
     TARGET_GAME.set(game).ok();
 
@@ -45,6 +59,8 @@ pub fn init_env(game: Game) {
     if let Some(v) = utils::check_update() {
         warn!("检测到新版本，请手动更新：{}", v);
     }
+
+    Ok(())
 }
 
 pub fn get_scanner(model: &[u8], content: &str) -> Result<Scanner> {

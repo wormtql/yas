@@ -28,7 +28,7 @@ pub struct ScannerCore {
     avg_switch_time: f64,
     scanned_count: u32,
 
-    is_cloud: bool,
+    pub game_info: GameInfo,
 
     pub cancellation_token: CancellationToken,
 
@@ -96,7 +96,7 @@ impl ScannerCore {
             avg_switch_time: 0.0,
             scanned_count: 0,
 
-            is_cloud: game_info.is_cloud,
+            game_info,
 
             cancellation_token: CancellationToken::new(),
         }

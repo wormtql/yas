@@ -89,8 +89,8 @@ impl Scanner {
 
         self.move_to(0, 0);
 
-        // #[cfg(target_os = "macos")]
-        // utils::sleep(20);
+        #[cfg(target_os = "macos")]
+        utils::sleep(20);
 
         self.enigo.mouse_click(MouseButton::Left);
         utils::sleep(1000);
@@ -119,8 +119,8 @@ impl Scanner {
                     self.move_to(row, col);
                     self.enigo.mouse_click(MouseButton::Left);
 
-                    // #[cfg(target_os = "macos")]
-                    // utils::sleep(20);
+                    #[cfg(target_os = "macos")]
+                    utils::sleep(20);
 
                     self.wait_until_switched();
 
@@ -149,6 +149,10 @@ impl Scanner {
             let scroll_row = remain_row.min(self.row);
             start_row = self.row - scroll_row;
 
+            if self.cancellation_token.cancelled() {
+                break 'outer;
+            }
+
             match self.scroll_rows(scroll_row) {
                 ScrollResult::TimeLimitExceeded => {
                     error!("翻页出现问题");
@@ -159,14 +163,14 @@ impl Scanner {
             }
 
             utils::sleep(100);
-
-            if self.cancellation_token.cancelled() {
-                break 'outer;
-            }
         }
     }
 
-    fn worker(&self, rx: Receiver<Option<ItemImage>>, token: CancellationToken) -> JoinHandle<Vec<ScanResult>> {
+    fn worker(
+        &self,
+        rx: Receiver<Option<ItemImage>>,
+        token: CancellationToken,
+    ) -> JoinHandle<Vec<ScanResult>> {
         let is_verbose = self.config.verbose;
         let min_level = self.config.min_level;
         let info = self.scan_info.clone();

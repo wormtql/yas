@@ -1,10 +1,10 @@
+pub mod cancel;
 pub mod capture;
 pub mod character_name;
 pub mod color;
 pub mod draw_config;
 pub mod pos;
 pub mod utils;
-pub mod cancel;
 
 pub use capture::{Capturable, RelativeCapturable};
 pub use draw_config::DrawConfig;

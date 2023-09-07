@@ -27,15 +27,15 @@ fn get_cloud_window_name() -> &'static [&'static str] {
 fn get_window() -> (HWND, bool) {
     for name in get_game_window_name() {
         let hwnd = utils::find_window_local(name);
-        if hwnd.is_ok() {
-            return (hwnd.unwrap(), false);
+        if let Ok(hwnd) = hwnd {
+            return (hwnd, false);
         }
     }
 
     for name in get_cloud_window_name() {
         let hwnd = utils::find_window_local(name);
-        if hwnd.is_ok() {
-            return (hwnd.unwrap(), true);
+        if let Ok(hwnd) = hwnd {
+            return (hwnd, true);
         }
     }
 

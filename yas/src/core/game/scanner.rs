@@ -135,7 +135,7 @@ impl Scanner {
                     let image = self.capture_panel().unwrap();
                     let star = self.get_star();
 
-                    if star < self.config.min_star || self.cancellation_token.cancelled() {
+                    if self.cancellation_token.cancelled() || star < self.config.min_star {
                         break 'outer;
                     }
 
@@ -236,8 +236,8 @@ impl Scanner {
                     style(&result.main_stat_name).dim()
                 ));
 
-                if result.level <= min_level {
-                    info!("找到满足最低等级要求的物品，准备退出……");
+                if result.level < min_level {
+                    info!("找到满足最低等级要求 {} 的物品({})，准备退出……", min_level, result.level);
                     token.cancel();
                     break;
                 }

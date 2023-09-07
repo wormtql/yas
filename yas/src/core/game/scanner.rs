@@ -1,4 +1,5 @@
 use anyhow::Result;
+use console::style;
 use enigo::{MouseButton, MouseControllable};
 use indicatif::ProgressBar;
 use std::collections::HashSet;
@@ -134,20 +135,15 @@ impl Scanner {
                     let image = self.capture_panel().unwrap();
                     let star = self.get_star();
 
-                    if star < self.config.min_star {
-                        break 'outer;
-                    }
-
-                    if self.cancellation_token.cancelled() {
+                    if star < self.config.min_star || self.cancellation_token.cancelled() {
                         break 'outer;
                     }
 
                     progress_bar.inc(1);
                     progress_bar.set_message(format!(
-                        "[{:>2},{:>2}] {} 星",
-                        scanned_row + row,
-                        col,
-                        star
+                        "{} {}",
+                        style(format!("{} 星物品", star)).bold().cyan(),
+                        style(format!("({},{})", scanned_row + 1, col + 1,)).dim()
                     ));
                     tx.send(Some(ItemImage { image, star })).ok();
 
@@ -234,8 +230,10 @@ impl Scanner {
 
                 progress_bar.inc(1);
                 progress_bar.set_message(format!(
-                    "[{:>5}] {}({}): {}",
-                    cnt, result.name, result.level, result.main_stat_name
+                    "{}{}: {}",
+                    style(&result.name).bold().cyan(),
+                    style(format!("({})", result.level)).yellow(),
+                    style(&result.main_stat_name).dim()
                 ));
 
                 if result.level <= min_level {

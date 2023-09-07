@@ -6,9 +6,9 @@ use cocoa::{
 };
 use enigo::*;
 
-pub fn mac_scroll(enigo: &mut Enigo, count: i32) {
+pub fn mac_scroll(enigo: &mut Enigo, length: i32) {
     utils::sleep(10);
-    for _j in 0..count {
+    for _j in 0..length {
         enigo.mouse_down(MouseButton::Left);
         for _i in 0..5 {
             enigo.mouse_move_relative(0, -2);

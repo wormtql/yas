@@ -203,7 +203,9 @@ impl Scanner {
                 };
 
                 if is_verbose {
-                    info!("{:?}", &result);
+                    info!("{:?}", result);
+                } else {
+                    info!("[{:<4}]{}: {}", cnt, result.name, result.main_stat_name);
                 }
 
                 if hash.contains(&result) {
@@ -216,7 +218,7 @@ impl Scanner {
                     results.push(result);
                 }
 
-                if consecutive_dup_count >= info.item_row {
+                if consecutive_dup_count >= info.item_row && !CONFIG.ignore_dup {
                     error!("检测到连续多个重复物品，可能为翻页错误，或者为非背包顶部开始扫描");
                     token.cancel();
                     break;

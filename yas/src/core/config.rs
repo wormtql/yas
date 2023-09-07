@@ -60,6 +60,10 @@ pub struct YasScannerConfig {
     #[arg(long, default_value_t = false)]
     pub draw_config_only: bool,
 
+    /// Ignore duplicated items
+    #[arg(long, default_value_t = false)]
+    pub ignore_dup: bool,
+
     /// Export format of item info
     #[arg(short, long, value_enum, default_value_t = ExportFormat::None)]
     pub export_format: ExportFormat,

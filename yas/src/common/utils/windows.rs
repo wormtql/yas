@@ -82,18 +82,16 @@ unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<Rect, String> {
     let left: i32 = point.x;
     let top: i32 = point.y;
 
-    Result::Ok(
-        Rect {
-            origin: Pos {
-                x: left as u32,
-                y: top as u32,
-            },
-            size: Size {
-                width: width as u32,
-                height: height as u32,
-            },
-        }
-    )
+    Result::Ok(Rect {
+        origin: Pos {
+            x: left as u32,
+            y: top as u32,
+        },
+        size: Size {
+            width: width as u32,
+            height: height as u32,
+        },
+    })
 }
 
 pub fn get_client_rect(hwnd: HWND) -> Result<Rect, String> {

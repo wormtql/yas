@@ -8,34 +8,13 @@ use crate::common::utils::*;
 
 impl ScannerCore {
     pub fn align_row(&mut self) {
-        let mut count = 0;
-
-        while count < 10 {
+        for _ in 0..10 {
             if self.get_flag_color().unwrap() == self.initial_color {
                 return;
             }
-
-            #[cfg(windows)]
-            self.enigo.mouse_scroll_y(-1);
-
-            #[cfg(target_os = "linux")]
-            self.enigo.mouse_scroll_y(1);
-
-            #[cfg(target_os = "macos")]
-            {
-                match self.game_info.ui {
-                    crate::common::UI::Desktop => {
-                        self.enigo.mouse_scroll_y(-1);
-                        utils::sleep(20);
-                    },
-                    crate::common::UI::Mobile => {
-                        mac_scroll(&mut self.enigo, 1);
-                    },
-                }
-            }
+            self.mouse_scroll(1);
 
             utils::sleep(self.config.scroll_delay);
-            count += 1;
         }
     }
 
@@ -58,44 +37,31 @@ impl ScannerCore {
 
     pub fn scroll_one_row(&mut self) -> ScrollResult {
         let mut state = 0;
-        let mut count = 0;
-        let max_scroll = 25;
-        while count < max_scroll {
+
+        for count in 0..25 {
             if utils::is_rmb_down() || self.cancellation_token.cancelled() {
                 return ScrollResult::Interrupt;
             }
 
-            #[cfg(windows)]
-            self.enigo.mouse_scroll_y(-5);
-            #[cfg(target_os = "linux")]
-            self.enigo.mouse_scroll_y(1);
-            #[cfg(target_os = "macos")]
-            {
-                match self.game_info.ui {
-                    crate::common::UI::Desktop => {
-                        self.enigo.mouse_scroll_y(-1);
-                        // utils::sleep(20);
-                    },
-                    crate::common::UI::Mobile => {
-                        mac_scroll(&mut self.enigo, 1);
-                    },
-                }
-            }
+            // FIXME: Why -5 for windows?
+            // #[cfg(windows)]
+            // self.enigo.mouse_scroll_y(-5);
+
+            self.mouse_scroll(1);
+
             utils::sleep(self.config.scroll_delay);
-            count += 1;
-            if let Ok(color) = self.get_flag_color() {
-                if state == 0 && color != self.initial_color {
-                    state = 1;
-                } else if state == 1 && self.initial_color == color {
-                    self.avg_scroll_one_row = (self.avg_scroll_one_row * self.scrolled_rows as f64
-                        + count as f64)
-                        / (self.scrolled_rows as f64 + 1.0);
-                    info!("Avg scroll/row: {}", self.avg_scroll_one_row);
-                    self.scrolled_rows += 1;
-                    return ScrollResult::Success;
-                }
-            } else {
-                return ScrollResult::Failed;
+
+            let color = match self.get_flag_color() {
+                Ok(color) => color,
+                Err(_) => return ScrollResult::Failed,
+            };
+
+            if state == 0 && color != self.initial_color {
+                state = 1;
+            } else if state == 1 && self.initial_color == color {
+                self.calc_avg_row(count);
+                self.scrolled_rows += 1;
+                return ScrollResult::Success;
             }
         }
 
@@ -106,24 +72,7 @@ impl ScannerCore {
         if self.scrolled_rows >= 5 {
             let scroll = ((self.avg_scroll_one_row * count as f64 - 3.0).round() as u32).max(0);
             for _ in 0..scroll {
-                #[cfg(windows)]
-                self.enigo.mouse_scroll_y(-1);
-                #[cfg(target_os = "linux")]
-                self.enigo.mouse_scroll_y(1);
-                #[cfg(target_os = "macos")]
-                {
-                    // self.enigo.mouse_scroll_y(1);
-                    // mac_scroll(&mut self.enigo, 1);
-                    match self.game_info.ui {
-                        crate::common::UI::Desktop => {
-                            self.enigo.mouse_scroll_y(-1);
-                            utils::sleep(20);
-                        },
-                        crate::common::UI::Mobile => {
-                            mac_scroll(&mut self.enigo, 1);
-                        },
-                    }
-                }
+                self.mouse_scroll(1);
 
                 if self.cancellation_token.cancelled() {
                     return ScrollResult::Interrupt;
@@ -181,5 +130,35 @@ impl ScannerCore {
         }
 
         false
+    }
+
+    #[inline(always)]
+    fn mouse_scroll(&mut self, length: i32) {
+        #[cfg(windows)]
+        self.enigo.mouse_scroll_y(-length);
+
+        #[cfg(target_os = "linux")]
+        self.enigo.mouse_scroll_y(length);
+
+        #[cfg(target_os = "macos")]
+        {
+            match self.game_info.ui {
+                crate::common::UI::Desktop => {
+                    self.enigo.mouse_scroll_y(-length);
+                    utils::sleep(20);
+                },
+                crate::common::UI::Mobile => {
+                    mac_scroll(&mut self.enigo, length);
+                },
+            }
+        }
+    }
+
+    #[inline(always)]
+    fn calc_avg_row(&mut self, count: i32) {
+        self.avg_scroll_one_row = (self.avg_scroll_one_row * self.scrolled_rows as f64
+            + count as f64)
+            / (self.scrolled_rows as f64 + 1.0);
+        info!("Avg scroll/row: {}", self.avg_scroll_one_row);
     }
 }

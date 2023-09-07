@@ -35,7 +35,7 @@ pub enum Item {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Game {
     Genshin,
-    StarRail
+    StarRail,
 }
 
 pub fn get_window_info(resolution: Resolution) -> WindowInfo {

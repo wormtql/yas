@@ -1,10 +1,9 @@
 use anyhow::Result;
 use enigo::{MouseButton, MouseControllable};
 use std::ops::DerefMut;
-use std::path::Path;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
-use std::{collections::HashSet, fs};
+use std::collections::HashSet;
 
 use super::genshin::GenshinScanner;
 use super::starrail::StarRailScanner;
@@ -18,12 +17,11 @@ pub enum Scanner {
 impl Scanner {
     pub fn new(
         scan_info: ScanInfo,
-        config: YasScannerConfig,
         game_info: GameInfo,
         model: &[u8],
         content: &str,
     ) -> Self {
-        let core = ScannerCore::new(scan_info, config, game_info, model, content);
+        let core = ScannerCore::new(scan_info, game_info, model, content);
 
         match crate::TARGET_GAME.get().unwrap() {
             Game::Genshin => Scanner::Genshin(genshin::GenshinScanner(core)),
@@ -168,7 +166,6 @@ impl Scanner {
 
     fn worker(&self, rx: Receiver<Option<ItemImage>>) -> JoinHandle<Vec<ScanResult>> {
         let is_verbose = self.config.verbose;
-        let is_dump_mode = self.config.dump_mode;
         let min_level = self.config.min_level;
         let info = self.scan_info.clone();
         let dump_mode = self.config.dump_mode;
@@ -185,11 +182,6 @@ impl Scanner {
             let mut hash = HashSet::new();
             let mut consecutive_dup_count = 0;
             let model_inference = get_model_inference_func(dump_mode, model, panel_origin);
-
-            let dump_path = Path::new("dumps");
-            if is_dump_mode && !dump_path.exists() {
-                fs::create_dir(dump_path).unwrap();
-            }
 
             for (cnt, item) in rx.into_iter().enumerate() {
                 let item = match item {

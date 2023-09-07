@@ -2,15 +2,15 @@ pub mod good;
 pub mod mingyu_lab;
 pub mod mona_uranai;
 
-use crate::{core::genshin::GenshinArtifact, YasScannerConfig};
+use crate::*;
 use std::path::Path;
 
 use super::ExportFormat;
 
-pub fn export(config: &YasScannerConfig, results: &[GenshinArtifact]) {
-    let output_dir = Path::new(&config.output_dir);
+pub fn export(results: &[GenshinArtifact]) {
+    let output_dir = Path::new(&CONFIG.output_dir);
 
-    match config.export_format {
+    match &CONFIG.export_format {
         ExportFormat::Mona => {
             let output_filename = output_dir.join("mona.json");
             let mona = mona_uranai::MonaFormat::new(results);

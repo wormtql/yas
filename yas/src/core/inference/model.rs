@@ -49,7 +49,7 @@ impl CRNNModel {
             })
             .into();
 
-        let result = self.model.run(tvec!(tensor.into()))?;
+        let result = self.model.run(tvec!(tensor))?;
         let arr = result[0].to_array_view::<f32>()?;
 
         let shape = arr.shape();

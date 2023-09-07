@@ -77,6 +77,15 @@ pub fn get_pid_and_ui() -> (i32, UI) {
     }
 }
 
+#[allow(clippy::default_constructed_unit_structs)]
+pub fn request_capture_access() -> bool {
+    use core_graphics::access::ScreenCaptureAccess;
+
+    let access = ScreenCaptureAccess::default();
+
+    access.preflight() || access.request()
+}
+
 pub unsafe fn find_window_by_pid(pid: i32) -> Result<(Rect, String), String> {
     use core_foundation::array::{CFArrayGetCount, CFArrayGetValueAtIndex};
     use core_foundation::base::TCFType;

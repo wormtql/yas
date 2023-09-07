@@ -4,6 +4,10 @@ use crate::export::ExportFormat;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+lazy_static! {
+    pub static ref CONFIG: YasScannerConfig = YasScannerConfig::parse();
+}
+
 /// Yas Scanner Config
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]

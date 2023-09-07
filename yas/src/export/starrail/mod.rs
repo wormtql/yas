@@ -1,14 +1,14 @@
 pub mod march7th;
 
-use crate::{core::starrail::StarrailRelic, YasScannerConfig};
+use crate::*;
 use std::path::Path;
 
 use super::ExportFormat;
 
-pub fn export(config: &YasScannerConfig, results: &[StarrailRelic]) {
-    let output_dir = Path::new(&config.output_dir);
+pub fn export(results: &[StarrailRelic]) {
+    let output_dir = Path::new(&CONFIG.output_dir);
 
-    match config.export_format {
+    match CONFIG.export_format {
         ExportFormat::March7th => {
             let output_filename = output_dir.join("march7th.json");
             let mona = march7th::March7thFormat::new(results);

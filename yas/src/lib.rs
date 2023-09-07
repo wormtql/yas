@@ -8,13 +8,19 @@ use once_cell::sync::OnceCell;
 #[macro_use]
 extern crate log;
 
+#[macro_use]
+extern crate lazy_static;
+
 pub mod common;
 pub mod core;
 pub mod export;
 
-pub use crate::core::{Game, Scanner, YasScannerConfig};
+pub use crate::core::{
+    genshin::GenshinArtifact, starrail::StarrailRelic, Game, Scanner, YasScannerConfig, CONFIG,
+};
 use common::*;
 use core::ScanResult;
+use std::{path::Path, fs};
 
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
@@ -23,9 +29,19 @@ pub fn init_env(game: Game) {
 
     TARGET_GAME.set(game).ok();
 
+    let dump_path = Path::new("dumps");
+    if CONFIG.dump_mode && !dump_path.exists() {
+        fs::create_dir(dump_path).unwrap();
+    }
+
+    #[cfg(target_os = "macos")]
+    if !utils::request_capture_access() {
+        crate::error_and_quit!("无法获取屏幕截图权限");
+    }
+
     #[cfg(windows)]
     if !utils::is_admin() {
-        utils::error_and_quit("请以管理员身份运行该程序")
+        crate::error_and_quit!("请以管理员身份运行该程序")
     }
 
     if let Some(v) = utils::check_update() {
@@ -37,12 +53,12 @@ pub fn get_config() -> YasScannerConfig {
     YasScannerConfig::parse()
 }
 
-pub fn get_scanner(model: &[u8], content: &str, config: &YasScannerConfig) -> Scanner {
+pub fn get_scanner(model: &[u8], content: &str) -> Scanner {
     let game_info = core::ui::get_game_info();
     let window_info = core::get_window_info(game_info.resolution);
     let scan_info = window_info.get_scan_info(game_info.window.size);
 
-    Scanner::new(scan_info, config.clone(), game_info, model, content)
+    Scanner::new(scan_info, game_info, model, content)
 }
 
 pub fn map_results_to<'a, T>(results: &'a [ScanResult]) -> Vec<T>

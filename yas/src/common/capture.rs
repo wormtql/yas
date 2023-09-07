@@ -25,7 +25,7 @@ impl Capturable<RgbImage> for Rect {
     fn capture(&self) -> Result<RgbImage> {
         let screen = screenshots::Screen::all()?[0];
 
-        debug!("Capture rect: {:?}", self);
+        debug!("Capture: {}", self);
 
         let mut rgb_img: RgbImage = screen
             .capture_area(
@@ -35,6 +35,8 @@ impl Capturable<RgbImage> for Rect {
                 self.size.height,
             )?
             .convert();
+
+        rgb_img.save(format!("dumps/{}.png", self.origin))?;
 
         if rgb_img.width() > self.size.width && rgb_img.height() > self.size.height {
             rgb_img = resize(&rgb_img, self.size.width, self.size.height, Triangle);
@@ -69,4 +71,22 @@ pub fn get_color(pos: Pos<u32>) -> Result<Color> {
 
     let pixel = image.get_pixel(0, 0);
     Ok(Color::new(pixel[0], pixel[1], pixel[2]))
+}
+
+impl std::fmt::Display for Pos {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
+impl std::fmt::Display for Size {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{} x {}]", self.width, self.height)
+    }
+}
+
+impl std::fmt::Display for Rect {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Rect {} -> {}", self.origin, self.size)
+    }
 }

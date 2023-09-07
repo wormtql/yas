@@ -34,7 +34,7 @@ pub struct ScannerCore {
 
     pub model: Arc<CRNNModel>,
     pub scan_info: Arc<ScanInfo>,
-    pub config: YasScannerConfig,
+    pub config: &'static YasScannerConfig,
 
     pub enigo: Enigo,
 }
@@ -64,13 +64,7 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
 }
 
 impl ScannerCore {
-    pub fn new(
-        scan_info: ScanInfo,
-        config: YasScannerConfig,
-        game_info: GameInfo,
-        model: &[u8],
-        content: &str,
-    ) -> Self {
+    pub fn new(scan_info: ScanInfo, game_info: GameInfo, model: &[u8], content: &str) -> Self {
         let model = match CRNNModel::new(model, content) {
             Ok(v) => v,
             Err(e) => crate::error_and_quit!("模型加载失败, 错误信息：{}", e),
@@ -84,7 +78,7 @@ impl ScannerCore {
             enigo: Enigo::new(),
 
             scan_info: Arc::new(scan_info),
-            config,
+            config: &CONFIG,
 
             row,
             col,

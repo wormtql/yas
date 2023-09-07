@@ -12,14 +12,13 @@ const CONTENT: &str = include_str!("../models/index_2_word.json");
 fn main() -> Result<()> {
     yas::init_env(yas::Game::StarRail);
 
-    let config = yas::get_config();
-    let mut scanner = yas::get_scanner(MODEL, CONTENT, &config);
+    let mut scanner = yas::get_scanner(MODEL, CONTENT);
 
     let now = SystemTime::now();
     #[cfg(target_os = "macos")]
     {
-        info!("初始化完成，请切换到崩坏：星穹铁道窗口，Yas 将在10s后开始扫描");
-        yas::common::utils::sleep(10000);
+        info!("初始化完成，请切换到崩坏：星穹铁道窗口，Yas 将在 5s 后开始扫描");
+        yas::common::utils::sleep(5000);
     }
 
     let results = scanner.scan()?;
@@ -27,7 +26,7 @@ fn main() -> Result<()> {
 
     let relics = yas::map_results_to::<StarrailRelic>(&results);
 
-    yas::export::starrail::export(&config, &relics);
+    yas::export::starrail::export(&relics);
 
     println!("{:#?}", relics);
 

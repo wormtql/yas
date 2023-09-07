@@ -25,3 +25,9 @@ impl CancellationToken {
         self.cancelled.load(std::sync::atomic::Ordering::SeqCst)
     }
 }
+
+impl Default for CancellationToken {
+    fn default() -> Self {
+        Self::new()
+    }
+}

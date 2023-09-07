@@ -102,7 +102,7 @@ impl ScanInfo {
     }
 
     pub fn move_to(&mut self, pos: &Pos) {
-        self.origin = pos.clone();
+        self.origin = *pos;
     }
 }
 

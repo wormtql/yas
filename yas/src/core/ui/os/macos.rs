@@ -7,7 +7,7 @@ pub fn get_game_info() -> GameInfo {
 
     let (rect, window_title) = unsafe { find_window_by_pid(pid).unwrap() };
 
-    info!("Found genshin pid: {}, window name: {}", pid, window_title);
+    info!("Found game pid: {}, window name: {}", pid, window_title);
 
     GameInfo {
         window: rect,

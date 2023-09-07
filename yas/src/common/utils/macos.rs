@@ -50,14 +50,14 @@ pub fn get_pid_and_ui() -> (i32, UI) {
         String::from_utf8_unchecked(
             std::process::Command::new("sh")
                 .arg("-c")
-                .arg(r#"ps -Aj | grep [Y]uanshen | cut -f 2 -w"#)
+                .arg(r#"ps -Aj | grep "PlayCover/" | cut -f 2 -w | head -n 1"#)
                 .output()
                 .unwrap()
                 .stdout,
         )
     };
 
-    let pid_str_genshin_wine = unsafe {
+    let pid_str_wine = unsafe {
         String::from_utf8_unchecked(
             std::process::Command::new("sh")
                 .arg("-c")
@@ -70,9 +70,9 @@ pub fn get_pid_and_ui() -> (i32, UI) {
 
     match pid_str_playcover.trim().parse::<i32>() {
         Ok(pid) => (pid, UI::Mobile),
-        Err(_) => match pid_str_genshin_wine.trim().parse::<i32>() {
+        Err(_) => match pid_str_wine.trim().parse::<i32>() {
             Ok(pid) => (pid, UI::Desktop),
-            Err(_) => crate::error_and_quit!("No genshin program found"),
+            Err(_) => crate::error_and_quit!("No game program found"),
         },
     }
 }
@@ -105,8 +105,9 @@ pub unsafe fn find_window_by_pid(pid: i32) -> Result<(Rect, String), String> {
     let cf_win_array =
         CGWindowListCopyWindowInfo(kCGWindowListOptionExcludeDesktopElements, kCGNullWindowID);
     let count = CFArrayGetCount(cf_win_array);
+
     if count == 0 {
-        return Err("No genshin window found".to_string());
+        return Err("No game window found".to_string());
     }
 
     let mut mrect = Rect::default();

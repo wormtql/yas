@@ -5,6 +5,8 @@ use std::ops::DerefMut;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 
+use crate::common::cancel::CancellationToken;
+
 use super::genshin::GenshinScanner;
 use super::starrail::StarRailScanner;
 use super::*;
@@ -53,8 +55,9 @@ impl Scanner {
         let count = self.get_item_count();
 
         let (tx, rx) = mpsc::channel::<Option<ItemImage>>();
+        let token = self.cancellation_token.clone();
 
-        let worker = self.worker(rx);
+        let worker = self.worker(rx, token);
 
         self.send(&tx, count);
 
@@ -86,8 +89,8 @@ impl Scanner {
 
         self.move_to(0, 0);
 
-        #[cfg(target_os = "macos")]
-        utils::sleep(20);
+        // #[cfg(target_os = "macos")]
+        // utils::sleep(20);
 
         self.enigo.mouse_click(MouseButton::Left);
         utils::sleep(1000);
@@ -116,8 +119,8 @@ impl Scanner {
                     self.move_to(row, col);
                     self.enigo.mouse_click(MouseButton::Left);
 
-                    #[cfg(target_os = "macos")]
-                    utils::sleep(20);
+                    // #[cfg(target_os = "macos")]
+                    // utils::sleep(20);
 
                     self.wait_until_switched();
 
@@ -156,10 +159,14 @@ impl Scanner {
             }
 
             utils::sleep(100);
+
+            if self.cancellation_token.cancelled() {
+                break 'outer;
+            }
         }
     }
 
-    fn worker(&self, rx: Receiver<Option<ItemImage>>) -> JoinHandle<Vec<ScanResult>> {
+    fn worker(&self, rx: Receiver<Option<ItemImage>>, token: CancellationToken) -> JoinHandle<Vec<ScanResult>> {
         let is_verbose = self.config.verbose;
         let min_level = self.config.min_level;
         let info = self.scan_info.clone();
@@ -208,6 +215,12 @@ impl Scanner {
 
                 if consecutive_dup_count >= info.item_row {
                     error!("检测到连续多个重复物品，可能为翻页错误，或者为非背包顶部开始扫描");
+                    token.cancel();
+                    break;
+                }
+
+                if token.cancelled() {
+                    error!("扫描任务被取消");
                     break;
                 }
             }

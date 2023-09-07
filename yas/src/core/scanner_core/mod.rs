@@ -1,4 +1,5 @@
 use super::*;
+use crate::common::cancel::CancellationToken;
 use crate::common::color::Color;
 use crate::core::inference::CRNNModel;
 use anyhow::Result;
@@ -28,6 +29,8 @@ pub struct ScannerCore {
     scanned_count: u32,
 
     is_cloud: bool,
+
+    pub cancellation_token: CancellationToken,
 
     pub row: usize,
     pub col: usize,
@@ -94,6 +97,8 @@ impl ScannerCore {
             scanned_count: 0,
 
             is_cloud: game_info.is_cloud,
+
+            cancellation_token: CancellationToken::new(),
         }
     }
 }

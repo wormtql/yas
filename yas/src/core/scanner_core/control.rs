@@ -61,13 +61,13 @@ impl ScannerCore {
 
         self.enigo.mouse_move_to(left as i32, top as i32);
 
-        #[cfg(target_os = "macos")]
-        utils::sleep(20);
+        // #[cfg(target_os = "macos")]
+        // utils::sleep(20);
     }
 
     pub fn scroll_one_row(&mut self) -> ScrollResult {
-        #[cfg(target_os = "macos")]
-        let (_, ui) = get_pid_and_ui();
+        // #[cfg(target_os = "macos")]
+        // let (_, ui) = get_pid_and_ui();
 
         let mut state = 0;
         let mut count = 0;
@@ -83,15 +83,18 @@ impl ScannerCore {
             self.enigo.mouse_scroll_y(1);
             #[cfg(target_os = "macos")]
             {
-                match ui {
-                    crate::common::UI::Desktop => {
-                        self.enigo.mouse_scroll_y(-1);
-                        utils::sleep(20);
-                    },
-                    crate::common::UI::Mobile => {
-                        mac_scroll(&mut self.enigo, 1);
-                    },
-                }
+                // self.enigo.mouse_scroll_y(1);
+                mac_scroll(&mut self.enigo, 1);
+                // match ui {
+                //     crate::common::UI::Desktop => {
+                //         self.enigo.mouse_scroll_y(-1);
+                //         // utils::sleep(20);
+                //     },
+                //     crate::common::UI::Mobile => {
+                //         self.enigo.mouse_scroll_y(1);
+                //         // mac_scroll(&mut self.enigo, 1);
+                //     },
+                // }
             }
             utils::sleep(self.config.scroll_delay);
             count += 1;
@@ -102,7 +105,7 @@ impl ScannerCore {
                     self.avg_scroll_one_row = (self.avg_scroll_one_row * self.scrolled_rows as f64
                         + count as f64)
                         / (self.scrolled_rows as f64 + 1.0);
-                    info!("avg scroll/row: {}", self.avg_scroll_one_row);
+                    info!("Avg scroll/row: {}", self.avg_scroll_one_row);
                     self.scrolled_rows += 1;
                     return ScrollResult::Success;
                 }
@@ -115,8 +118,9 @@ impl ScannerCore {
     }
 
     pub fn scroll_rows(&mut self, count: usize) -> ScrollResult {
-        #[cfg(target_os = "macos")]
-        let (_, ui) = get_pid_and_ui();
+        // #[cfg(target_os = "macos")]
+        // let (_, ui) = get_pid_and_ui();
+
         if self.scrolled_rows >= 5 {
             let scroll = ((self.avg_scroll_one_row * count as f64 - 3.0).round() as u32).max(0);
             for _ in 0..scroll {
@@ -126,19 +130,22 @@ impl ScannerCore {
                 self.enigo.mouse_scroll_y(1);
                 #[cfg(target_os = "macos")]
                 {
-                    match ui {
-                        crate::common::UI::Desktop => {
-                            // mac_scroll(&mut self.enigo, 1);
-                            self.enigo.mouse_scroll_y(-1);
-                            utils::sleep(20);
-                        },
-                        crate::common::UI::Mobile => {
-                            mac_scroll(&mut self.enigo, 1);
-                        },
-                    }
+                    // self.enigo.mouse_scroll_y(1);
+                    mac_scroll(&mut self.enigo, 1);
+                    // match ui {
+                    //     crate::common::UI::Desktop => {
+                    //         self.enigo.mouse_scroll_y(-1);
+                    //         utils::sleep(20);
+                    //     },
+                    //     crate::common::UI::Mobile => {
+                    //         mac_scroll(&mut self.enigo, 1);
+                    //     },
+                    // }
                 }
             }
+
             utils::sleep(400);
+
             self.align_row();
             return ScrollResult::Skip;
         }

@@ -1,5 +1,5 @@
 [package]
-name = "yas_scanner_lib"
+name = "yas_scanner"
 version = "0.1.14"
 edition = "2021"
 description = "Mihoyo game item scanner library"

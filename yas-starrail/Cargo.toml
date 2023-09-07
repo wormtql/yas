@@ -11,7 +11,7 @@ license = "GPL-2.0-or-later"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-yas = { path = "../yas",  package="yas_scanner_lib" }
+yas = { path = "../yas",  package="yas_scanner" }
 anyhow = "1.0"
 log = "0.4"
 

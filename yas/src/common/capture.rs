@@ -24,9 +24,6 @@ where
 impl Capturable<RgbImage> for Rect {
     fn capture(&self) -> Result<RgbImage> {
         let screen = screenshots::Screen::all()?[0];
-
-        debug!("Capture: {}", self);
-
         let mut rgb_img: RgbImage = screen
             .capture_area(
                 self.origin.x as i32,
@@ -35,9 +32,6 @@ impl Capturable<RgbImage> for Rect {
                 self.size.height,
             )?
             .convert();
-
-        #[cfg(test)]
-        rgb_img.save(format!("dumps/{}.png", self.origin))?;
 
         if rgb_img.width() > self.size.width && rgb_img.height() > self.size.height {
             rgb_img = resize(&rgb_img, self.size.width, self.size.height, Triangle);

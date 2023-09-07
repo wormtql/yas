@@ -4,7 +4,7 @@ extern crate log;
 use std::time::SystemTime;
 
 use anyhow::Result;
-use yas_scanner_lib as yas;
+use yas_scanner as yas;
 
 const GENSHIN_MODEL: &[u8] = include_bytes!("../../yas-genshin/models/model_training.onnx");
 const GENSHIN_CONTENT: &str = include_str!("../../yas-genshin/models/index_2_word.json");
@@ -25,7 +25,7 @@ fn main() -> Result<()> {
     let now = SystemTime::now();
     #[cfg(target_os = "macos")]
     {
-        info!("初始化完成，请切换到原神窗口，Yas 将在 5s 后开始扫描");
+        info!("初始化完成，请切换到对应窗口，Yas 将在 5s 后开始扫描");
         yas::common::utils::sleep(5000);
     }
 

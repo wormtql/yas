@@ -9,12 +9,17 @@ use crate::common::utils::*;
 impl ScannerCore {
     pub fn align_row(&mut self) {
         for _ in 0..10 {
-            if self.get_flag_color().unwrap() == self.initial_color {
-                return;
-            }
-            self.mouse_scroll(1);
+            let color = match self.get_flag_color() {
+                Ok(color) => color,
+                Err(_) => return,
+            };
 
-            utils::sleep(self.config.scroll_delay);
+            if color != self.initial_color {
+                self.mouse_scroll(1);
+                utils::sleep(self.config.scroll_delay);
+            } else {
+                break;
+            }
         }
     }
 
@@ -59,8 +64,7 @@ impl ScannerCore {
             if state == 0 && color != self.initial_color {
                 state = 1;
             } else if state == 1 && self.initial_color == color {
-                self.calc_avg_row(count);
-                self.scrolled_rows += 1;
+                self.update_avg_row(count);
                 return ScrollResult::Success;
             }
         }
@@ -68,16 +72,16 @@ impl ScannerCore {
         ScrollResult::TimeLimitExceeded
     }
 
-    pub fn scroll_rows(&mut self, count: usize) -> ScrollResult {
+    pub fn scroll_rows(&mut self, count: i32) -> ScrollResult {
         if self.scrolled_rows >= 5 {
-            let scroll = ((self.avg_scroll_one_row * count as f64 - 3.0).round() as u32).max(0);
-            for _ in 0..scroll {
-                self.mouse_scroll(1);
+            let length = self.estimate_scroll_length(count);
 
-                if self.cancellation_token.cancelled() {
-                    return ScrollResult::Interrupt;
-                }
-            }
+            debug!(
+                "Alread scrolled {} rows, estimated scroll length: {}",
+                self.scrolled_rows, length
+            );
+
+            self.mouse_scroll(length);
 
             utils::sleep(400);
 
@@ -87,9 +91,8 @@ impl ScannerCore {
 
         for _ in 0..count {
             match self.scroll_one_row() {
-                ScrollResult::TimeLimitExceeded => return ScrollResult::TimeLimitExceeded,
-                ScrollResult::Interrupt => return ScrollResult::Interrupt,
-                _ => (),
+                ScrollResult::Success | ScrollResult::Skip => (),
+                v => return v,
             }
         }
 
@@ -155,10 +158,19 @@ impl ScannerCore {
     }
 
     #[inline(always)]
-    fn calc_avg_row(&mut self, count: i32) {
-        self.avg_scroll_one_row = (self.avg_scroll_one_row * self.scrolled_rows as f64
-            + count as f64)
-            / (self.scrolled_rows as f64 + 1.0);
-        info!("Avg scroll/row: {}", self.avg_scroll_one_row);
+    fn update_avg_row(&mut self, count: i32) {
+        let current = self.avg_scroll_one_row * self.scrolled_rows as f64 + count as f64;
+        self.scrolled_rows += 1;
+        self.avg_scroll_one_row = current / self.scrolled_rows as f64;
+
+        debug!(
+            "avg scroll one row: {} ({})",
+            self.avg_scroll_one_row, self.scrolled_rows
+        );
+    }
+
+    #[inline(always)]
+    fn estimate_scroll_length(&self, count: i32) -> i32 {
+        ((self.avg_scroll_one_row * count as f64 - 2.0).round() as i32).max(0)
     }
 }

@@ -98,13 +98,13 @@ impl Scanner {
 
         'outer: while scanned_count < count {
             '_row: for row in start_row..self.row {
-                let c = if scanned_row == total_row - 1 {
+                let row_item_count = if scanned_row == total_row - 1 {
                     last_row_col
                 } else {
                     self.col
                 };
 
-                '_col: for col in 0..c {
+                '_col: for col in 0..row_item_count {
                     // 大于最大数量则退出
                     if scanned_count > count {
                         break 'outer;
@@ -152,9 +152,9 @@ impl Scanner {
                 break 'outer;
             }
 
-            match self.scroll_rows(scroll_row) {
+            match self.scroll_rows(scroll_row as i32) {
                 ScrollResult::TimeLimitExceeded => {
-                    error!("翻页出现问题");
+                    error!("翻页超时，扫描终止……");
                     break 'outer;
                 },
                 ScrollResult::Interrupt => break 'outer,
@@ -205,13 +205,19 @@ impl Scanner {
                 if is_verbose {
                     info!("{:?}", result);
                 } else {
-                    info!("[{:<4}]{}: {}", cnt, result.name, result.main_stat_name);
+                    info!("[{:>3}] {}({}): {}", cnt, result.name, result.level, result.main_stat_name);
+                }
+
+                if result.level <= min_level {
+                    info!("找到满足最低等级要求的物品，准备退出……");
+                    token.cancel();
+                    break;
                 }
 
                 if hash.contains(&result) {
                     dup_count += 1;
                     consecutive_dup_count += 1;
-                    warn!("Dup artifact detected: {:#?}", result);
+                    warn!("监测到重复物品: {:#?}", result);
                 } else {
                     consecutive_dup_count = 0;
                     hash.insert(result.clone());
@@ -230,16 +236,9 @@ impl Scanner {
                 }
             }
 
-            info!("Dup count: {}", dup_count);
+            info!("重复物品数量: {}", dup_count);
 
-            if min_level > 0 {
-                results
-                    .into_iter()
-                    .filter(|result| result.level >= min_level)
-                    .collect::<Vec<_>>()
-            } else {
-                results
-            }
+            results
         })
     }
 }

@@ -3,7 +3,7 @@ use std::iter::once;
 use std::mem::transmute;
 use std::ptr::null_mut;
 
-use crate::common::PixelRect;
+use crate::common::*;
 use log::{info, warn};
 
 pub use winapi::shared::minwindef::{BOOL, HINSTANCE};
@@ -66,7 +66,7 @@ pub fn find_window_cloud() -> Result<HWND, String> {
     Err(String::from("cannot find window"))
 }
 
-unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<PixelRect, String> {
+unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<Rect, String> {
     let mut rect: WinRect = WinRect {
         left: 0,
         top: 0,
@@ -82,15 +82,21 @@ unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<PixelRect, String> {
     let left: i32 = point.x;
     let top: i32 = point.y;
 
-    Ok(PixelRect {
-        left,
-        top,
-        width,
-        height,
-    })
+    Result::Ok(
+        Rect {
+            origin: Pos {
+                x: left as u32,
+                y: top as u32,
+            },
+            size: Size {
+                width: width as u32,
+                height: height as u32,
+            },
+        }
+    )
 }
 
-pub fn get_client_rect(hwnd: HWND) -> Result<PixelRect, String> {
+pub fn get_client_rect(hwnd: HWND) -> Result<Rect, String> {
     unsafe { get_client_rect_unsafe(hwnd) }
 }
 

@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::*;
+use crate::core::Game;
 use winapi::shared::windef::HWND;
 
 fn window_not_found() -> ! {
@@ -28,14 +28,14 @@ fn get_window() -> (HWND, bool) {
     for name in get_game_window_name() {
         let hwnd = utils::find_window_local(name);
         if hwnd.is_ok() {
-            return (hwnd, false);
+            return (hwnd.unwrap(), false);
         }
     }
 
     for name in get_cloud_window_name() {
         let hwnd = utils::find_window_local(name);
         if hwnd.is_ok() {
-            return (hwnd, true);
+            return (hwnd.unwrap(), true);
         }
     }
 
@@ -47,7 +47,7 @@ pub fn get_game_info() -> GameInfo {
 
     utils::set_dpi_awareness();
 
-    let (hwnd, is_cloud) = get_window().unwrap();
+    let (hwnd, is_cloud) = get_window();
 
     unsafe {
         ShowWindow(hwnd, SW_RESTORE);

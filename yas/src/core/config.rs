@@ -1,6 +1,6 @@
 use clap::{command, Parser};
 
-use crate::export::ExportFormat;
+use crate::{export::ExportFormat, Game};
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -52,10 +52,6 @@ pub struct YasScannerConfig {
     #[arg(long, default_value_t = 300)]
     pub cloud_wait_switch_item: u32,
 
-    /// TODO
-    #[arg(value_enum, default_value_t = ExportFormat::None)]
-    pub export_format: ExportFormat,
-
     /// Output directory
     #[arg(short, long, default_value = ".")]
     pub output_dir: String,
@@ -63,6 +59,14 @@ pub struct YasScannerConfig {
     /// Only draw config for captured image
     #[arg(long, default_value_t = false)]
     pub draw_config_only: bool,
+
+    /// TODO
+    #[arg(short, long, value_enum, default_value_t = ExportFormat::None)]
+    pub export_format: ExportFormat,
+
+    /// Game to scan
+    #[arg(short, long, value_enum, default_value_t = Game::Genshin)]
+    pub game: Game,
 }
 
 // App::new("YAS - 原神圣遗物导出器")

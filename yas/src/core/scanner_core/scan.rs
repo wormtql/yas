@@ -54,14 +54,12 @@ impl ScannerCore {
         let count = self.config.number;
         let item_name = match TARGET_GAME.get().unwrap() {
             Game::Genshin => "圣遗物",
-            Game::StarRail => "遗器数量",
-            _ => unimplemented!("不支持的游戏"),
+            Game::StarRail => "遗器数量"
         };
 
         let max_count = match crate::TARGET_GAME.get().unwrap() {
             Game::Genshin => 1800,
-            Game::StarRail => 1500,
-            _ => unimplemented!("不支持的游戏"),
+            Game::StarRail => 1500
         };
 
         if count > 0 {

@@ -20,6 +20,7 @@ pub use crate::core::{
 };
 use common::{draw_config::DrawConfig, utils::ensure_dir, *};
 use core::ScanResult;
+
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
 pub fn init_env(game: Game) {

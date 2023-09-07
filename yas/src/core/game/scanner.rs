@@ -23,7 +23,6 @@ impl Scanner {
         match crate::TARGET_GAME.get().unwrap() {
             Game::Genshin => Scanner::Genshin(genshin::GenshinScanner(core)),
             Game::StarRail => Scanner::StarRail(starrail::StarRailScanner(core)),
-            _ => crate::error_and_quit!("不支持的游戏类型"),
         }
     }
 }

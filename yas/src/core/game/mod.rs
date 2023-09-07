@@ -1,5 +1,6 @@
 use super::*;
 use anyhow::Result;
+use clap::ValueEnum;
 use image::RgbImage;
 use std::{fmt::*, ops::DerefMut};
 
@@ -31,18 +32,16 @@ pub enum Item {
     StarrailRelic(starrail::StarrailRelic),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Game {
     Genshin,
-    StarRail,
-    Unknown,
+    StarRail
 }
 
 pub fn get_window_info(resolution: Resolution) -> WindowInfo {
     match crate::TARGET_GAME.get().unwrap() {
         Game::Genshin => WindowInfo::Genshin(genshin::get_window_info(resolution)),
         Game::StarRail => WindowInfo::StarRail(starrail::get_window_info(resolution)),
-        _ => crate::error_and_quit!("不支持的游戏类型"),
     }
 }
 
@@ -75,7 +74,6 @@ impl Display for Game {
         match self {
             Game::Genshin => write!(f, "原神"),
             Game::StarRail => write!(f, "崩坏：星穹铁道"),
-            Game::Unknown => write!(f, "未知"),
         }
     }
 }

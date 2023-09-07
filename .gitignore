@@ -5,5 +5,5 @@ dumps/
 .idea/
 /*.json
 **/*.png
-tmp/
+**tmp**
 **/.DS_Store

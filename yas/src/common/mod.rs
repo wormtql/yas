@@ -34,6 +34,7 @@ pub struct GithubTag {
     pub name: String,
 }
 
+#[derive(Debug)]
 pub enum ScrollResult {
     TimeLimitExceeded,
     Interrupt,

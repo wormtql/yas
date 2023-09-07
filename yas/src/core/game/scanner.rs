@@ -1,9 +1,9 @@
 use anyhow::Result;
 use enigo::{MouseButton, MouseControllable};
+use std::collections::HashSet;
 use std::ops::DerefMut;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
-use std::collections::HashSet;
 
 use super::genshin::GenshinScanner;
 use super::starrail::StarRailScanner;
@@ -15,12 +15,7 @@ pub enum Scanner {
 }
 
 impl Scanner {
-    pub fn new(
-        scan_info: ScanInfo,
-        game_info: GameInfo,
-        model: &[u8],
-        content: &str,
-    ) -> Self {
+    pub fn new(scan_info: ScanInfo, game_info: GameInfo, model: &[u8], content: &str) -> Self {
         let core = ScannerCore::new(scan_info, game_info, model, content);
 
         match crate::TARGET_GAME.get().unwrap() {

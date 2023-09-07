@@ -31,3 +31,13 @@ impl ConvertToScanInfo<GenshinScanInfo> for GenshinWindowInfo {
         }
     }
 }
+
+impl DrawConfig for GenshinScanInfo {
+    fn draw_config(&self, image: &mut image::RgbImage) {
+        self.shared.draw_config(image);
+
+        for pos in self.sub_stat_pos.iter() {
+            pos.draw_config(image);
+        }
+    }
+}

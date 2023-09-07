@@ -59,6 +59,10 @@ pub struct YasScannerConfig {
     /// Output directory
     #[arg(short, long, default_value = ".")]
     pub output_dir: String,
+
+    /// Only draw config for captured image
+    #[arg(long, default_value_t = false)]
+    pub draw_config_only: bool,
 }
 
 // App::new("YAS - 原神圣遗物导出器")

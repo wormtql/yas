@@ -1,4 +1,6 @@
 use super::*;
+use anyhow::Result;
+use image::RgbImage;
 use std::{fmt::*, ops::DerefMut};
 
 pub mod genshin;
@@ -51,7 +53,7 @@ pub fn parse_level(str_level: &str) -> u8 {
         return str_level.parse::<u8>().unwrap();
     }
 
-    str_level[0..pos.unwrap()].parse::<u8>().unwrap()
+    str_level[pos.unwrap()..].parse::<u8>().unwrap()
 }
 
 impl WindowInfo {
@@ -90,6 +92,27 @@ impl ScanInfo {
         match self {
             ScanInfo::StarRail(info) => info,
             _ => crate::error_and_quit!("ScanInfo is not starrail"),
+        }
+    }
+
+    pub fn capture_window(&self) -> Result<RgbImage> {
+        Rect {
+            origin: self.origin,
+            size: self.size,
+        }
+        .capture()
+    }
+
+    pub fn move_to(&mut self, pos: &Pos) {
+        self.origin = pos.clone();
+    }
+}
+
+impl DrawConfig for ScanInfo {
+    fn draw_config(&self, image: &mut image::RgbImage) {
+        match self {
+            ScanInfo::Genshin(info) => info.draw_config(image),
+            ScanInfo::StarRail(info) => info.draw_config(image),
         }
     }
 }

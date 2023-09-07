@@ -36,6 +36,9 @@ impl Capturable<RgbImage> for Rect {
             )?
             .convert();
 
+        #[cfg(test)]
+        rgb_img.save(format!("dumps/{}.png", self.origin))?;
+
         if rgb_img.width() > self.size.width && rgb_img.height() > self.size.height {
             rgb_img = resize(&rgb_img, self.size.width, self.size.height, Triangle);
         }

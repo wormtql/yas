@@ -63,7 +63,7 @@ impl ScaleToScanInfo<Rect<ScanInfoType, ScanInfoType>> for Rect<WindowInfoType, 
 
 /// use to define a struct that can be converted to scan info
 #[macro_export]
-macro_rules! scan_info_convert {
+macro_rules! scan_info_ext {
     (
         pub type ScanInfoType = $stype:ty;
         pub type WindowInfoType = $wtype:ty;

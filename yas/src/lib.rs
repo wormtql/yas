@@ -1,7 +1,7 @@
 #![allow(clippy::missing_safety_doc)]
 #![allow(clippy::single_match)]
 
-use clap::Parser;
+use anyhow::Result;
 use env_logger::{Builder, Env};
 use once_cell::sync::OnceCell;
 
@@ -18,10 +18,8 @@ pub mod export;
 pub use crate::core::{
     genshin::GenshinArtifact, starrail::StarrailRelic, Game, Scanner, YasScannerConfig, CONFIG,
 };
-use common::*;
+use common::{draw_config::DrawConfig, utils::ensure_dir, *};
 use core::ScanResult;
-use std::{path::Path, fs};
-
 pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
 pub fn init_env(game: Game) {
@@ -29,9 +27,8 @@ pub fn init_env(game: Game) {
 
     TARGET_GAME.set(game).ok();
 
-    let dump_path = Path::new("dumps");
-    if CONFIG.dump_mode && !dump_path.exists() {
-        fs::create_dir(dump_path).unwrap();
+    if CONFIG.dump_mode {
+        ensure_dir("dumps");
     }
 
     #[cfg(target_os = "macos")]
@@ -49,16 +46,26 @@ pub fn init_env(game: Game) {
     }
 }
 
-pub fn get_config() -> YasScannerConfig {
-    YasScannerConfig::parse()
-}
-
-pub fn get_scanner(model: &[u8], content: &str) -> Scanner {
+pub fn get_scanner(model: &[u8], content: &str) -> Result<Scanner> {
     let game_info = core::ui::get_game_info();
     let window_info = core::get_window_info(game_info.resolution);
-    let scan_info = window_info.get_scan_info(game_info.window.size);
+    let mut scan_info = window_info.get_scan_info(game_info.window.size);
+    scan_info.move_to(&game_info.window.origin);
 
-    Scanner::new(scan_info, game_info, model, content)
+    if CONFIG.draw_config_only {
+        ensure_dir("dumps");
+
+        let mut image = scan_info.capture_window()?;
+        scan_info.draw_config(&mut image);
+
+        image.save("dumps/draw_config.png")?;
+
+        info!("绘制配置完成，保存在 dumps/draw_config.png");
+
+        std::process::exit(0)
+    }
+
+    Ok(Scanner::new(scan_info, game_info, model, content))
 }
 
 pub fn map_results_to<'a, T>(results: &'a [ScanResult]) -> Vec<T>

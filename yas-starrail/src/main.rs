@@ -12,7 +12,7 @@ const CONTENT: &str = include_str!("../models/index_2_word.json");
 fn main() -> Result<()> {
     yas::init_env(yas::Game::StarRail);
 
-    let mut scanner = yas::get_scanner(MODEL, CONTENT);
+    let mut scanner = yas::get_scanner(MODEL, CONTENT)?;
 
     let now = SystemTime::now();
     #[cfg(target_os = "macos")]

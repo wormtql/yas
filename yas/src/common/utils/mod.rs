@@ -72,3 +72,9 @@ pub fn check_update() -> Option<String> {
         None
     }
 }
+
+pub fn ensure_dir(path: &str) {
+    if !std::path::Path::new(path).exists() {
+        fs::create_dir_all(path).unwrap();
+    }
+}

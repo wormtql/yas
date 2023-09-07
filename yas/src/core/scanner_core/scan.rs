@@ -114,6 +114,7 @@ pub fn get_model_inference_func(
         if dump_mode {
             captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
         }
+
         let rect = &Rect::from(pos) - &panel_origin;
 
         let raw_img = to_gray(captured_img)

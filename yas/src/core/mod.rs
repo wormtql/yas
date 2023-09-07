@@ -17,7 +17,7 @@ pub use scanner_core::*;
 
 pub mod inference;
 
-crate::scan_info_convert! {
+crate::scan_info_ext! {
     pub type ScanInfoType = u32;
     pub type WindowInfoType = f64;
 
@@ -71,10 +71,6 @@ pub type SharedWindowInfo = SharedScanInfo<WindowInfoType>;
 impl SharedScanInfo<f64> {
     pub fn get_radio(&self, size: Size<f64>) -> (f64, f64) {
         (size.width / self.size.width, size.height / self.size.height)
-    }
-
-    pub fn move_to(&mut self, pos: Pos<f64>) {
-        self.origin = pos;
     }
 }
 

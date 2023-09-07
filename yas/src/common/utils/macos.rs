@@ -6,19 +6,33 @@ use cocoa::{
 };
 use enigo::*;
 
-pub fn mac_scroll(enigo: &mut Enigo, length: i32) {
-    utils::sleep(10);
+pub fn mac_scroll(enigo: &mut Enigo, length: i32, delta: i32, times: i32) {
     for _j in 0..length {
         enigo.mouse_down(MouseButton::Left);
-        for _i in 0..5 {
-            enigo.mouse_move_relative(0, -2);
+        for _i in 0..times {
+            enigo.mouse_move_relative(0, -delta);
             utils::sleep(10);
         }
+
         enigo.mouse_up(MouseButton::Left);
         utils::sleep(10);
-        enigo.mouse_move_relative(0, 10);
+
+        enigo.mouse_down(MouseButton::Left);
+        utils::sleep(5);
+        enigo.mouse_up(MouseButton::Left);
+        utils::sleep(5);
+
+        enigo.mouse_move_relative(0, times * delta);
         utils::sleep(20);
     }
+}
+
+pub fn mac_scroll_fast(enigo: &mut Enigo, length: i32) {
+    mac_scroll(enigo, length, 4, 30);
+}
+
+pub fn mac_scroll_slow(enigo: &mut Enigo, length: i32) {
+    mac_scroll(enigo, length, 4, 5);
 }
 
 pub fn get_titlebar_height() -> f64 {

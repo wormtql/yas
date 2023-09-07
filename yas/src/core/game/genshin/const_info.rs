@@ -224,7 +224,7 @@ pub const MACOS_8_5: GenshinWindowInfo = GenshinWindowInfo {
 
         scan_margin: S::new(155.0, 118.0 - 28.0),
 
-        flag: P::new(170.0, 223.0 - 28.0),
+        flag: P::new(240.0, 223.0 - 32.0),
         star: P::new(1060.0, 140.0 - 28.0),
 
         pool_pos: R::new(390.0 - 28.0, 1010.0, 504.0 - 28.0, 792.0),

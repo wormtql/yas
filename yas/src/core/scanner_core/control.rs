@@ -14,8 +14,8 @@ impl ScannerCore {
                 Err(_) => return,
             };
 
-            if color != self.initial_color {
-                self.mouse_scroll(1);
+            if self.initial_color.distance(&color) > 10 {
+                self.mouse_scroll(1, false);
                 utils::sleep(self.config.scroll_delay);
             } else {
                 break;
@@ -52,7 +52,7 @@ impl ScannerCore {
             // #[cfg(windows)]
             // self.enigo.mouse_scroll_y(-5);
 
-            self.mouse_scroll(1);
+            self.mouse_scroll(1, count < 1);
 
             utils::sleep(self.config.scroll_delay);
 
@@ -61,9 +61,9 @@ impl ScannerCore {
                 Err(_) => return ScrollResult::Failed,
             };
 
-            if state == 0 && color != self.initial_color {
+            if state == 0 && self.initial_color.distance(&color) > 10 {
                 state = 1;
-            } else if state == 1 && self.initial_color == color {
+            } else if state == 1 && self.initial_color.distance(&color) <= 10 {
                 self.update_avg_row(count);
                 return ScrollResult::Success;
             }
@@ -73,7 +73,7 @@ impl ScannerCore {
     }
 
     pub fn scroll_rows(&mut self, count: i32) -> ScrollResult {
-        if self.scrolled_rows >= 5 {
+        if cfg!(not(target_os = "macos")) && self.scrolled_rows >= 5 {
             let length = self.estimate_scroll_length(count);
 
             debug!(
@@ -81,7 +81,7 @@ impl ScannerCore {
                 self.scrolled_rows, length
             );
 
-            self.mouse_scroll(length);
+            self.mouse_scroll(length, false);
 
             utils::sleep(400);
 
@@ -91,8 +91,11 @@ impl ScannerCore {
 
         for _ in 0..count {
             match self.scroll_one_row() {
-                ScrollResult::Success | ScrollResult::Skip => (),
-                v => return v,
+                ScrollResult::Success | ScrollResult::Skip => continue,
+                v => {
+                    info!("Scrolling failed: {:?}", v);
+                    return v;
+                },
             }
         }
 
@@ -136,7 +139,7 @@ impl ScannerCore {
     }
 
     #[inline(always)]
-    fn mouse_scroll(&mut self, length: i32) {
+    pub fn mouse_scroll(&mut self, length: i32, try_find: bool) {
         #[cfg(windows)]
         self.enigo.mouse_scroll_y(-length);
 
@@ -151,7 +154,11 @@ impl ScannerCore {
                     utils::sleep(20);
                 },
                 crate::common::UI::Mobile => {
-                    mac_scroll(&mut self.enigo, length);
+                    if try_find {
+                        mac_scroll_fast(&mut self.enigo, length)
+                    } else {
+                        mac_scroll_slow(&mut self.enigo, length)
+                    }
                 },
             }
         }

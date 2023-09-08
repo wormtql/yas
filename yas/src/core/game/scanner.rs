@@ -6,6 +6,7 @@ use std::collections::HashSet;
 use std::ops::DerefMut;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
+use std::time::SystemTime;
 
 use crate::common::cancel::CancellationToken;
 use crate::*;
@@ -54,6 +55,9 @@ impl DerefMut for Scanner {
 
 impl Scanner {
     pub fn scan(&mut self) -> Result<Vec<ScanResult>> {
+        info!("开始扫描，使用鼠标右键中断扫描");
+
+        let now = SystemTime::now();
         let count = self.get_item_count();
 
         let (tx, rx) = mpsc::channel::<Option<ItemImage>>();
@@ -63,12 +67,16 @@ impl Scanner {
 
         self.send(&tx, count);
 
-        tx.send(None).ok();
-
-        info!("扫描结束，等待识别线程结束，请勿关闭程序");
+        match tx.send(None) {
+            Ok(_) => info!("扫描结束，等待识别线程结束，请勿关闭程序"),
+            Err(_) => info!("扫描结束，识别已完成"),
+        }
 
         match worker.join() {
-            Ok(v) => Ok(v),
+            Ok(v) => {
+                info!("识别耗时: {:?}", now.elapsed()?);
+                Ok(v)
+            },
             Err(_) => Err(anyhow::anyhow!("识别线程出现错误")),
         }
     }
@@ -91,7 +99,7 @@ impl Scanner {
         };
 
         info!(
-            "开始扫描，共 {} 个物品 {} 行，尾行 {} 个",
+            "扫描任务共 {} 个物品，共计 {} 行，尾行 {} 个",
             count, total_row, last_row_col
         );
 

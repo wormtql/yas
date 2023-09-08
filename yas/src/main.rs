@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate log;
 
-use std::time::SystemTime;
-
 use anyhow::Result;
 use yas_scanner as yas;
 
@@ -22,7 +20,6 @@ fn main() -> Result<()> {
 
     let mut scanner = yas::get_scanner(model, content)?;
 
-    let now = SystemTime::now();
     #[cfg(target_os = "macos")]
     {
         info!("初始化完成，请切换到对应窗口，Yas 将在 5s 后开始扫描");
@@ -30,7 +27,6 @@ fn main() -> Result<()> {
     }
 
     let results = scanner.scan()?;
-    info!("扫描耗时: {:?}", now.elapsed());
 
     match yas::CONFIG.game {
         yas::Game::Genshin => {

@@ -27,11 +27,12 @@ pub static TARGET_GAME: OnceCell<Game> = OnceCell::new();
 
 lazy_static! {
     pub static ref MULTI_PROGRESS: MultiProgress = MultiProgress::new();
-    pub static ref PROGRESS_STYLE: ProgressStyle = ProgressStyle::default_bar()
-        .template("{spinner:.green} [{elapsed_precise}] {prefix:.green.bold} [{bar:48.cyan/blue}] {pos:>4}/{len:4.dim} {msg}")
-        .unwrap()
-        .progress_chars("#>-")
-        .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
+    pub static ref PROGRESS_STYLE: ProgressStyle = ProgressStyle::with_template(
+        "{spinner:.green} {prefix:.green.bold} [{wide_bar:.cyan/blue}] {pos:>4}/{len:4.dim} {msg:50}"
+    )
+    .unwrap()
+    .progress_chars("#>-")
+    .tick_chars("😐😐😮😮😦😦😧😧🤯💥✨\u{3000}\u{3000}\u{3000}");
 }
 
 pub fn init_env(game: Game) -> Result<()> {

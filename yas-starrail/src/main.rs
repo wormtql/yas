@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate log;
 
-use std::time::SystemTime;
-
 use anyhow::Result;
 use yas::core::starrail::StarrailRelic;
 
@@ -14,7 +12,6 @@ fn main() -> Result<()> {
 
     let mut scanner = yas::get_scanner(MODEL, CONTENT)?;
 
-    let now = SystemTime::now();
     #[cfg(target_os = "macos")]
     {
         info!("初始化完成，请切换到崩坏：星穹铁道窗口，Yas 将在 5s 后开始扫描");
@@ -22,7 +19,6 @@ fn main() -> Result<()> {
     }
 
     let results = scanner.scan()?;
-    info!("扫描耗时: {:?}", now.elapsed());
 
     let relics = yas::map_results_to::<StarrailRelic>(&results);
 

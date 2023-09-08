@@ -30,22 +30,20 @@ fn main() -> Result<()> {
     }
 
     let results = scanner.scan()?;
-    info!("Time: {:?}", now.elapsed());
+    info!("扫描耗时: {:?}", now.elapsed());
 
     match yas::CONFIG.game {
         yas::Game::Genshin => {
             let artifacts = yas::map_results_to::<yas::core::genshin::GenshinArtifact>(&results);
             yas::export::genshin::export(&artifacts);
-            println!("{:#?}", artifacts);
         },
         yas::Game::StarRail => {
             let relics = yas::map_results_to::<yas::core::starrail::StarrailRelic>(&results);
             yas::export::starrail::export(&relics);
-            println!("{:#?}", relics);
         },
     }
 
-    info!("Yas 识别结束");
+    info!("Yas 识别结束，共识别到 {} 件物品。", results.len());
 
     Ok(())
 }

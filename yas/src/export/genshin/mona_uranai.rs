@@ -1,8 +1,5 @@
-use std::convert::From;
-use std::fs::File;
-use std::io::prelude::*;
-
 use serde::ser::{Serialize, SerializeMap, Serializer};
+use std::convert::From;
 
 use crate::core::genshin::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
@@ -204,20 +201,7 @@ impl<'a> MonaFormat<'a> {
             cup,
             sand,
             head,
-
             version: String::from("1"),
-        }
-    }
-
-    pub fn save(&self, path: String) {
-        let mut file = match File::create(&path) {
-            Err(why) => crate::error_and_quit!("couldn't create {}: {}", path, why),
-            Ok(file) => file,
-        };
-        let s = serde_json::to_string(&self).unwrap();
-
-        if let Err(why) = file.write_all(s.as_bytes()) {
-            crate::error_and_quit!("couldn't write to {}: {}", path, why)
         }
     }
 }

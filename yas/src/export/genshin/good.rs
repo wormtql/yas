@@ -3,8 +3,6 @@ use crate::core::genshin::{
 };
 use serde::ser::{SerializeMap, Serializer};
 use serde::Serialize;
-use std::fs::File;
-use std::io::prelude::*;
 
 struct GOODArtifact<'a> {
     artifact: &'a GenshinArtifact,
@@ -180,18 +178,6 @@ impl<'a> GOODFormat<'a> {
             version: 1,
             source: "yas",
             artifacts,
-        }
-    }
-
-    pub fn save(&self, path: String) {
-        let mut file = match File::create(&path) {
-            Err(why) => crate::error_and_quit!("couldn't create {}: {}", path, why),
-            Ok(file) => file,
-        };
-        let s = serde_json::to_string(&self).unwrap();
-
-        if let Err(why) = file.write_all(s.as_bytes()) {
-            crate::error_and_quit!("couldn't write to {}: {}", path, why)
         }
     }
 }

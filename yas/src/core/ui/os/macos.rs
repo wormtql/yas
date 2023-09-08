@@ -7,7 +7,7 @@ pub fn get_game_info() -> GameInfo {
 
     let (rect, window_title) = unsafe { find_window_by_pid(pid).unwrap() };
 
-    info!("找到游戏窗口： {} (PID: {})", window_title, pid);
+    info!("找到游戏窗口：{} (PID: {})", window_title, pid);
 
     GameInfo {
         window: rect,

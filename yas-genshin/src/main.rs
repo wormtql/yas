@@ -22,15 +22,13 @@ fn main() -> Result<()> {
     }
 
     let results = scanner.scan()?;
-    info!("Time: {:?}", now.elapsed());
+    info!("扫描耗时: {:?}", now.elapsed()?);
 
     let artifacts = yas::map_results_to::<GenshinArtifact>(&results);
 
     yas::export::genshin::export(&artifacts);
 
-    println!("{:#?}", artifacts);
-
-    info!("Yas 识别结束");
+    info!("Yas 识别结束，共识别到 {} 件圣遗物。", artifacts.len());
 
     Ok(())
 }

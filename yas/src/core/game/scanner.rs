@@ -63,7 +63,7 @@ impl Scanner {
 
         self.send(&tx, count);
 
-        tx.send(None)?;
+        tx.send(None).ok();
 
         info!("扫描结束，等待识别线程结束，请勿关闭程序");
 
@@ -114,13 +114,11 @@ impl Scanner {
                 };
 
                 '_col: for col in 0..row_item_count {
-                    // 大于最大数量则退出
-                    if scanned_count > count {
-                        break 'outer;
-                    }
-
-                    // 右键终止
-                    if utils::is_rmb_down() {
+                    // 大于最大数量 或者 取消 或者 鼠标右键按下
+                    if utils::is_rmb_down()
+                        || scanned_count > count
+                        || self.cancellation_token.cancelled()
+                    {
                         break 'outer;
                     }
 
@@ -135,7 +133,11 @@ impl Scanner {
                     let image = self.capture_panel().unwrap();
                     let star = self.get_star();
 
-                    if self.cancellation_token.cancelled() || star < self.config.min_star {
+                    if star < self.config.min_star {
+                        info!(
+                            "找到满足最低星级要求 {} 的物品，准备退出……",
+                            self.config.min_star
+                        );
                         break 'outer;
                     }
 
@@ -145,7 +147,11 @@ impl Scanner {
                         style(format!("{} 星物品", star)).bold().cyan(),
                         style(format!("({},{})", scanned_row + 1, col + 1,)).dim()
                     ));
-                    tx.send(Some(ItemImage { image, star })).ok();
+
+                    if tx.send(Some(ItemImage { image, star })).is_err() {
+                        error!("识别线程已退出，扫描终止……");
+                        break 'outer;
+                    }
 
                     scanned_count += 1;
                 } // end '_col
@@ -163,6 +169,7 @@ impl Scanner {
             let scroll_row = remain_row.min(self.row);
             start_row = self.row - scroll_row;
 
+            // 在翻页前检查是否取消
             if self.cancellation_token.cancelled() {
                 break 'outer;
             }
@@ -237,7 +244,10 @@ impl Scanner {
                 ));
 
                 if result.level < min_level {
-                    info!("找到满足最低等级要求 {} 的物品({})，准备退出……", min_level, result.level);
+                    info!(
+                        "找到满足最低等级要求 {} 的物品({})，准备退出……",
+                        min_level, result.level
+                    );
                     token.cancel();
                     break;
                 }

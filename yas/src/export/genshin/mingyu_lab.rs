@@ -2,8 +2,6 @@ use crate::core::genshin::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
 use serde::ser::{Serialize, SerializeMap, Serializer};
-use std::fs::File;
-use std::io::prelude::*;
 
 struct MingyuLabArtifact<'a> {
     artifact: &'a GenshinArtifact,
@@ -160,15 +158,13 @@ impl<'a> MingyuLabFormat<'a> {
             .collect();
         MingyuLabFormat { artifacts }
     }
+}
 
-    pub fn save(&self, path: String) {
-        let mut file = match File::create(&path) {
-            Err(why) => crate::error_and_quit!("couldn't create {}: {}", path, why),
-            Ok(file) => file,
-        };
-        let s = serde_json::to_string(&self.artifacts).unwrap();
-        if let Err(why) = file.write_all(s.as_bytes()) {
-            crate::error_and_quit!("couldn't write to {}: {}", path, why)
-        }
+impl Serialize for MingyuLabFormat<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.artifacts.serialize(serializer)
     }
 }

@@ -149,7 +149,6 @@ impl Scanner {
                     ));
 
                     if tx.send(Some(ItemImage { image, star })).is_err() {
-                        error!("识别线程已退出，扫描终止……");
                         break 'outer;
                     }
 

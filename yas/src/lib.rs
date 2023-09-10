@@ -16,6 +16,14 @@ extern crate lazy_static;
 pub mod common;
 pub mod core;
 pub mod export;
+pub mod draw_capture_region;
+pub mod capture;
+pub mod utils;
+pub mod scanner;
+pub mod inference;
+pub mod game_info;
+pub mod arguments_builder;
+pub mod window_info;
 
 pub use crate::core::{
     genshin::GenshinArtifact, starrail::StarrailRelic, Game, Scanner, YasScannerConfig, CONFIG,

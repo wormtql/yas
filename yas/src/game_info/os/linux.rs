@@ -1,5 +1,4 @@
-use super::*;
-use crate::common::*;
+use crate::game_info::game_info::GameInfo;
 
 pub fn get_game_info() -> GameInfo {
     let window_id = unsafe {

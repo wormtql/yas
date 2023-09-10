@@ -21,7 +21,6 @@ regex = "1.5"
 log = "0.4"
 env_logger = "0.10"
 edit-distance = "2.1"
-clap = { version = "4.4", features = ["derive"] }
 os_info = "3.0"
 strum = "0.25"
 strum_macros = "0.25"

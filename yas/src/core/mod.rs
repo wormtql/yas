@@ -1,7 +1,5 @@
 use crate::common::*;
 use std::ops::Deref;
-pub mod ui;
-pub use ui::*;
 
 mod config;
 pub use config::*;
@@ -15,7 +13,6 @@ pub use game::*;
 mod scanner_core;
 pub use scanner_core::*;
 
-pub mod inference;
 
 crate::scan_info_ext! {
     pub type ScanInfoType = u32;

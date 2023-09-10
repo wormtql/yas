@@ -1,6 +1,5 @@
 use crate::{common::utils::*, core::ui::Resolution};
-
-use super::GameInfo;
+use crate::game_info::game_info::GameInfo;
 
 pub fn get_game_info() -> GameInfo {
     let (pid, ui) = get_pid_and_ui();

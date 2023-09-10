@@ -56,16 +56,6 @@ pub trait ItemScanner {
     ) -> Result<ScanResult>;
 }
 
-pub fn calc_pool(row: &Vec<u8>) -> f32 {
-    let len = row.len() / 3;
-    let mut pool: f32 = 0.0;
-
-    for i in 0..len {
-        pool += row[i * 3] as f32;
-    }
-    pool
-}
-
 impl ScannerCore {
     pub fn new(scan_info: ScanInfo, game_info: GameInfo, model: &[u8], content: &str) -> Self {
         let model = match CRNNModel::new(model, content) {

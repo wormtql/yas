@@ -1,12 +1,14 @@
 pub mod cancel;
-pub mod capture;
 pub mod character_name;
 pub mod color;
-pub mod draw_config;
-pub mod pos;
-pub mod utils;
+pub mod ui;
+pub mod resolution;
 
-pub use capture::{Capturable, RelativeCapturable};
+
+pub mod positioning;
+// pub mod as_primitive;
+
+pub use crate::capture::capture::{Capturable, RelativeCapturable};
 pub use draw_config::DrawConfig;
 
 use crate::core::inference::{raw_to_img, uint8_raw_to_img};
@@ -14,10 +16,7 @@ use image::{GrayImage, ImageBuffer};
 pub use pos::*;
 use serde::Deserialize;
 
-pub enum UI {
-    Desktop,
-    Mobile,
-}
+
 
 pub struct RawImage {
     pub data: Vec<f32>,

@@ -4,100 +4,11 @@ use crate::common::color::Color;
 use crate::TARGET_GAME;
 use anyhow::Result;
 use image::*;
-use pre_process::ImageConvExt;
+use crate::inference::pre_process::ImageConvExt;
 use std::fmt::Display;
 use std::fs;
 use std::path::Path;
-
-impl ScannerCore {
-    #[inline(always)]
-    pub fn get_flag_color(&self) -> Result<Color> {
-        let target = &self.scan_info.flag + &self.scan_info.origin;
-        capture::get_color(target)
-    }
-
-    #[inline(always)]
-    pub fn capture_panel(&mut self) -> Result<RgbImage> {
-        Rect::from(&self.scan_info.panel_pos).capture_relative(&self.scan_info.origin)
-    }
-
-    #[inline(always)]
-    pub fn sample_initial_color(&mut self) {
-        self.initial_color = self.get_flag_color().unwrap();
-    }
-
-    pub fn get_star(&self) -> u8 {
-        let color = capture::get_color(&self.scan_info.origin + &self.scan_info.star).unwrap();
-
-        let match_colors = [
-            Color::new(113, 119, 139),
-            Color::new(42, 143, 114),
-            Color::new(81, 127, 203),
-            Color::new(161, 86, 224),
-            Color::new(188, 105, 50),
-        ];
-
-        let mut min_dis: u32 = 0xdeadbeef;
-        let mut ret: usize = 1;
-        for (i, match_color) in match_colors.iter().enumerate() {
-            let dis = match_color.distance(&color);
-            if dis < min_dis {
-                min_dis = dis;
-                ret = i + 1;
-            }
-        }
-
-        ret as u8
-    }
-
-    pub fn get_item_count(&self) -> usize {
-        let count = self.config.number;
-        let item_name = match TARGET_GAME.get().unwrap() {
-            Game::Genshin => "圣遗物",
-            Game::StarRail => "遗器数量",
-        };
-
-        let max_count = match crate::TARGET_GAME.get().unwrap() {
-            Game::Genshin => 1800,
-            Game::StarRail => 1500,
-        };
-
-        if count > 0 {
-            return max_count.min(count);
-        }
-
-        let im = match Rect::from(&self.scan_info.item_count_pos)
-            .capture_relative(&self.scan_info.origin)
-        {
-            Ok(im) => im,
-            Err(e) => {
-                error!("Error when capturing item count: {}", e);
-                return max_count;
-            },
-        };
-
-        let s = match self.model.inference_string(&im) {
-            Ok(s) => s,
-            Err(e) => {
-                error!("Error when inferring item count: {}", e);
-                return max_count;
-            },
-        };
-
-        info!("物品信息: {}", s);
-
-        if s.starts_with(item_name) {
-            let chars = s.chars().collect::<Vec<char>>();
-            let count_str = chars[4..chars.len() - 5].iter().collect::<String>();
-            match count_str.parse::<usize>() {
-                Ok(v) => v.min(max_count),
-                Err(_) => max_count,
-            }
-        } else {
-            max_count
-        }
-    }
-}
+use crate::capture::capture;
 
 pub fn get_model_inference_func(
     dump_mode: bool,

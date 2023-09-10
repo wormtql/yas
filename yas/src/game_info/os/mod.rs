@@ -1,14 +1,3 @@
-use crate::common::*;
-
-use super::Resolution;
-
-pub struct GameInfo {
-    pub window: Rect,
-    pub resolution: Resolution,
-    pub is_cloud: bool,
-    pub ui: UI,
-}
-
 #[cfg(windows)]
 mod winodws;
 #[cfg(windows)]

@@ -3,19 +3,20 @@ use image::EncodableLayout;
 use serde_json::Value;
 use tract_onnx::prelude::*;
 
-use super::pre_process::GrayImageFloat;
+use crate::core::inference::GrayImageFloat;
 
 type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
 
-pub struct CRNNModel {
+/// currently the model is using SVTR structure
+pub struct OCRModel {
     model: ModelType,
     index_2_word: Vec<String>,
 
     pub avg_inference_time: f64,
 }
 
-impl CRNNModel {
-    pub fn new(model: &[u8], content: &str) -> Result<CRNNModel> {
+impl OCRModel {
+    pub fn new(model: &[u8], content: &str) -> Result<OCRModel> {
         let model = tract_onnx::onnx()
             .model_for_read(&mut model.as_bytes())?
             .with_input_fact(0, f32::fact([1, 1, 32, 384]).into())?
@@ -35,7 +36,7 @@ impl CRNNModel {
 
         let index_2_word = index_2_word.into_iter().map(|(_, v)| v).collect();
 
-        Ok(CRNNModel {
+        Ok(OCRModel {
             model,
             index_2_word,
             avg_inference_time: 0.0,

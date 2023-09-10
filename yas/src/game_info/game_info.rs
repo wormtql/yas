@@ -1,7 +1,9 @@
-use crate::common::pos::Size;
+use crate::positioning::{Rect, Size};
 
-mod os;
-pub use os::*;
+pub enum UI {
+    Desktop,
+    Mobile,
+}
 
 #[derive(Clone, Copy, Debug)]
 pub enum Resolution {
@@ -16,7 +18,7 @@ pub enum Resolution {
 }
 
 impl Resolution {
-    pub fn new(size: Size) -> Self {
+    pub fn new(size: Size<u32>) -> Self {
         if size.height * 43 == size.width * 18 {
             Resolution::Windows43x18
         } else if size.height * 16 == size.width * 9 {
@@ -33,4 +35,12 @@ impl Resolution {
             crate::error_and_quit!("不支持的分辨率");
         }
     }
+}
+
+pub struct GameInfo {
+    // it's possible to be off the screen
+    pub window: Rect<i32>,
+    pub resolution: Resolution,
+    pub is_cloud: bool,
+    pub ui: UI,
 }

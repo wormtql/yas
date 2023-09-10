@@ -7,3 +7,4 @@ dumps/
 **/*.png
 **tmp**
 **/.DS_Store
+data/

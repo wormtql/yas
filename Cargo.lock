@@ -2936,7 +2936,6 @@ name = "yas_scanner"
 version = "0.1.14"
 dependencies = [
  "anyhow",
- "clap",
  "cocoa",
  "console",
  "core-foundation",
@@ -2970,6 +2969,8 @@ name = "yas_scanner_genshin"
 version = "0.1.14"
 dependencies = [
  "anyhow",
+ "clap",
+ "image",
  "log",
  "winres",
  "yas_scanner",
@@ -2977,16 +2978,6 @@ dependencies = [
 
 [[package]]
 name = "yas_scanner_starrail"
-version = "0.1.14"
-dependencies = [
- "anyhow",
- "log",
- "winres",
- "yas_scanner",
-]
-
-[[package]]
-name = "yas_scanner_test"
 version = "0.1.14"
 dependencies = [
  "anyhow",

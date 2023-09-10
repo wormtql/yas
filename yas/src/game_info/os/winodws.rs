@@ -1,5 +1,6 @@
-use super::*;
 use crate::core::Game;
+use crate::game_info::game_info::GameInfo;
+use crate::utils;
 use winapi::shared::windef::HWND;
 
 fn window_not_found() -> ! {

@@ -2,17 +2,18 @@ use std::cell::RefCell;
 use std::ops::Generator;
 use std::rc::Rc;
 use std::sync::Arc;
+use clap::builder::ValueParserFactory;
 use yas::common::cancel::CancellationToken;
 use yas::common::color::Color;
 use yas::game_info::game_info::GameInfo;
 use yas::inference::model::OCRModel;
 use yas::capture::capture;
+use yas::window_info::require_window_info::RequireWindowInfo;
 use yas::window_info::window_info::WindowInfo;
 use crate::scanner_controller::repository_layout::config::{GenshinRepositoryScannerLogicConfig};
 use anyhow::Result;
-use yas::common::positioning::{Pos, Rect};
+use yas::common::positioning::{Pos, Rect, Size};
 use yas::utils;
-use crate::scanner_controller::repository_layout::scan_info::GenshinRepositoryScanInfo;
 use log::{debug, info, error};
 use std::time::SystemTime;
 use yas::common::RelativeCapturable;
@@ -25,6 +26,31 @@ pub enum ScrollResult {
     Success,
     Failed,
     Skip,
+}
+
+// todo use macros
+struct GenshinRepositoryScanControllerWindowInfo {
+    pub window_origin: Pos,
+    pub panel_pos: Rect,
+    pub flag_pos: Pos,
+    pub item_gap: Size,
+    pub item_size: Size,
+    pub scan_margin: Pos,
+    pub pool_pos: Rect,
+}
+
+impl From<&WindowInfo> for GenshinRepositoryScanControllerWindowInfo {
+    fn from(value: &WindowInfo) -> Self {
+        GenshinRepositoryScanControllerWindowInfo {
+            window_origin: value.get("window_origin"),
+            panel_pos: value.get("genshin_repository_panel_pos"),
+            flag_pos: value.get("genshin_repository_flag_pos"),
+            item_gap: value.get("genshin_repository_item_gap"),
+            item_size: value.get("genshin_repository_item_size"),
+            scan_margin: value.get("genshin_repository_scan_margin"),
+            pool_pos: value.get("genshin_repository_pool_pos"),
+        }
+    }
 }
 
 pub struct GenshinRepositoryScanController {
@@ -43,18 +69,26 @@ pub struct GenshinRepositoryScanController {
 
     pub row: usize,
     pub col: usize,
-    pub config: GenshinRepositoryScannerConfig,
-
-    pub scan_info: GenshinRepositoryScanInfo,
-
-    pub system_control: SystemControl,
-
     pub item_count: usize,
 
-    // scan state
-    // scanned_row: usize,
-    // scanned_count: usize,
-    // start_row: usize,
+    pub config: GenshinRepositoryScannerConfig,
+    pub window_info: GenshinRepositoryScanControllerWindowInfo,
+    pub system_control: SystemControl,
+}
+
+impl RequireWindowInfo for GenshinRepositoryScanController {
+    fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
+        window_info_builder
+            .add_required_key("window_origin")
+            .add_required_key("genshin_repository_panel_pos")
+            .add_required_key("genshin_repository_flag_pos")
+            .add_required_key("genshin_repository_item_gap")
+            .add_required_key("genshin_repository_item_size")
+            .add_required_key("genshin_repository_scan_margin")
+            .add_required_key("genshin_repository_pool_pos")
+            .add_required_key("genshin_repository_item_row")
+            .add_required_key("genshin_repository_item_col");
+    }
 }
 
 pub fn calc_pool(row: &Vec<u8>) -> f32 {
@@ -69,14 +103,16 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
 
 impl GenshinRepositoryScanController {
     pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: WindowInfo, item_count: usize) -> Self {
+        let item_row = window_info.get::<i32>("genshin_repository_item_row").unwrap();
+        let item_col = window_info.get::<i32>("genshin_repository_item_col").unwrap();
 
         GenshinRepositoryScanController {
             system_control: SystemControl::new(),
 
-            row: scan_info.item_row as usize,
-            col: scan_info.item_col as usize,
+            row: item_row,
+            col: item_col,
 
-            scan_info,
+            window_info: GenshinRepositoryScanControllerWindowInfo::from(&window_info),
             config,
 
             pool: 0.0,
@@ -187,13 +223,12 @@ impl GenshinRepositoryScanController {
     }
 
     pub fn capture_panel(&self) -> Result<RgbImage> {
-        Rect::from(&self.scan_info.panel_pos).capture_relative(&self.scan_info.origin)
+        self.window_info.panel_pos.capture_relative(self.window_info.window_origin)
     }
 
     #[inline(always)]
     pub fn get_flag_color(&self) -> Result<Color> {
-        let target = &self.scan_info.flag + &self.scan_info.origin;
-        capture::get_color(target)
+        capture::get_color(self.window_info.flag_pos + self.window_info.window_origin)
     }
 
     #[inline(always)]
@@ -220,16 +255,16 @@ impl GenshinRepositoryScanController {
 
     pub fn move_to(&mut self, row: usize, col: usize) {
         let (row, col) = (row as u32, col as u32);
-        let origin = self.scan_info.origin;
+        let origin = self.window_info.window_origin;
 
-        let gap = self.scan_info.item_gap;
-        let margin = self.scan_info.scan_margin;
-        let size = self.scan_info.item_size;
+        let gap = self.window_info.item_gap;
+        let margin = self.window_info.scan_margin;
+        let size = self.window_info.item_size;
 
-        let left = origin.x + margin.width + (gap.width + size.width) * col + size.width / 2;
-        let top = origin.y + margin.height + (gap.height + size.height) * row + size.height / 4;
+        let left = origin.x + margin.x + (gap.width + size.width) * (col as f64) + size.width / 2.0;
+        let top = origin.y + margin.y + (gap.height + size.height) * (row as f64) + size.height / 2.0;
 
-        self.system_control.mouse_move_to(left, top);
+        self.system_control.mouse_move_to(left as i32, top as i32);
 
         #[cfg(target_os = "macos")]
         utils::sleep(20);
@@ -308,12 +343,8 @@ impl GenshinRepositoryScanController {
         let mut consecutive_time = 0;
         let mut diff_flag = false;
         while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_item as u128 {
-            let im: RgbImage = self.scan_info.pool_pos
-                .capture_relative(self.scan_info.origin)?;
-
-            // let im: RgbImage = Rect::from(&self.scan_info.pool_pos)
-            //     .capture_relative(&self.scan_info.origin)
-            //     .unwrap();
+            let im: RgbImage = self.window_info.pool_pos
+                .capture_relative(self.window_info.window_origin)?;
 
             let pool = calc_pool(im.as_raw()) as f64;
 

@@ -9,7 +9,7 @@ pub struct WindowInfoBuilder<'a> {
 }
 
 impl WindowInfoBuilder {
-    pub fn add_required_key(&mut self, key: &str) -> &mut self {
+    pub fn add_required_key(&mut self, key: &str) -> &mut Self {
         self.required_key.insert(String::from(key));
         self
     }

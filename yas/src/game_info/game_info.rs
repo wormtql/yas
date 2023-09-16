@@ -5,7 +5,7 @@ pub enum UI {
     Mobile,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 pub enum Resolution {
     // PC
     Windows43x18,
@@ -18,21 +18,24 @@ pub enum Resolution {
 }
 
 impl Resolution {
-    pub fn new(size: Size<u32>) -> Self {
-        if size.height * 43 == size.width * 18 {
+    pub fn new(size: Size) -> Self {
+        let height = size.height as u32;
+        let width = size.width as u32;
+
+        if height * 43 == width * 18 {
             Resolution::Windows43x18
-        } else if size.height * 16 == size.width * 9 {
+        } else if height * 16 == width * 9 {
             Resolution::Windows16x9
-        } else if size.height * 8 == size.width * 5 {
+        } else if height * 8 == width * 5 {
             Resolution::Windows8x5
-        } else if size.height * 4 == size.width * 3 {
+        } else if height * 4 == width * 3 {
             Resolution::Windows4x3
-        } else if size.height * 7 == size.width * 3 {
+        } else if height * 7 == width * 3 {
             Resolution::WIndows7x3
-        } else if (size.height as i32 * 8 - size.width as i32 * 5).abs() < 20 {
+        } else if (height as i32 * 8 - width as i32 * 5).abs() < 20 {
             Resolution::MacOS8x5
         } else {
-            crate::error_and_quit!("不支持的分辨率");
+            crate::error_and_quit!("不支持的分辨率")
         }
     }
 }

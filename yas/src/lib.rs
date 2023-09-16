@@ -24,6 +24,7 @@ pub mod inference;
 pub mod game_info;
 pub mod arguments_builder;
 pub mod window_info;
+pub mod system_control;
 
 pub use crate::core::{
     genshin::GenshinArtifact, starrail::StarrailRelic, Game, Scanner, YasScannerConfig, CONFIG,

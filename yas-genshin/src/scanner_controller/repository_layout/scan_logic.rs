@@ -7,6 +7,7 @@ use yas::common::color::Color;
 use yas::game_info::game_info::GameInfo;
 use yas::inference::model::OCRModel;
 use yas::capture::capture;
+use yas::window_info::window_info::WindowInfo;
 use crate::scanner_controller::repository_layout::config::{GenshinRepositoryScannerLogicConfig};
 use anyhow::Result;
 use yas::common::positioning::{Pos, Rect};
@@ -15,6 +16,7 @@ use crate::scanner_controller::repository_layout::scan_info::GenshinRepositorySc
 use log::{debug, info, error};
 use std::time::SystemTime;
 use yas::common::RelativeCapturable;
+use yas::system_control::SystemControl;
 
 #[derive(Debug)]
 pub enum ScrollResult {
@@ -45,7 +47,7 @@ pub struct GenshinRepositoryScanController {
 
     pub scan_info: GenshinRepositoryScanInfo,
 
-    pub enigo: Enigo,
+    pub system_control: SystemControl,
 
     pub item_count: usize,
 
@@ -66,9 +68,10 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
 }
 
 impl GenshinRepositoryScanController {
-    pub fn new(config: GenshinRepositoryScannerLogicConfig, scan_info: GenshinRepositoryScanInfo, item_count: usize) -> Self {
+    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: WindowInfo, item_count: usize) -> Self {
+
         GenshinRepositoryScanController {
-            enigo: Enigo::new(),
+            system_control: SystemControl::new(),
 
             row: scan_info.item_row as usize,
             col: scan_info.item_col as usize,
@@ -117,7 +120,7 @@ impl GenshinRepositoryScanController {
             #[cfg(target_os = "macos")]
             utils::sleep(20);
 
-            mut_self.enigo.mouse_click(MouseButton::Left);
+            mut_self.system_control.mouse_click();
             utils::sleep(1000);
 
             yield;
@@ -142,7 +145,7 @@ impl GenshinRepositoryScanController {
                         }
 
                         mut_self.move_to(row, col);
-                        mut_self.enigo.mouse_click(MouseButton::Left);
+                        mut_self.system_control.mouse_click();
 
                         #[cfg(target_os = "macos")]
                         utils::sleep(20);
@@ -226,7 +229,7 @@ impl GenshinRepositoryScanController {
         let left = origin.x + margin.width + (gap.width + size.width) * col + size.width / 2;
         let top = origin.y + margin.height + (gap.height + size.height) * row + size.height / 4;
 
-        self.enigo.mouse_move_to(left as i32, top as i32);
+        self.system_control.mouse_move_to(left, top);
 
         #[cfg(target_os = "macos")]
         utils::sleep(20);
@@ -336,23 +339,23 @@ impl GenshinRepositoryScanController {
     #[inline(always)]
     pub fn mouse_scroll(&mut self, length: i32, try_find: bool) {
         #[cfg(windows)]
-        self.enigo.mouse_scroll_y(-length);
+        self.system_control.mouse_scroll(length, try_find);
 
         #[cfg(target_os = "linux")]
-        self.enigo.mouse_scroll_y(length);
+        self.system_control.mouse_scroll(length, try_find);
 
         #[cfg(target_os = "macos")]
         {
             match self.game_info.ui {
                 crate::common::UI::Desktop => {
-                    self.enigo.mouse_scroll_y(-length);
+                    self.system_control.mouse_scroll(length);
                     utils::sleep(20);
                 },
                 crate::common::UI::Mobile => {
                     if try_find {
-                        mac_scroll_fast(&mut self.enigo, length)
+                        self.system_control.mac_scroll_fast(length);
                     } else {
-                        mac_scroll_slow(&mut self.enigo, length)
+                        self.system_control.mac_scroll_slow(length);
                     }
                 },
             }

@@ -101,8 +101,9 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
     pool
 }
 
+// constructor
 impl GenshinRepositoryScanController {
-    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: WindowInfo, item_count: usize) -> Self {
+    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: &WindowInfo, item_count: usize) -> Self {
         let item_row = window_info.get::<i32>("genshin_repository_item_row").unwrap();
         let item_col = window_info.get::<i32>("genshin_repository_item_col").unwrap();
 
@@ -112,7 +113,7 @@ impl GenshinRepositoryScanController {
             row: item_row,
             col: item_col,
 
-            window_info: GenshinRepositoryScanControllerWindowInfo::from(&window_info),
+            window_info: GenshinRepositoryScanControllerWindowInfo::from(window_info),
             config,
 
             pool: 0.0,
@@ -133,17 +134,20 @@ impl GenshinRepositoryScanController {
 
 impl GenshinRepositoryScanController {
     pub fn into_generator(self: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Generator {
-        let mut_self = self.borrow_mut();
+        // let mut_self = self.borrow_mut();
         let generator = move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;
             let mut start_row = 0;
 
-            let total_row = (mut_self.item_count + mut_self.col - 1) / mut_self.col;
-            let last_row_col = if mut_self.item_count % mut_self.col == 0 {
-                mut_self.col
+            let mut_self = || { return self.borrow_mut(); };
+            let immut_self = || { return self.borrow(); };
+
+            let total_row = (immut_self().item_count + immut_self().col - 1) / immut_self().col;
+            let last_row_col = if immut_self().item_count % immut_self().col == 0 {
+                immut_self().col
             } else {
-                count % mut_self.col
+                count % immut_self().col
             };
 
             info!(
@@ -151,43 +155,40 @@ impl GenshinRepositoryScanController {
                 count, total_row, last_row_col
             );
 
-            mut_self.move_to(0, 0);
+            mut_self().move_to(0, 0);
 
             #[cfg(target_os = "macos")]
             utils::sleep(20);
 
-            mut_self.system_control.mouse_click();
+            mut_self().system_control.mouse_click();
             utils::sleep(1000);
 
-            yield;
-
-            mut_self.sample_initial_color();
+            mut_self().sample_initial_color();
 
             'outer: while scanned_count < count {
-                '_row: for row in start_row..mut_self.row {
+                '_row: for row in start_row..immut_self().row {
                     let row_item_count = if scanned_row == total_row - 1 {
                         last_row_col
                     } else {
-                        mut_self.col
+                        immut_self().col
                     };
 
                     '_col: for col in 0..row_item_count {
                         // 大于最大数量 或者 取消 或者 鼠标右键按下
-                        if utils::is_rmb_down()
-                            || scanned_count > count
-                            || mut_self.cancellation_token.cancelled()
-                        {
+                        // todo use controller
+                        if utils::is_rmb_down() || scanned_count > count {
                             break 'outer;
                         }
 
-                        mut_self.move_to(row, col);
-                        mut_self.system_control.mouse_click();
+                        mut_self().move_to(row, col);
+                        mut_self().system_control.mouse_click();
 
                         #[cfg(target_os = "macos")]
                         utils::sleep(20);
 
-                        mut_self.wait_until_switched();
+                        mut_self().wait_until_switched();
 
+                        // have to make sure at this point no mut ref exists
                         yield;
 
                         scanned_count += 1;
@@ -195,18 +196,18 @@ impl GenshinRepositoryScanController {
 
                     scanned_row += 1;
 
-                    if scanned_row >= self.config.max_row {
+                    if scanned_row >= immut_self().config.max_row {
                         info!("到达最大行数，准备退出……");
                         break 'outer;
                     }
                 } // end '_row
 
                 let remain = count - scanned_count;
-                let remain_row = (remain + self.col - 1) / self.col;
-                let scroll_row = remain_row.min(self.row);
-                start_row = self.row - scroll_row;
+                let remain_row = (remain + immut_self().col - 1) / immut_self().col;
+                let scroll_row = remain_row.min(immut_self().row);
+                start_row = immut_self().row - scroll_row;
 
-                match self.scroll_rows(scroll_row as i32) {
+                match mut_self().scroll_rows(scroll_row as i32) {
                     ScrollResult::TimeLimitExceeded => {
                         error!("翻页超时，扫描终止……");
                         break 'outer;

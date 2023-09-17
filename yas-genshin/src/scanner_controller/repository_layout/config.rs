@@ -1,10 +1,11 @@
 use yas::arguments_builder::arguments_builder::ArgumentsBuilder;
 use crate::export::export_format::ExportFormat;
-use clap::{Arg, arg, Command};
+use clap::{Arg, arg, Command, FromArgMatches};
 
+#[derive(Clone)]
 pub struct GenshinRepositoryScannerLogicConfig {
     /// Max rows to scan
-    pub max_row: usize,
+    pub max_row: i32,
 
     /// Will the scanner capture only?
     pub capture_only: bool,
@@ -13,7 +14,7 @@ pub struct GenshinRepositoryScannerLogicConfig {
     pub scroll_delay: u32,
 
     /// Max number of items to scan
-    pub number: usize,
+    pub number: i32,
 
     /// Dump the captured image
     pub dump_mode: bool,
@@ -25,8 +26,36 @@ pub struct GenshinRepositoryScannerLogicConfig {
     pub cloud_wait_switch_item: u32,
 }
 
+impl Default for GenshinRepositoryScannerLogicConfig {
+    fn default() -> Self {
+        GenshinRepositoryScannerLogicConfig {
+            max_row: -1,
+            capture_only: false,
+            scroll_delay: 80,
+            number: -1,
+            dump_mode: false,
+            max_wait_switch_item: 80,
+            cloud_wait_switch_item: 100,
+        }
+    }
+}
+
+impl FromArgMatches for GenshinRepositoryScannerLogicConfig {
+    fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {
+        // todo
+        // let result = GenshinRepositoryScannerLogicConfig {
+        //     max_row: matches.get_one<usize>("max-row"),
+        //     capture_only: false,
+
+        // }
+            
+        let result = GenshinRepositoryScannerLogicConfig::default();
+        Ok(result)
+    }
+}
+
 impl ArgumentsBuilder for GenshinRepositoryScannerConfig {
-    fn modify_arguments(&self, cmd: &mut Command) {
+    fn modify_arguments(cmd: &mut Command) {
         cmd
             .arg(Arg::new("max-row").long("max-row").help("最大扫描行数"))
             .arg(Arg::new("min-star").long("min-star").help("最小星级"))

@@ -1,0 +1,57 @@
+{
+    "current_resolution": {
+        "Size": {
+            "width": 1600,
+            "height": 900
+        }
+    },
+    "resolution_family": "Windows16x9",
+    "data": {
+        "genshin_repository_panel_pos": {
+            "Rect": {
+                "top": 100.0,
+                "left": 1090.0,
+                "width": 410.0,
+                "height": 700.0
+            }
+        },
+        "genshin_repository_flag_pos": {
+            "Pos": {
+                "x": 271.1,
+                "y": 89.8
+            }
+        },
+        "genshin_repository_item_gap": {
+            "Size": {
+                "width": 20,
+                "height": 20
+            }
+        },
+        "genshin_repository_item_size": {
+            "Size": {
+                "width": 102,
+                "height": 126
+            }
+        },
+        "genshin_repository_scan_margin": {
+            "Size": {
+                "width": 99,
+                "height": 101
+            }
+        },
+        "genshin_repository_pool_pos": {
+            "Rect": {
+                "top": 118.2,
+                "left": 1144.7,
+                "width": 15,
+                "height": 392.1
+            }
+        },
+        "genshin_repository_item_row": {
+            "InvariantInt": 5
+        },
+        "genshin_repository_item_col": {
+            "InvariantInt": 8
+        }
+    }
+}

@@ -95,6 +95,7 @@ pub const WINDOW_16_9: GenshinWindowInfo = GenshinWindowInfo {
         size: S::new(1600.0, 900.0),
         origin: P::new(0.0, 0.0),
 
+        // top right bottom left
         title_pos: R::new(106.6, 1417.7, 139.6, 1111.8),
         main_stat_name_pos: R::new(224.3, 1253.9, 248.0, 1110.0),
         main_stat_value_pos: R::new(248.4, 1246.8, 286.8, 1110.0),

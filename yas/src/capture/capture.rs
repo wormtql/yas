@@ -1,9 +1,7 @@
 use crate::common::{color::Color, *};
-use crate::core::inference::{pre_process, to_gray, GrayImageFloat};
 use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, RgbImage};
 
 use anyhow::Result;
-use crate::as_primitive::AsPrimitive;
 use crate::positioning::{Pos, Rect};
 
 pub trait Capturable<ResultType> {
@@ -54,20 +52,20 @@ where
     }
 }
 
-impl<T> Capturable<GrayImageFloat> for Rect<T>
-where
-    T: Copy + TryInto<i32>
-{
-    fn capture(&self) -> Result<GrayImageFloat> {
-        let rgb_img: RgbImage = self.capture()?;
+// impl<T> Capturable<GrayImageFloat> for Rect<T>
+// where
+//     T: Copy + TryInto<i32>
+// {
+//     fn capture(&self) -> Result<GrayImageFloat> {
+//         let rgb_img: RgbImage = self.capture()?;
 
-        // todo refactor pre process logic
-        match pre_process(to_gray(&rgb_img)) {
-            Some(im) => Ok(im),
-            None => Err(anyhow::anyhow!("Capture error")),
-        }
-    }
-}
+//         // todo refactor pre process logic
+//         match pre_process(to_gray(&rgb_img)) {
+//             Some(im) => Ok(im),
+//             None => Err(anyhow::anyhow!("Capture error")),
+//         }
+//     }
+// }
 
 pub fn get_color(pos: Pos<i32>) -> Result<Color> {
     let rect: Rect<i32> = Rect {

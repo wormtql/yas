@@ -268,8 +268,6 @@ pub struct GenshinArtifactScanner {
 
     pub window_info: ArtifactScannerWindowInfo,
     window_info_clone: WindowInfo,
-
-    ocr_model: Arc<OCRModel>,
 }
 
 impl RequireWindowInfo for GenshinArtifactScanner {
@@ -294,12 +292,11 @@ struct SendItem {
 
 // constructor
 impl GenshinArtifactScanner {
-    pub fn new(config: GenshinArtifactScannerConfig, window_info: &WindowInfo, model: OCRModel) {
+    pub fn new(config: GenshinArtifactScannerConfig, window_info: &WindowInfo) -> Self {
         GenshinArtifactScanner {
             scanner_config: config.genshin_repo_scan_logic_config.clone(),
             window_info: ArtifactScannerWindowInfo::from(window_info),
             window_info_clone: window_info.clone(),
-            ocr_model: Arc::new(model),
         }
     }
 }
@@ -375,16 +372,34 @@ impl GenshinArtifactScanner {
         }
     }
 
-    pub fn scan(&mut self) -> Result<Vec<ScanResult>> {
+    pub fn scan(&mut self) -> Result<Vec<GenshinArtifactScanResult>> {
         info!("开始扫描，使用鼠标右键中断扫描");
 
         let now = SystemTime::now();
         let count = self.get_item_count();
 
         let (tx, rx) = mpsc::channel::<Option<SendItem>>();
-        let token = self.cancellation_token.clone();
+        // let token = self.cancellation_token.clone();
 
-        let worker = self.worker(rx, count, token);
+        let model = {
+            let model_bytes = include_bytes!("./models/model_training.onnx");
+            let index_to_world = include_str!("./models/index_2_word.json");
+
+            OCRModel::new(
+                model_bytes, index_to_world
+            )
+        };
+
+        let worker = ArtifactScannerWorker::new(
+            rx,
+            model,
+            self.window_info.clone(),
+            self.scanner_config.clone()
+        );
+
+        let join_handle = worker.run();
+
+        // let worker = self.worker(rx, count, token);
 
         self.send(&tx, count);
 
@@ -393,7 +408,7 @@ impl GenshinArtifactScanner {
             Err(_) => info!("扫描结束，识别已完成"),
         }
 
-        match worker.join() {
+        match join_handle.join() {
             Ok(v) => {
                 info!("识别耗时: {:?}", now.elapsed()?);
                 Ok(v)

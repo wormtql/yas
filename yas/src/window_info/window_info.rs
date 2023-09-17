@@ -2,10 +2,11 @@ use std::collections::HashMap;
 use std::ops::Mul;
 use crate::{common::positioning::{Rect, Pos, Size, Scalable}, game_info::game_info::Resolution};
 use anyhow::{Result, anyhow};
+use serde::{Serialize, Deserialize};
 
 type StdResult = std::result::Result;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum WindowInfoType {
     Rect(Rect),
     Pos(Pos),
@@ -43,6 +44,7 @@ impl TryInto<f64> for WindowInfoType {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct WindowInfo {
     pub data: HashMap<String, WindowInfoType>,
     pub current_resolution: Size,
@@ -102,3 +104,13 @@ impl WindowInfo {
     }
 }
 
+#[macro_export]
+macro_rules! load_window_info {
+    ($filename:expr) => {
+        {
+            let s = include_str!($filename);
+            let result: WindowInfo = serde_json::from_str(s).unwrap();
+            result
+        }
+    };
+}

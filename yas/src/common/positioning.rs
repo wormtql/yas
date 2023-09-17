@@ -1,8 +1,9 @@
 use std::ops::{Add, Mul, Sub};
 use std::fmt::Display;
 use anyhow::Result;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, Default, Copy)]
+#[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
 pub struct Rect {
     pub left: f64,
     pub top: f64,
@@ -10,13 +11,13 @@ pub struct Rect {
     pub height: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Copy)]
+#[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
 pub struct Pos {
     pub x: f64,
     pub y: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Copy)]
+#[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
 pub struct Size {
     pub height: f64,
     pub width: f64,
@@ -36,7 +37,7 @@ impl Add<Pos> for Pos {
 impl Sub<Pos> for Pos {
     type Output = Self;
 
-    fn sub(self, rhs: Pos<T>) -> Self::Output {
+    fn sub(self, rhs: Pos) -> Self::Output {
         Pos {
             x: self.x - rhs.x,
             y: self.y - rhs.y,

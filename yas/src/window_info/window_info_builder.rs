@@ -4,8 +4,17 @@ use crate::{game_info::game_info::Resolution, common::positioning::{Size, Scalab
 
 use super::{window_info::WindowInfo, window_info_prototypes::WindowInfoPrototypes};
 
-pub struct WindowInfoBuilder<'a> {
+pub struct WindowInfoBuilder {
     pub required_key: HashSet<String>,
+}
+
+// constructors
+impl WindowInfoBuilder {
+    pub fn new() -> Self {
+        WindowInfoBuilder {
+            required_key: HashSet::new(),
+        }
+    }
 }
 
 impl WindowInfoBuilder {

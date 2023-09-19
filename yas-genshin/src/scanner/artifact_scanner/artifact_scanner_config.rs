@@ -1,4 +1,4 @@
-use yas::arguments_builder::arguments_builder::ArgumentsBuilder;
+use yas::arguments_builder::arguments_builder::ArgumentsModifier;
 use clap::{Arg, Command, FromArgMatches};
 
 use crate::{export::export_format::GenshinArtifactExportFormat, scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig};
@@ -25,7 +25,7 @@ pub struct GenshinArtifactScannerConfig {
     pub genshin_repo_scan_logic_config: GenshinRepositoryScannerLogicConfig,
 }
 
-impl ArgumentsBuilder for GenshinArtifactScannerConfig {
+impl ArgumentsModifier for GenshinArtifactScannerConfig {
     fn modify_arguments(cmd: Command) -> Command {
         // todo use custom command builder
         // todo add more configs
@@ -33,7 +33,7 @@ impl ArgumentsBuilder for GenshinArtifactScannerConfig {
             .arg(Arg::new("min-star").long("min-star").help("最小星级").value_name("MIN_STAR"))
             .arg(Arg::new("min-level").long("min-level").help("最小等级").value_name("MIN_LEVEL"));
 
-        <GenshinRepositoryScannerLogicConfig as ArgumentsBuilder>::modify_arguments(cmd)
+        <GenshinRepositoryScannerLogicConfig as ArgumentsModifier>::modify_arguments(cmd)
     }
 }
 

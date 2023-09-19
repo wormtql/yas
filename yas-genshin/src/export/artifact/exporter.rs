@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use clap::{Arg, FromArgMatches};
-use yas::arguments_builder::arguments_builder::ArgumentsBuilder;
+use yas::arguments_builder::arguments_builder::ArgumentsModifier;
 use yas::export::{YasExporter, ExportAssets};
 
 use crate::artifact::GenshinArtifact;
@@ -52,7 +52,7 @@ impl<'a> YasExporter for GenshinArtifactExporter<'a> {
     }
 }
 
-impl<'a> ArgumentsBuilder for GenshinArtifactExporter<'a> {
+impl<'a> ArgumentsModifier for GenshinArtifactExporter<'a> {
     fn modify_arguments(cmd: clap::Command) -> clap::Command {
         cmd.arg(
             Arg::new("output-format")

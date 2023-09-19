@@ -1,5 +1,6 @@
 use clap::Command;
 
-pub trait ArgumentsBuilder {
+pub trait ArgumentsModifier {
     fn modify_arguments(cmd: Command) -> Command;
 }
+

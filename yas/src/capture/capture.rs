@@ -2,38 +2,31 @@ use crate::common::{color::Color, *};
 use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, RgbImage};
 
 use anyhow::Result;
-use crate::positioning::{Pos, Rect};
+use crate::common::positioning::{Pos, Rect};
 
 pub trait Capturable<ResultType> {
     fn capture(&self) -> Result<ResultType>;
 }
 
-pub trait RelativeCapturable<ResultType, PosType> where PosType: Copy + TryInto<i32> {
-    fn capture_relative(&self, offset: Pos<PosType>) -> Result<ResultType>;
+pub trait RelativeCapturable<ResultType> {
+    fn capture_relative(&self, offset: Pos) -> Result<ResultType>;
 }
 
-impl<ResultType, T, U> RelativeCapturable<ResultType, T> for Rect<U>
-where
-    T: Copy + TryInto<i32>,
-    U: Copy + TryInto<i32>,
-{
-    fn capture_relative(&self, offset: Pos<T>) -> Result<ResultType> {
-        (self + offset).capture()
+impl RelativeCapturable<RgbImage> for Rect {
+    fn capture_relative(&self, offset: Pos) -> Result<RgbImage> {
+        self.translate(offset).capture()
     }
 }
 
-impl<T> Capturable<RgbImage> for Rect<T>
-where
-    T: Copy + TryInto<i32>
-{
+impl Capturable<RgbImage> for Rect {
     fn capture(&self) -> Result<RgbImage> {
         // todo optimize screen logic
         let screen = screenshots::Screen::all()?[0];
 
-        let left = self.left.try_into()?;
-        let top = self.top.try_into()?;
-        let width = self.width.try_into()?;
-        let height = self.height.try_into()?;
+        let left = self.left as i32;
+        let top = self.top as i32;
+        let width = self.width as u32;
+        let height = self.height as u32;
 
         let mut rgb_img: RgbImage = screen
             .capture_area(
@@ -44,8 +37,9 @@ where
             )?
             .convert();
 
-        if rgb_img.width() as i32 > width && rgb_img.height() as i32 > height {
-            rgb_img = resize(&rgb_img, self.size.width, self.size.height, Triangle);
+        // why is this step
+        if rgb_img.width() > width && rgb_img.height() > height {
+            rgb_img = resize(&rgb_img, self.width as u32, self.height as u32, Triangle);
         }
 
         Ok(rgb_img)
@@ -67,12 +61,12 @@ where
 //     }
 // }
 
-pub fn get_color(pos: Pos<i32>) -> Result<Color> {
-    let rect: Rect<i32> = Rect {
+pub fn get_color(pos: Pos) -> Result<Color> {
+    let rect: Rect = Rect {
         left: pos.x,
         top: pos.y,
-        width: 1,
-        height: 1,
+        width: 1.0,
+        height: 1.0,
     };
     let image: RgbImage = rect.capture()?;
 

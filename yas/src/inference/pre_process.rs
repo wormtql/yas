@@ -1,7 +1,6 @@
 use image::imageops::{overlay, resize};
 use image::{GenericImageView, GrayImage, ImageBuffer, Luma, RgbImage};
 
-use crate::common::{RawImage, Size};
 pub type GrayImageFloat = ImageBuffer<Luma<f32>, Vec<f32>>;
 
 pub trait ImageConvExt {
@@ -142,30 +141,30 @@ pub fn crop(im: &GrayImageFloat) -> GrayImageFloat {
     cropped_im
 }
 
-pub fn raw_to_img(im: &RawImage) -> GrayImage {
-    let (width, height) = (im.size.width, im.size.height);
-    let data = &im.data;
+// pub fn raw_to_img(im: &RawImage) -> GrayImage {
+//     let (width, height) = (im.size.width, im.size.height);
+//     let data = &im.data;
 
-    ImageBuffer::from_fn(width, height, |x, y| {
-        let index = get_index(width, x, y);
-        let p = data[index];
-        let pixel = (p * 255.0) as u32;
-        let pixel: u8 = if pixel > 255 { 255 } else { pixel as u8 };
-        Luma([pixel])
-    })
-}
+//     ImageBuffer::from_fn(width, height, |x, y| {
+//         let index = get_index(width, x, y);
+//         let p = data[index];
+//         let pixel = (p * 255.0) as u32;
+//         let pixel: u8 = if pixel > 255 { 255 } else { pixel as u8 };
+//         Luma([pixel])
+//     })
+// }
 
-pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
-    let (width, height) = (im.size.width, im.size.height);
-    let data = &im.data;
+// pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
+//     let (width, height) = (im.size.width, im.size.height);
+//     let data = &im.data;
 
-    ImageBuffer::from_fn(width, height, |x, y| {
-        let index = get_index(width, x, y);
-        let pixel = data[index] as u32;
-        let pixel: u8 = if pixel > 255 { 255 } else { pixel as u8 };
-        Luma([pixel])
-    })
-}
+//     ImageBuffer::from_fn(width, height, |x, y| {
+//         let index = get_index(width, x, y);
+//         let pixel = data[index] as u32;
+//         let pixel: u8 = if pixel > 255 { 255 } else { pixel as u8 };
+//         Luma([pixel])
+//     })
+// }
 
 pub fn resize_and_pad(im: &GrayImageFloat) -> GrayImageFloat {
     let w = im.width();
@@ -221,21 +220,21 @@ pub fn pre_process(im: GrayImageFloat) -> Option<GrayImageFloat> {
     Some(im)
 }
 
-pub fn image_to_raw(im: GrayImage) -> RawImage {
-    let w = im.width();
-    let h = im.height();
+// pub fn image_to_raw(im: GrayImage) -> RawImage {
+//     let w = im.width();
+//     let h = im.height();
 
-    let mut data: Vec<f32> = vec![0.0; (w * h) as usize];
-    for i in 0..w {
-        for j in 0..h {
-            let pixel = im.get_pixel(i, j).0[0] as f32 / 255.0;
-            let index = get_index(w, i, j);
-            data[index] = pixel;
-        }
-    }
+//     let mut data: Vec<f32> = vec![0.0; (w * h) as usize];
+//     for i in 0..w {
+//         for j in 0..h {
+//             let pixel = im.get_pixel(i, j).0[0] as f32 / 255.0;
+//             let index = get_index(w, i, j);
+//             data[index] = pixel;
+//         }
+//     }
 
-    RawImage {
-        data,
-        size: Size::new(w, h),
-    }
-}
+//     RawImage {
+//         data,
+//         size: Size::new(w, h),
+//     }
+// }

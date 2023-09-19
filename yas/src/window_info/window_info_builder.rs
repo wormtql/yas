@@ -1,6 +1,6 @@
 use std::collections::HashSet;
-use anyhow::Result;
-use crate::{game_info::game_info::Resolution, common::positioning::{Size, Scalable}};
+use anyhow::{Result, anyhow};
+use crate::{game_info::Resolution, common::positioning::{Size, Scalable}};
 
 use super::{window_info::WindowInfo, window_info_prototypes::WindowInfoPrototypes};
 
@@ -25,7 +25,12 @@ impl WindowInfoBuilder {
 
     pub fn build(&self, prototypes: &WindowInfoPrototypes, resolution: Size) -> Result<WindowInfo> {
         let res = Resolution::new(resolution);
-        let proto = prototypes.get_window_info(res)?;
+        let proto = match prototypes.get_window_info(res) {
+            Some(v) => v,
+            None => {
+                return Err(anyhow!("window info not found"));
+            }
+        };
         
         let factor = resolution.height / proto.current_resolution.height;
         let result = proto.scale(factor);

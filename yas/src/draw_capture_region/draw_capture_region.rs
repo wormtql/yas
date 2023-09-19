@@ -1,4 +1,5 @@
-use crate::positioning::{Pos, Rect};
+use crate::common::positioning::{Pos, Rect};
+
 
 pub trait DrawCaptureRegion {
     fn draw_capture_region(&self, image: &mut image::RgbImage);

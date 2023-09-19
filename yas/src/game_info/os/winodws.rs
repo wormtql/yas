@@ -67,7 +67,7 @@ pub fn get_game_info(window_names: &[&str]) -> GameInfo {
 
     GameInfo {
         window: rect,
-        resolution: Resolution::new(rect.size),
+        resolution: Resolution::new(rect.size()),
         is_cloud,
         ui: UI::Desktop,
     }

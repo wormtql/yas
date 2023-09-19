@@ -1,7 +1,7 @@
 use yas::arguments_builder::arguments_builder::ArgumentsBuilder;
-use crate::export::export_format::ExportFormat;
 use clap::{Arg, arg, Command, FromArgMatches};
 
+// todo add all the cmd arguments
 #[derive(Clone)]
 pub struct GenshinRepositoryScannerLogicConfig {
     /// Max rows to scan
@@ -52,10 +52,15 @@ impl FromArgMatches for GenshinRepositoryScannerLogicConfig {
         let result = GenshinRepositoryScannerLogicConfig::default();
         Ok(result)
     }
+
+    fn update_from_arg_matches(&mut self, matches: &clap::ArgMatches) -> Result<(), clap::Error> {
+        // todo
+        Ok(())
+    }
 }
 
-impl ArgumentsBuilder for GenshinRepositoryScannerConfig {
-    fn modify_arguments(cmd: &mut Command) {
+impl ArgumentsBuilder for GenshinRepositoryScannerLogicConfig {
+    fn modify_arguments(cmd: Command) -> Command {
         cmd
             .arg(Arg::new("max-row").long("max-row").help("最大扫描行数"))
             .arg(Arg::new("min-star").long("min-star").help("最小星级"))
@@ -66,9 +71,9 @@ impl ArgumentsBuilder for GenshinRepositoryScannerConfig {
             .arg(Arg::new("offset-x").long("offset-x").help("人为指定横坐标偏移（截图有偏移时可用该选项校正）"))
             .arg(Arg::new("offset-y").long("offset-y").help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"))
             .arg(Arg::new("max-wait-switch-artifact").long("max-wait-switch-artifact").help("切换圣遗物最大等待时间(ms)"))
-            .arg(Arg::new("output-dir").long("output-dir").short("o").help("输出目录").default_value("."))
-            .arg(Arg::new("output-format").long("output-format").short("f").help("输出格式").default_value("mona"))
-            .arg(Arg::new("cloud-wait-switch-artifact").long("cloud-wait-switch-artifact").help("指定云·原神切换圣遗物等待时间(ms)"));
+            // .arg(Arg::new("output-dir").long("output-dir").short('o').help("输出目录").default_value("."))
+            // .arg(Arg::new("output-format").long("output-format").short("f").help("输出格式").default_value("mona"))
+            .arg(Arg::new("cloud-wait-switch-artifact").long("cloud-wait-switch-artifact").help("指定云·原神切换圣遗物等待时间(ms)"))
     }
 }
 

@@ -1,12 +1,13 @@
 use crate::common::positioning::{Rect, Size};
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum UI {
     Desktop,
     Mobile,
 }
 
-#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Resolution {
     // PC
     Windows43x18,
@@ -41,6 +42,7 @@ impl Resolution {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct GameInfo {
     pub window: Rect,
     pub resolution: Resolution,

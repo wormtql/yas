@@ -2971,19 +2971,15 @@ version = "0.1.14"
 dependencies = [
  "anyhow",
  "clap",
+ "edit-distance",
  "image",
+ "lazy_static",
  "log",
+ "regex",
+ "serde",
  "serde_json",
- "winres",
- "yas_scanner",
-]
-
-[[package]]
-name = "yas_scanner_starrail"
-version = "0.1.14"
-dependencies = [
- "anyhow",
- "log",
+ "strum",
+ "strum_macros",
  "winres",
  "yas_scanner",
 ]

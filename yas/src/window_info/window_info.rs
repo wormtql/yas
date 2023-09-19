@@ -9,15 +9,29 @@ type StdResult<T, E> = std::result::Result<T, E>;
 pub enum WindowInfoType {
     Rect(Rect),
     Pos(Pos),
+    Size(Size),
     Float(f64),
     InvariantInt(i32),
     InvariantFloat(f64),
 }
 
-// due to orphan rule, we implement TryInto instead of TryFrom 
+// due to orphan rule, we implement TryInto instead of TryFrom
+impl TryInto<i32> for WindowInfoType {
+    type Error = String;
+
+    fn try_into(self) -> std::result::Result<i32, Self::Error> {
+        match self {
+            WindowInfoType::InvariantInt(v) => StdResult::Ok(v),
+            _ => StdResult::Err(String::from("not an i32 type"))
+        }
+    }
+}
+
 impl TryInto<Rect> for WindowInfoType {
+    type Error = String;
+
     fn try_into(self) -> std::result::Result<Rect, Self::Error> {
-        match *self {
+        match self {
             WindowInfoType::Rect(rect) => StdResult::Ok(rect),
             _ => StdResult::Err(String::from("not a rect type")),
         }
@@ -25,8 +39,10 @@ impl TryInto<Rect> for WindowInfoType {
 }
 
 impl TryInto<Pos> for WindowInfoType {
+    type Error = String;
+
     fn try_into(self) -> std::result::Result<Pos, Self::Error> {
-        match *self {
+        match self {
             WindowInfoType::Pos(pos) => StdResult::Ok(pos),
             _ => StdResult::Err(String::from("not a pos type")),
         }
@@ -34,8 +50,10 @@ impl TryInto<Pos> for WindowInfoType {
 }
 
 impl TryInto<f64> for WindowInfoType {
+    type Error = String;
+
     fn try_into(self) -> std::result::Result<f64, Self::Error> {
-        match *self {
+        match self {
             WindowInfoType::Float(f) => StdResult::Ok(f),
             WindowInfoType::InvariantFloat(f) => StdResult::Ok(f),
             _ => StdResult::Err(String::from("not a float type")),
@@ -43,7 +61,18 @@ impl TryInto<f64> for WindowInfoType {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+impl TryInto<Size> for WindowInfoType {
+    type Error = String;
+
+    fn try_into(self) -> std::result::Result<Size, Self::Error> {
+        match self {
+            WindowInfoType::Size(size) => StdResult::Ok(size),
+            _ => StdResult::Err(String::from("not a size type")),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct WindowInfo {
     pub data: HashMap<String, WindowInfoType>,
     pub current_resolution: Size,
@@ -55,7 +84,8 @@ impl Scalable for WindowInfoType {
         let result = match *self {
             WindowInfoType::Rect(rect) => WindowInfoType::Rect(rect.scale(factor)),
             WindowInfoType::Pos(pos) => WindowInfoType::Pos(pos.scale(factor)),
-            WindowInfoType::Number(v) => WindowInfoType::Number(v.scale(factor)),
+            WindowInfoType::Size(size) => WindowInfoType::Size(size.scale(factor)),
+            WindowInfoType::Float(v) => WindowInfoType::Float(v.scale(factor)),
             WindowInfoType::InvariantInt(v) => WindowInfoType::InvariantInt(v),
             WindowInfoType::InvariantFloat(v) => WindowInfoType::InvariantFloat(v),
         };
@@ -84,14 +114,18 @@ impl WindowInfo {
 
     pub fn merge(&self, other: &WindowInfo) -> Result<WindowInfo> {
         if (self.resolution_family != other.resolution_family) {
-            return anyhow!("resolution family not match");
+            return Err(anyhow!("resolution family not match"));
         }
         let mut result = WindowInfo {
             data: self.data.clone(),
             current_resolution: self.current_resolution,
             resolution_family: self.resolution_family
         };
-        result.data.extend(other.data.iter());
+
+        for (name, value) in other.data.iter() {
+            result.data.insert(name.clone(), value.clone());
+        }
+        
         anyhow::Ok(result)
     }
 

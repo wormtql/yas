@@ -1,22 +1,23 @@
 use std::cell::RefCell;
 use std::ops::Generator;
 use std::rc::Rc;
-use std::sync::Arc;
-use clap::builder::ValueParserFactory;
-use yas::common::cancel::CancellationToken;
+use image::RgbImage;
+// use std::sync::Arc;
+// use clap::builder::ValueParserFactory;
+// use yas::common::cancel::CancellationToken;
 use yas::common::color::Color;
-use yas::game_info::game_info::GameInfo;
+use yas::game_info::GameInfo;
 use yas::inference::model::OCRModel;
 use yas::capture::capture;
 use yas::window_info::require_window_info::RequireWindowInfo;
 use yas::window_info::window_info::WindowInfo;
 use crate::scanner_controller::repository_layout::config::{GenshinRepositoryScannerLogicConfig};
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use yas::common::positioning::{Pos, Rect, Size};
 use yas::utils;
 use log::{debug, info, error};
 use std::time::SystemTime;
-use yas::common::RelativeCapturable;
+use yas::capture::capture::RelativeCapturable;
 use yas::system_control::SystemControl;
 
 #[derive(Debug)]
@@ -42,13 +43,13 @@ struct GenshinRepositoryScanControllerWindowInfo {
 impl From<&WindowInfo> for GenshinRepositoryScanControllerWindowInfo {
     fn from(value: &WindowInfo) -> Self {
         GenshinRepositoryScanControllerWindowInfo {
-            window_origin: value.get("window_origin"),
-            panel_pos: value.get("genshin_repository_panel_pos"),
-            flag_pos: value.get("genshin_repository_flag_pos"),
-            item_gap: value.get("genshin_repository_item_gap"),
-            item_size: value.get("genshin_repository_item_size"),
-            scan_margin: value.get("genshin_repository_scan_margin"),
-            pool_pos: value.get("genshin_repository_pool_pos"),
+            window_origin: value.get::<Pos>("window_origin").unwrap(),
+            panel_pos: value.get("genshin_repository_panel_pos").unwrap(),
+            flag_pos: value.get("genshin_repository_flag_pos").unwrap(),
+            item_gap: value.get("genshin_repository_item_gap").unwrap(),
+            item_size: value.get("genshin_repository_item_size").unwrap(),
+            scan_margin: value.get("genshin_repository_scan_margin").unwrap(),
+            pool_pos: value.get("genshin_repository_pool_pos").unwrap(),
         }
     }
 }
@@ -64,6 +65,7 @@ pub struct GenshinRepositoryScanController {
     avg_scroll_one_row: f64,
 
     avg_switch_time: f64,
+    scanned_count: usize,
 
     pub game_info: GameInfo,
 
@@ -71,7 +73,7 @@ pub struct GenshinRepositoryScanController {
     pub col: usize,
     pub item_count: usize,
 
-    pub config: GenshinRepositoryScannerConfig,
+    pub config: GenshinRepositoryScannerLogicConfig,
     pub window_info: GenshinRepositoryScanControllerWindowInfo,
     pub system_control: SystemControl,
 }
@@ -103,15 +105,15 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
 
 // constructor
 impl GenshinRepositoryScanController {
-    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: &WindowInfo, item_count: usize) -> Self {
+    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: &WindowInfo, item_count: usize, game_info: GameInfo) -> Self {
         let item_row = window_info.get::<i32>("genshin_repository_item_row").unwrap();
         let item_col = window_info.get::<i32>("genshin_repository_item_col").unwrap();
 
         GenshinRepositoryScanController {
             system_control: SystemControl::new(),
 
-            row: item_row,
-            col: item_col,
+            row: item_row as usize,
+            col: item_col as usize,
 
             window_info: GenshinRepositoryScanControllerWindowInfo::from(window_info),
             config,
@@ -128,26 +130,29 @@ impl GenshinRepositoryScanController {
 
             game_info,
             item_count,
+            scanned_count: 0,
         }
     }
 }
 
 impl GenshinRepositoryScanController {
-    pub fn into_generator(self: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Generator {
+    pub fn into_generator(object: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Generator {
         // let mut_self = self.borrow_mut();
         let generator = move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;
             let mut start_row = 0;
 
-            let mut_self = || { return self.borrow_mut(); };
-            let immut_self = || { return self.borrow(); };
+            // let mut_self = || { return object.borrow_mut(); };
+            // let immut_self = || { return object.borrow(); };
 
-            let total_row = (immut_self().item_count + immut_self().col - 1) / immut_self().col;
-            let last_row_col = if immut_self().item_count % immut_self().col == 0 {
-                immut_self().col
+            let count = object.borrow().item_count;
+
+            let total_row = (object.borrow().item_count + object.borrow().col - 1) / object.borrow().col;
+            let last_row_col = if object.borrow().item_count % object.borrow().col == 0 {
+                object.borrow().col
             } else {
-                count % immut_self().col
+                count % object.borrow().col
             };
 
             info!(
@@ -155,22 +160,24 @@ impl GenshinRepositoryScanController {
                 count, total_row, last_row_col
             );
 
-            mut_self().move_to(0, 0);
+            object.borrow_mut().move_to(0, 0);
 
             #[cfg(target_os = "macos")]
             utils::sleep(20);
 
-            mut_self().system_control.mouse_click();
+            object.borrow_mut().system_control.mouse_click();
             utils::sleep(1000);
 
-            mut_self().sample_initial_color();
+            object.borrow_mut().sample_initial_color();
+
+            let row = object.borrow().row;
 
             'outer: while scanned_count < count {
-                '_row: for row in start_row..immut_self().row {
+                '_row: for row in start_row..row {
                     let row_item_count = if scanned_row == total_row - 1 {
                         last_row_col
                     } else {
-                        immut_self().col
+                        object.borrow().col
                     };
 
                     '_col: for col in 0..row_item_count {
@@ -180,34 +187,36 @@ impl GenshinRepositoryScanController {
                             break 'outer;
                         }
 
-                        mut_self().move_to(row, col);
-                        mut_self().system_control.mouse_click();
+                        object.borrow_mut().move_to(row, col);
+                        object.borrow_mut().system_control.mouse_click();
 
                         #[cfg(target_os = "macos")]
                         utils::sleep(20);
 
-                        mut_self().wait_until_switched();
+                        object.borrow_mut().wait_until_switched();
 
                         // have to make sure at this point no mut ref exists
                         yield;
 
                         scanned_count += 1;
+                        object.borrow_mut().scanned_count = scanned_count;
                     } // end '_col
 
                     scanned_row += 1;
 
-                    if scanned_row >= immut_self().config.max_row {
+                    // todo this is dangerous, use uniform integer type instead
+                    if scanned_row >= object.borrow().config.max_row as usize {
                         info!("到达最大行数，准备退出……");
                         break 'outer;
                     }
                 } // end '_row
 
                 let remain = count - scanned_count;
-                let remain_row = (remain + immut_self().col - 1) / immut_self().col;
-                let scroll_row = remain_row.min(immut_self().row);
-                start_row = immut_self().row - scroll_row;
+                let remain_row = (remain + object.borrow().col - 1) / object.borrow().col;
+                let scroll_row = remain_row.min(object.borrow().row);
+                start_row = object.borrow().row - scroll_row;
 
-                match mut_self().scroll_rows(scroll_row as i32) {
+                match object.borrow_mut().scroll_rows(scroll_row as i32) {
                     ScrollResult::TimeLimitExceeded => {
                         error!("翻页超时，扫描终止……");
                         break 'outer;
@@ -275,7 +284,10 @@ impl GenshinRepositoryScanController {
         let mut state = 0;
 
         for count in 0..25 {
-            if utils::is_rmb_down() || self.cancellation_token.cancelled() {
+            // if utils::is_rmb_down() || self.cancellation_token.cancelled() {
+            //     return ScrollResult::Interrupt;
+            // }
+            if utils::is_rmb_down() {
                 return ScrollResult::Interrupt;
             }
 
@@ -365,7 +377,7 @@ impl GenshinRepositoryScanController {
             }
         }
 
-        anyhow::Err(())
+        Err(anyhow!("Wait until switched failed"))
     }
 
     #[inline(always)]

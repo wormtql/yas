@@ -1,6 +1,5 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Sub};
 use std::fmt::Display;
-use anyhow::Result;
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
@@ -46,7 +45,7 @@ impl Sub<Pos> for Pos {
 }
 
 impl Rect {
-    pub fn new<T>(left: T, top: T, width: T, height: T) -> Rect where T: TryInto<f64> {
+    pub fn new<T, E>(left: T, top: T, width: T, height: T) -> Rect where T: TryInto<f64, Error = E>, E: std::fmt::Debug {
         let left = left.try_into().unwrap();
         let top = top.try_into().unwrap();
         let width = width.try_into().unwrap();
@@ -62,10 +61,17 @@ impl Rect {
             y: self.top
         }
     }
+
+    pub fn size(&self) -> Size {
+        Size {
+            width: self.width,
+            height: self.height
+        }
+    }
 }
 
 impl Pos {
-    pub fn new<T>(x: T, y: T) -> Pos where T: TryInto<f64> {
+    pub fn new<T, E>(x: T, y: T) -> Pos where T: TryInto<f64, Error = E>, E: std::fmt::Debug {
         let x = x.try_into().unwrap();
         let y = y.try_into().unwrap();
         Pos {
@@ -94,7 +100,7 @@ impl Display for Pos {
 
 impl Display for Rect {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Rect {} -> {}", self.origin, self.size)
+        write!(f, "Rect {} -> {:?}", self.origin(), self.size())
     }
 }
 
@@ -131,7 +137,7 @@ impl Scalable for f64 {
 impl Scalable for i32 {
     fn scale(&self, factor: f64) -> Self {
         let temp = (*self as f64) * factor;
-        temp.try_into().unwrap()
+        temp as i32
     }
 }
 

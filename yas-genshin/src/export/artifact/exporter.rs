@@ -1,8 +1,8 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use clap::{Arg, FromArgMatches};
 use yas::arguments_builder::arguments_builder::ArgumentsBuilder;
-use yas::export::exporter::{YasExporter, ExportAssets};
+use yas::export::{YasExporter, ExportAssets};
 
 use crate::artifact::GenshinArtifact;
 
@@ -15,7 +15,7 @@ use super::mona_uranai::MonaFormat;
 pub struct GenshinArtifactExporter<'a> {
     pub format: GenshinArtifactExportFormat,
     pub results: Option<&'a [GenshinArtifact]>,
-    pub output_dir: Path,
+    pub output_dir: PathBuf,
 }
 
 impl<'a> YasExporter for GenshinArtifactExporter<'a> {
@@ -53,21 +53,21 @@ impl<'a> YasExporter for GenshinArtifactExporter<'a> {
 }
 
 impl<'a> ArgumentsBuilder for GenshinArtifactExporter<'a> {
-    fn modify_arguments(cmd: &mut clap::Command) {
+    fn modify_arguments(cmd: clap::Command) -> clap::Command {
         cmd.arg(
             Arg::new("output-format")
                 .long("output-format")
-                .short("f")
+                .short('f')
                 .help("输出格式")
-                .default_value(GenshinArtifactExportFormat::Mona)
+                // .default_value("Mona")
         )
         .arg(
             Arg::new("output-dir")
                 .long("output-dir")
-                .short("o")
+                .short('o')
                 .help("输出目录")
                 .default_value(".")
-        );
+        )
     }
 }
 
@@ -75,14 +75,20 @@ impl<'a> FromArgMatches for GenshinArtifactExporter<'a> {
     fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {
         let output_dir = matches.get_one::<String>("output-dir").unwrap();
 
-        let path = Path::try_from(output_dir)?;
+        // todo error propogation
+        let path = PathBuf::try_from(output_dir).unwrap();
 
         let value = GenshinArtifactExporter {
-            format: matches.get_one("output-format"),
+            format: *matches.get_one("output-format").unwrap(),
             results: None,
             output_dir: path
         };
 
         Ok(value)
+    }
+
+    fn update_from_arg_matches(&mut self, matches: &clap::ArgMatches) -> Result<(), clap::Error> {
+        // todo
+        unimplemented!()
     }
 }

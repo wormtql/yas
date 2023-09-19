@@ -4,8 +4,9 @@ use regex::Regex;
 use std::cmp::Ordering::*;
 use std::hash::{Hash, Hasher};
 use strum_macros::Display;
+use crate::scanner::artifact_scanner::GenshinArtifactScanResult;
 
-use crate::{common::character_name::CHARACTER_NAMES, core::ScanResult};
+use crate::character::CHARACTER_NAMES;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum ArtifactStatName {
@@ -100,8 +101,8 @@ pub struct ArtifactStat {
 pub struct GenshinArtifact {
     pub set_name: ArtifactSetName,
     pub slot: ArtifactSlot,
-    pub star: u8,
-    pub level: u8,
+    pub star: i32,
+    pub level: i32,
     pub main_stat: ArtifactStat,
     pub sub_stat_1: Option<ArtifactStat>,
     pub sub_stat_2: Option<ArtifactStat>,
@@ -270,10 +271,10 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
     }
 }
 
-impl TryFrom<&ScanResult> for GenshinArtifact {
+impl TryFrom<&GenshinArtifactScanResult> for GenshinArtifact {
     type Error = ();
 
-    fn try_from(value: &ScanResult) -> Result<Self, Self::Error> {
+    fn try_from(value: &GenshinArtifactScanResult) -> Result<Self, Self::Error> {
         let set_name = ArtifactSetName::from_zh_cn(&value.name).ok_or(())?;
         let slot = ArtifactSlot::from_zh_cn(&value.name).ok_or(())?;
         let star = value.star;
@@ -289,7 +290,7 @@ impl TryFrom<&ScanResult> for GenshinArtifact {
         let sub4 = ArtifactStat::from_zh_cn_raw(&value.sub_stat[3]);
 
         let equip = if value.equip.ends_with("已装备") {
-            let chars = value.equip.chars().collect_vec();
+            let chars = value.equip.chars().collect::<Vec<_>>();
             let equip_name = chars[..chars.len() - 3].iter().collect::<String>();
 
             if CHARACTER_NAMES.contains(equip_name.as_str()) {

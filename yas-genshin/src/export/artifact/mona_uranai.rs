@@ -1,7 +1,7 @@
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::convert::From;
 
-use crate::core::genshin::{
+use crate::artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
 

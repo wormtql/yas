@@ -4,7 +4,7 @@ use std::{ops::{Generator, GeneratorState}, pin::Pin, rc::Rc, cell::RefCell, syn
 
 use crate::scanner_controller::repository_layout::{scan_logic::GenshinRepositoryScanController, config::GenshinRepositoryScannerLogicConfig};
 
-use super::{artifact_scanner_config::GenshinArtifactScannerConfig};
+use super::artifact_scanner_config::GenshinArtifactScannerConfig;
 use anyhow::Result;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]

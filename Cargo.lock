@@ -2973,6 +2973,7 @@ dependencies = [
  "clap",
  "image",
  "log",
+ "serde_json",
  "winres",
  "yas_scanner",
 ]

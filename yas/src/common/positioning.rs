@@ -45,8 +45,8 @@ impl Sub<Pos> for Pos {
     }
 }
 
-impl<T> Rect where T: TryInto<f64> {
-    pub fn new(left: T, top: T, width: T, height: T) -> Rect {
+impl Rect {
+    pub fn new<T>(left: T, top: T, width: T, height: T) -> Rect where T: TryInto<f64> {
         let left = left.try_into().unwrap();
         let top = top.try_into().unwrap();
         let width = width.try_into().unwrap();
@@ -55,10 +55,17 @@ impl<T> Rect where T: TryInto<f64> {
             left, top, width, height
         }
     }
+
+    pub fn origin(&self) -> Pos {
+        Pos {
+            x: self.left,
+            y: self.top
+        }
+    }
 }
 
-impl<T> Pos where T: TryInto<f64> {
-    pub fn new(x: T, y: T) -> Pos {
+impl Pos {
+    pub fn new<T>(x: T, y: T) -> Pos where T: TryInto<f64> {
         let x = x.try_into().unwrap();
         let y = y.try_into().unwrap();
         Pos {

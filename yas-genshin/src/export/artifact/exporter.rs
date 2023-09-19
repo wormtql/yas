@@ -1,0 +1,88 @@
+use std::path::Path;
+
+use clap::{Arg, FromArgMatches};
+use yas::arguments_builder::arguments_builder::ArgumentsBuilder;
+use yas::export::exporter::{YasExporter, ExportAssets};
+
+use crate::artifact::GenshinArtifact;
+
+use crate::export::export_format::GenshinArtifactExportFormat;
+
+use super::good::GOODFormat;
+use super::mingyu_lab::MingyuLabFormat;
+use super::mona_uranai::MonaFormat;
+
+pub struct GenshinArtifactExporter<'a> {
+    pub format: GenshinArtifactExportFormat,
+    pub results: Option<&'a [GenshinArtifact]>,
+    pub output_dir: Path,
+}
+
+impl<'a> YasExporter for GenshinArtifactExporter<'a> {
+    fn export(&self, export_assets: &mut ExportAssets) {
+        if self.results.is_none() {
+            return;
+        }
+
+        let results = self.results.unwrap();
+
+        match self.format {
+            GenshinArtifactExportFormat::Mona => {
+                let path = self.output_dir.join("mona.json");
+                let value = MonaFormat::new(results);
+                let contents = serde_json::to_string(&value).unwrap();
+                
+                export_assets.add_asset(path, contents.into_bytes());
+            },
+            GenshinArtifactExportFormat::MingyuLab => {
+                let path = self.output_dir.join("mingyulab.json");
+                let value = MingyuLabFormat::new(results);
+                let contents = serde_json::to_string(&value).unwrap();
+
+                export_assets.add_asset(path, contents.into_bytes());
+            },
+            GenshinArtifactExportFormat::Good => {
+                let path = self.output_dir.join("good.json");
+                let value = GOODFormat::new(results);
+                let contents = serde_json::to_string(&value).unwrap();
+                
+                export_assets.add_asset(path, contents.into_bytes());
+            },
+        };
+    }
+}
+
+impl<'a> ArgumentsBuilder for GenshinArtifactExporter<'a> {
+    fn modify_arguments(cmd: &mut clap::Command) {
+        cmd.arg(
+            Arg::new("output-format")
+                .long("output-format")
+                .short("f")
+                .help("输出格式")
+                .default_value(GenshinArtifactExportFormat::Mona)
+        )
+        .arg(
+            Arg::new("output-dir")
+                .long("output-dir")
+                .short("o")
+                .help("输出目录")
+                .default_value(".")
+        );
+    }
+}
+
+impl<'a> FromArgMatches for GenshinArtifactExporter<'a> {
+    fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {
+        let output_dir = matches.get_one::<String>("output-dir").unwrap();
+
+        let path = Path::try_from(output_dir)?;
+
+        let value = GenshinArtifactExporter {
+            format: matches.get_one("output-format"),
+            results: None,
+            output_dir: path
+        };
+
+        Ok(value)
+    }
+}

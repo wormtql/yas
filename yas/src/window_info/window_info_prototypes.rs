@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::game_info::game_info::Resolution;
+use crate::game_info::Resolution;
 
 use super::window_info::WindowInfo;
 

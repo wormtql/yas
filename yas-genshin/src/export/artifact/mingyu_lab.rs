@@ -1,4 +1,4 @@
-use crate::core::genshin::{
+use crate::artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
 use serde::ser::{Serialize, SerializeMap, Serializer};

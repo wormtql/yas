@@ -1,10 +1,9 @@
 use std::collections::HashMap;
-use std::ops::Mul;
-use crate::{common::positioning::{Rect, Pos, Size, Scalable}, game_info::game_info::Resolution};
+use crate::{common::positioning::{Rect, Pos, Size, Scalable}, game_info::Resolution};
 use anyhow::{Result, anyhow};
 use serde::{Serialize, Deserialize};
 
-type StdResult = std::result::Result;
+type StdResult<T, E> = std::result::Result<T, E>;
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum WindowInfoType {
@@ -79,6 +78,10 @@ impl Scalable for WindowInfo {
 }
 
 impl WindowInfo {
+    pub fn add_pos(&mut self, name: &str, value: Pos) {
+        self.data.insert(String::from(name), WindowInfoType::Pos(value));
+    }
+
     pub fn merge(&self, other: &WindowInfo) -> Result<WindowInfo> {
         if (self.resolution_family != other.resolution_family) {
             return anyhow!("resolution family not match");

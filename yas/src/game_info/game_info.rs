@@ -1,5 +1,6 @@
-use crate::positioning::{Rect, Size};
+use crate::common::positioning::{Rect, Size};
 
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum UI {
     Desktop,
     Mobile,
@@ -41,8 +42,7 @@ impl Resolution {
 }
 
 pub struct GameInfo {
-    // it's possible to be off the screen
-    pub window: Rect<i32>,
+    pub window: Rect,
     pub resolution: Resolution,
     pub is_cloud: bool,
     pub ui: UI,

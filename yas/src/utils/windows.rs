@@ -3,7 +3,7 @@ use std::iter::once;
 use std::mem::transmute;
 use std::ptr::null_mut;
 
-use crate::common::*;
+use crate::common::positioning::Rect;
 use log::{info, warn};
 
 pub use winapi::shared::minwindef::{BOOL, HINSTANCE};
@@ -83,14 +83,10 @@ unsafe fn get_client_rect_unsafe(hwnd: HWND) -> Result<Rect, String> {
     let top: i32 = point.y;
 
     Result::Ok(Rect {
-        origin: Pos {
-            x: left as u32,
-            y: top as u32,
-        },
-        size: Size {
-            width: width as u32,
-            height: height as u32,
-        },
+        left: left as f64,
+        top: top as f64,
+        width: width as f64,
+        height: height as f64
     })
 }
 
@@ -141,6 +137,7 @@ pub fn is_rmb_down() -> bool {
         state & 1 > 0
     }
 }
+
 pub fn set_dpi_awareness() {
     // let os = os_info::get();
 
@@ -185,7 +182,6 @@ pub fn set_dpi_awareness() {
     // }
 }
 
-#[cfg(windows)]
 pub fn show_window_and_set_foreground(hwnd: HWND) {
     unsafe {
         ShowWindow(hwnd, SW_RESTORE);

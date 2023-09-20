@@ -142,9 +142,7 @@ impl ArtifactScannerWorker {
             let mut hash = HashSet::new();
             let mut consecutive_dup_count = 0;
 
-            // todo verbose
-            // let is_verbose = self.config.verbose;
-            let is_verbose = false;
+            let is_verbose = self.config.verbose;
             let min_level = self.config.min_level;
             let info = self.window_info.clone();
             // todo remove dump mode to another scanner
@@ -265,9 +263,9 @@ impl From<&WindowInfo> for ArtifactScannerWindowInfo {
 }
 
 pub struct GenshinArtifactScanner {
-    pub scanner_config: GenshinArtifactScannerConfig,
+    scanner_config: GenshinArtifactScannerConfig,
 
-    pub window_info: ArtifactScannerWindowInfo,
+    window_info: ArtifactScannerWindowInfo,
     window_info_clone: WindowInfo,
 
     game_info: GameInfo,

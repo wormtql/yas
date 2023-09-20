@@ -113,7 +113,7 @@ impl WindowInfo {
     }
 
     pub fn merge(&self, other: &WindowInfo) -> Result<WindowInfo> {
-        if (self.resolution_family != other.resolution_family) {
+        if self.resolution_family != other.resolution_family {
             return Err(anyhow!("resolution family not match"));
         }
         let mut result = WindowInfo {

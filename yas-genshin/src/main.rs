@@ -3,17 +3,22 @@ extern crate log;
 
 use anyhow::Result;
 use clap::{Command, command, FromArgMatches};
-use yas::{arguments_builder::arguments_builder::ArgumentsModifier, window_info::{require_window_info::RequireWindowInfo, window_info_builder::WindowInfoBuilder, window_info_prototypes::WindowInfoPrototypes, self}, load_window_info, game_info::{Resolution, GameInfoBuilder}, common::positioning::Pos, export::ExportAssets};
+use yas::{arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder}, window_info::{require_window_info::RequireWindowInfo, window_info_builder::WindowInfoBuilder, window_info_prototypes::WindowInfoPrototypes, self}, load_window_info, game_info::{Resolution, GameInfoBuilder}, common::positioning::Pos, export::ExportAssets};
 use yas_scanner_genshin::{scanner::artifact_scanner::{GenshinArtifactScanner, GenshinArtifactScannerConfig}, export::artifact::GenshinArtifactExporter, artifact::GenshinArtifact};
 use yas::export::YasExporter;
 use yas::window_info::window_info::WindowInfo;
+use yas::utils;
 
 fn main() -> Result<()> {
-    let cmd = Command::new("yas-genshin-artifact");
-
+    let mut builder = ArgumentsBuilder::new();
     // setup arguments
-    let cmd = <GenshinArtifactScannerConfig as ArgumentsModifier>::modify_arguments(cmd);
-    let cmd = <GenshinArtifactExporter as ArgumentsModifier>::modify_arguments(cmd);
+    <GenshinArtifactScannerConfig as ArgumentsModifier>::modify_arguments(&mut builder);
+    <GenshinArtifactExporter as ArgumentsModifier>::modify_arguments(&mut builder);
+    let cmd = Command::new("yas-genshin-artifact")
+        .version("0.1.14") // todo
+        .author("wormtql <584130248@qq.com>")
+        .about("Genshin Impact Artifact Scanner");
+    let cmd = builder.build(cmd);
     let matches = cmd.get_matches();
 
     // get game info
@@ -22,6 +27,13 @@ fn main() -> Result<()> {
         .add_local_window_name("Genshin Impact")
         .add_cloud_window_name("云·原神")
         .build();
+    let game_info = match game_info {
+        Err(e) => {
+            error!("{}", e);
+            utils::quit()
+        },
+        Ok(v) => v
+    };
 
     // setup window info
     let window_info = {
@@ -39,7 +51,6 @@ fn main() -> Result<()> {
     };    
 
     // setup config
-    
     let config = GenshinArtifactScannerConfig::from_arg_matches(&matches).unwrap();
 
     // setup scanner
@@ -49,7 +60,7 @@ fn main() -> Result<()> {
     #[cfg(target_os = "macos")]
     {
         info!("初始化完成，请切换到原神窗口，Yas 将在 5s 后开始扫描");
-        yas::common::utils::sleep(5000);
+        utils::sleep(5000);
     }
     let results = scanner.scan()?;
 

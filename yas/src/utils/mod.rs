@@ -3,6 +3,8 @@ use std::fs;
 use std::thread;
 use std::time::Duration;
 use serde::Deserialize;
+use std::io::stdin;
+use std::process;
 
 // use crate::core::VERSION;
 
@@ -26,6 +28,12 @@ pub fn sleep(ms: u32) {
 
 pub fn read_file_to_string(path: String) -> String {
     fs::read_to_string(path).unwrap()
+}
+
+pub fn quit() -> ! {
+    let mut s: String = String::new();
+    stdin().read_line(&mut s).unwrap();
+    process::exit(0);
 }
 
 #[doc(hidden)]
@@ -52,7 +60,7 @@ pub struct GithubTag {
 
 pub fn check_update() -> Option<String> {
     None
-    // todo
+    // todo update should be related to individual scanner instead of the package
     // let client = Client::new();
 
     // let resp = client

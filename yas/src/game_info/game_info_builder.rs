@@ -1,4 +1,5 @@
 use super::game_info::GameInfo;
+use anyhow::Result;
 
 pub struct GameInfoBuilder {
     pub local_window_names: Vec<String>,
@@ -23,7 +24,7 @@ impl GameInfoBuilder {
         self
     }
 
-    pub fn build(&self) -> GameInfo {
+    pub fn build(&self) -> Result<GameInfo> {
         #[cfg(windows)]
         {
             let mut window_names = Vec::new();

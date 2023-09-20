@@ -1,4 +1,4 @@
-use yas::arguments_builder::arguments_builder::ArgumentsModifier;
+use yas::arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder};
 use clap::{Arg, Command, FromArgMatches};
 
 use crate::{export::export_format::GenshinArtifactExportFormat, scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig};
@@ -11,14 +11,10 @@ pub struct GenshinArtifactScannerConfig {
     /// Items with level less than this will be ignored
     pub min_level: i32,
 
-    /// Output directory
-    pub output_dir: String,
-
     /// Ignore duplicated items
     pub ignore_dup: bool,
 
-    /// Export format of item info
-    pub export_format: GenshinArtifactExportFormat,
+    pub verbose: bool,
 
     pub number: i32,
 
@@ -26,14 +22,15 @@ pub struct GenshinArtifactScannerConfig {
 }
 
 impl ArgumentsModifier for GenshinArtifactScannerConfig {
-    fn modify_arguments(cmd: Command) -> Command {
+    fn modify_arguments(builder: &mut ArgumentsBuilder) {
         // todo use custom command builder
         // todo add more configs
-        let cmd = cmd
+        builder
+            .arg(Arg::new("verbose").long("verbose").help("显示详细信息"))
             .arg(Arg::new("min-star").long("min-star").help("最小星级").value_name("MIN_STAR"))
             .arg(Arg::new("min-level").long("min-level").help("最小等级").value_name("MIN_LEVEL"));
 
-        <GenshinRepositoryScannerLogicConfig as ArgumentsModifier>::modify_arguments(cmd)
+        <GenshinRepositoryScannerLogicConfig as ArgumentsModifier>::modify_arguments(builder);
     }
 }
 
@@ -46,9 +43,8 @@ impl FromArgMatches for GenshinArtifactScannerConfig {
             min_star: *matches.get_one::<i32>("min-star").unwrap(),
             min_level: *matches.get_one::<i32>("min-level").unwrap(),
             number: *matches.get_one::<i32>("number").unwrap(),
-            output_dir: String::from("."),
             ignore_dup: true,
-            export_format: GenshinArtifactExportFormat::Mona,
+            verbose: *matches.get_one::<bool>("verbose").unwrap(),
 
             genshin_repo_scan_logic_config: scanner_controller_config
         };

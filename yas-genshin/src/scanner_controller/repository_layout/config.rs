@@ -1,4 +1,4 @@
-use yas::arguments_builder::arguments_builder::ArgumentsModifier;
+use yas::arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder};
 use clap::{Arg, arg, Command, FromArgMatches};
 
 // todo add all the cmd arguments
@@ -60,20 +60,14 @@ impl FromArgMatches for GenshinRepositoryScannerLogicConfig {
 }
 
 impl ArgumentsModifier for GenshinRepositoryScannerLogicConfig {
-    fn modify_arguments(cmd: Command) -> Command {
-        cmd
+    fn modify_arguments(builder: &mut ArgumentsBuilder) {
+        builder
             .arg(Arg::new("max-row").long("max-row").help("最大扫描行数"))
-            // .arg(Arg::new("min-star").long("min-star").help("最小星级"))
-            // .arg(Arg::new("min-level").long("min-level").help("最小等级").value_name("MIN-LEVEL"))
             .arg(Arg::new("scroll-delay").long("scroll-delay").help("翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）"))
-            // .arg(Arg::new("number").long("number").help("指定圣遗物数量（在自动识别数量不准确时使用）"))
-            .arg(Arg::new("verbose").long("verbose").help("显示详细信息"))
             .arg(Arg::new("offset-x").long("offset-x").help("人为指定横坐标偏移（截图有偏移时可用该选项校正）"))
             .arg(Arg::new("offset-y").long("offset-y").help("人为指定纵坐标偏移（截图有偏移时可用该选项校正）"))
-            .arg(Arg::new("max-wait-switch-artifact").long("max-wait-switch-artifact").help("切换圣遗物最大等待时间(ms)"))
-            // .arg(Arg::new("output-dir").long("output-dir").short('o').help("输出目录").default_value("."))
-            // .arg(Arg::new("output-format").long("output-format").short("f").help("输出格式").default_value("mona"))
-            .arg(Arg::new("cloud-wait-switch-artifact").long("cloud-wait-switch-artifact").help("指定云·原神切换圣遗物等待时间(ms)"))
+            .arg(Arg::new("max-wait-switch-artifact").long("max-wait-switch-artifact").help("切换物品最大等待时间(ms)"))
+            .arg(Arg::new("cloud-wait-switch-artifact").long("cloud-wait-switch-artifact").help("指定云游戏切换物品等待时间(ms)"));
     }
 }
 

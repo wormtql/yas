@@ -67,15 +67,15 @@ pub struct GenshinRepositoryScanController {
     avg_switch_time: f64,
     scanned_count: usize,
 
-    pub game_info: GameInfo,
+    game_info: GameInfo,
 
-    pub row: usize,
-    pub col: usize,
-    pub item_count: usize,
+    row: usize,
+    col: usize,
+    item_count: usize,
 
-    pub config: GenshinRepositoryScannerLogicConfig,
-    pub window_info: GenshinRepositoryScanControllerWindowInfo,
-    pub system_control: SystemControl,
+    config: GenshinRepositoryScannerLogicConfig,
+    window_info: GenshinRepositoryScanControllerWindowInfo,
+    system_control: SystemControl,
 }
 
 impl RequireWindowInfo for GenshinRepositoryScanController {
@@ -165,10 +165,11 @@ impl GenshinRepositoryScanController {
             #[cfg(target_os = "macos")]
             utils::sleep(20);
 
-            object.borrow_mut().system_control.mouse_click();
+            // todo remove unwrap
+            object.borrow_mut().system_control.mouse_click().unwrap();
             utils::sleep(1000);
 
-            object.borrow_mut().sample_initial_color();
+            object.borrow_mut().sample_initial_color().unwrap();
 
             let row = object.borrow().row;
 
@@ -188,12 +189,12 @@ impl GenshinRepositoryScanController {
                         }
 
                         object.borrow_mut().move_to(row, col);
-                        object.borrow_mut().system_control.mouse_click();
+                        object.borrow_mut().system_control.mouse_click().unwrap();
 
                         #[cfg(target_os = "macos")]
                         utils::sleep(20);
 
-                        object.borrow_mut().wait_until_switched();
+                        object.borrow_mut().wait_until_switched().unwrap();
 
                         // have to make sure at this point no mut ref exists
                         yield;
@@ -274,7 +275,7 @@ impl GenshinRepositoryScanController {
         let left = origin.x + margin.x + (gap.width + size.width) * (col as f64) + size.width / 2.0;
         let top = origin.y + margin.y + (gap.height + size.height) * (row as f64) + size.height / 2.0;
 
-        self.system_control.mouse_move_to(left as i32, top as i32);
+        self.system_control.mouse_move_to(left as i32, top as i32).unwrap();
 
         #[cfg(target_os = "macos")]
         utils::sleep(20);
@@ -383,7 +384,7 @@ impl GenshinRepositoryScanController {
     #[inline(always)]
     pub fn mouse_scroll(&mut self, length: i32, try_find: bool) {
         #[cfg(windows)]
-        self.system_control.mouse_scroll(length, try_find);
+        self.system_control.mouse_scroll(length, try_find).unwrap();
 
         #[cfg(target_os = "linux")]
         self.system_control.mouse_scroll(length, try_find);

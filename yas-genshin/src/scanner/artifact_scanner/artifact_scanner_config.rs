@@ -1,5 +1,6 @@
+use log::info;
 use yas::arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder};
-use clap::{Arg, Command, FromArgMatches};
+use clap::{Arg, Command, FromArgMatches, ArgAction};
 
 use crate::{export::export_format::GenshinArtifactExportFormat, scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig};
 
@@ -26,9 +27,42 @@ impl ArgumentsModifier for GenshinArtifactScannerConfig {
         // todo use custom command builder
         // todo add more configs
         builder
-            .arg(Arg::new("verbose").long("verbose").help("显示详细信息"))
-            .arg(Arg::new("min-star").long("min-star").help("最小星级").value_name("MIN_STAR"))
-            .arg(Arg::new("min-level").long("min-level").help("最小等级").value_name("MIN_LEVEL"));
+            .arg(
+                Arg::new("ignore-dup")
+                    .long("ignore-dup")
+                    .help("忽略重复物品")
+                    // .num_args(0)
+                    .action(ArgAction::SetTrue)
+            )
+            .arg(
+                Arg::new("verbose")
+                    .long("verbose")
+                    .help("显示详细信息")
+                    // .num_args(0)
+                    .action(ArgAction::SetTrue)
+            )
+            .arg(
+                Arg::new("min-star")
+                    .long("min-star")
+                    .help("最小星级")
+                    .value_name("MIN_STAR")
+                    .default_value("4")
+                    .value_parser(clap::value_parser!(i32))
+            )
+            .arg(
+                Arg::new("min-level")
+                    .long("min-level")
+                    .help("最小等级")
+                    .value_name("MIN_LEVEL")
+                    .default_value("0")
+                    .value_parser(clap::value_parser!(i32))
+            ).arg(
+                Arg::new("number")
+                    .long("number")
+                    .help("指定圣遗物数量")
+                    .value_name("NUMBER")
+                    .value_parser(clap::value_parser!(i32))
+            );
 
         <GenshinRepositoryScannerLogicConfig as ArgumentsModifier>::modify_arguments(builder);
     }
@@ -42,9 +76,13 @@ impl FromArgMatches for GenshinArtifactScannerConfig {
         let result = GenshinArtifactScannerConfig {
             min_star: *matches.get_one::<i32>("min-star").unwrap(),
             min_level: *matches.get_one::<i32>("min-level").unwrap(),
-            number: *matches.get_one::<i32>("number").unwrap(),
-            ignore_dup: true,
-            verbose: *matches.get_one::<bool>("verbose").unwrap(),
+            number: if matches.contains_id("number") {
+                *matches.get_one::<i32>("number").unwrap()
+            } else {
+                -1
+            },
+            ignore_dup: matches.get_flag("ignore-dup"),
+            verbose: matches.get_flag("verbose"),
 
             genshin_repo_scan_logic_config: scanner_controller_config
         };

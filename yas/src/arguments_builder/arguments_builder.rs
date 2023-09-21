@@ -22,6 +22,7 @@ impl ArgumentsBuilder {
     pub fn arg(&mut self, a: Arg) -> &mut Self {
         let name = a.get_id().to_string();
         if self.names.contains(&name) {
+            warn!("Arg name {} already exists", name);
             return self;
         }
 

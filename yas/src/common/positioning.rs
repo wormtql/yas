@@ -80,6 +80,16 @@ impl Pos {
     }
 }
 
+impl Size {
+    pub fn new<T, E>(width: T, height: T) -> Size where T: TryInto<f64, Error = E>, E: std::fmt::Debug {
+        let width = width.try_into().unwrap();
+        let height = height.try_into().unwrap();
+        Size {
+            width, height
+        }
+    }
+}
+
 
 impl Rect where {
     pub fn translate(&self, pos: Pos) -> Rect {

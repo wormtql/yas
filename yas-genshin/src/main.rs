@@ -3,13 +3,17 @@ extern crate log;
 
 use anyhow::Result;
 use clap::{Command, command, FromArgMatches};
-use yas::{arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder}, window_info::{require_window_info::RequireWindowInfo, window_info_builder::WindowInfoBuilder, window_info_prototypes::WindowInfoPrototypes, self}, load_window_info, game_info::{Resolution, GameInfoBuilder}, common::positioning::Pos, export::ExportAssets};
+use yas::{arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder}, window_info::{require_window_info::RequireWindowInfo, window_info_builder::WindowInfoBuilder, window_info_prototypes::WindowInfoPrototypes, self}, load_window_info, game_info::{Resolution, GameInfoBuilder}, common::positioning::{Pos, Size}, export::ExportAssets};
 use yas_scanner_genshin::{scanner::artifact_scanner::{GenshinArtifactScanner, GenshinArtifactScannerConfig}, export::artifact::GenshinArtifactExporter, artifact::GenshinArtifact};
 use yas::export::YasExporter;
 use yas::window_info::window_info::WindowInfo;
 use yas::utils;
 
 fn main() -> Result<()> {
+    env_logger::Builder::new()
+        .filter_level(log::LevelFilter::Info)
+        .init();
+
     let mut builder = ArgumentsBuilder::new();
     // setup arguments
     <GenshinArtifactScannerConfig as ArgumentsModifier>::modify_arguments(&mut builder);
@@ -34,6 +38,7 @@ fn main() -> Result<()> {
         },
         Ok(v) => v
     };
+    info!("{:?}", game_info);
 
     // setup window info
     let window_info = {
@@ -48,7 +53,7 @@ fn main() -> Result<()> {
         wi.add_pos("window_origin", game_info.window.origin());
 
         wi
-    };    
+    };
 
     // setup config
     let config = GenshinArtifactScannerConfig::from_arg_matches(&matches).unwrap();

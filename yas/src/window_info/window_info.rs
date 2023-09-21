@@ -108,6 +108,14 @@ impl Scalable for WindowInfo {
 }
 
 impl WindowInfo {
+    pub fn new(current_resolution: Size, resolution_family: Resolution) -> WindowInfo {
+        WindowInfo {
+            data: HashMap::new(),
+            current_resolution,
+            resolution_family
+        }
+    }
+
     pub fn add_pos(&mut self, name: &str, value: Pos) {
         self.data.insert(String::from(name), WindowInfoType::Pos(value));
     }

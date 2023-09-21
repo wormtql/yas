@@ -194,10 +194,11 @@ pub fn resize_and_pad(im: &GrayImageFloat) -> GrayImageFloat {
     padded_im
 }
 
-pub fn pre_process(im: GrayImageFloat) -> Option<GrayImageFloat> {
+// if the image has only one color, then return false, but this is not an error
+pub fn pre_process(im: GrayImageFloat) -> (GrayImageFloat, bool) {
     let mut im = im;
     if !normalize(&mut im, true) {
-        return None;
+        return (im, false);
     }
     let mut im = crop(&im);
 
@@ -217,7 +218,7 @@ pub fn pre_process(im: GrayImageFloat) -> Option<GrayImageFloat> {
         }
     }
 
-    Some(im)
+    (im, true)
 }
 
 // pub fn image_to_raw(im: GrayImage) -> RawImage {

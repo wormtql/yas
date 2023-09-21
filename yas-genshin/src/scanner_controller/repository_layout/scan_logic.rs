@@ -2,12 +2,8 @@ use std::cell::RefCell;
 use std::ops::Generator;
 use std::rc::Rc;
 use image::RgbImage;
-// use std::sync::Arc;
-// use clap::builder::ValueParserFactory;
-// use yas::common::cancel::CancellationToken;
 use yas::common::color::Color;
 use yas::game_info::GameInfo;
-use yas::inference::model::OCRModel;
 use yas::capture::capture;
 use yas::window_info::require_window_info::RequireWindowInfo;
 use yas::window_info::window_info::WindowInfo;
@@ -15,7 +11,7 @@ use crate::scanner_controller::repository_layout::config::{GenshinRepositoryScan
 use anyhow::{Result, anyhow};
 use yas::common::positioning::{Pos, Rect, Size};
 use yas::utils;
-use log::{debug, info, error};
+use log::{info, error};
 use std::time::SystemTime;
 use yas::capture::capture::RelativeCapturable;
 use yas::system_control::SystemControl;
@@ -81,7 +77,7 @@ pub struct GenshinRepositoryScanController {
 impl RequireWindowInfo for GenshinRepositoryScanController {
     fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
         window_info_builder
-            .add_required_key("window_origin")
+            // .add_required_key("window_origin")
             .add_required_key("genshin_repository_panel_pos")
             .add_required_key("genshin_repository_flag_pos")
             .add_required_key("genshin_repository_item_gap")
@@ -135,16 +131,17 @@ impl GenshinRepositoryScanController {
     }
 }
 
+pub enum ReturnResult {
+    Interrupted,
+    Finished,
+}
+
 impl GenshinRepositoryScanController {
-    pub fn into_generator(object: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Generator {
-        // let mut_self = self.borrow_mut();
+    pub fn into_generator(object: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Generator<Yield = (), Return = Result<ReturnResult>> {
         let generator = move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;
             let mut start_row = 0;
-
-            // let mut_self = || { return object.borrow_mut(); };
-            // let immut_self = || { return object.borrow(); };
 
             let count = object.borrow().item_count;
 
@@ -183,9 +180,11 @@ impl GenshinRepositoryScanController {
 
                     '_col: for col in 0..row_item_count {
                         // 大于最大数量 或者 取消 或者 鼠标右键按下
-                        // todo use controller
-                        if utils::is_rmb_down() || scanned_count > count {
-                            break 'outer;
+                        if utils::is_rmb_down() {
+                            return Ok(ReturnResult::Interrupted);
+                        }
+                        if scanned_count > count {
+                            return Ok(ReturnResult::Finished);
                         }
 
                         object.borrow_mut().move_to(row, col);
@@ -194,7 +193,8 @@ impl GenshinRepositoryScanController {
                         #[cfg(target_os = "macos")]
                         utils::sleep(20);
 
-                        object.borrow_mut().wait_until_switched().unwrap();
+                        // do not unwrap
+                        object.borrow_mut().wait_until_switched();
 
                         // have to make sure at this point no mut ref exists
                         yield;
@@ -219,15 +219,19 @@ impl GenshinRepositoryScanController {
 
                 match object.borrow_mut().scroll_rows(scroll_row as i32) {
                     ScrollResult::TimeLimitExceeded => {
-                        error!("翻页超时，扫描终止……");
-                        break 'outer;
+                        // error!("");
+                        return Err(anyhow!("翻页超时，扫描终止……"));
                     },
-                    ScrollResult::Interrupt => break 'outer,
+                    ScrollResult::Interrupt => {
+                        return Ok(ReturnResult::Interrupted);
+                    },
                     _ => (),
                 }
 
                 utils::sleep(100);
             }
+
+            Ok(ReturnResult::Finished)
         };
 
         generator
@@ -257,7 +261,7 @@ impl GenshinRepositoryScanController {
 
             if self.initial_color.distance(&color) > 10 {
                 self.mouse_scroll(1, false);
-                utils::sleep(self.config.scroll_delay);
+                utils::sleep(self.config.scroll_delay.try_into().unwrap());
             } else {
                 break;
             }
@@ -283,22 +287,23 @@ impl GenshinRepositoryScanController {
 
     pub fn scroll_one_row(&mut self) -> ScrollResult {
         let mut state = 0;
+        let mut count = 0;
+        let max_scroll = 25;
 
-        for count in 0..25 {
-            // if utils::is_rmb_down() || self.cancellation_token.cancelled() {
-            //     return ScrollResult::Interrupt;
-            // }
+        while count < max_scroll {
             if utils::is_rmb_down() {
                 return ScrollResult::Interrupt;
             }
 
             // FIXME: Why -5 for windows?
-            // #[cfg(windows)]
+            #[cfg(windows)]
+            self.system_control.mouse_scroll(1, false);
             // self.enigo.mouse_scroll_y(-5);
 
-            self.mouse_scroll(1, count < 1);
+            // self.mouse_scroll(1, count < 1);
 
-            utils::sleep(self.config.scroll_delay);
+            utils::sleep(self.config.scroll_delay.try_into().unwrap());
+            count += 1;
 
             let color = match self.get_flag_color() {
                 Ok(color) => color,
@@ -320,12 +325,12 @@ impl GenshinRepositoryScanController {
         if cfg!(not(target_os = "macos")) && self.scrolled_rows >= 5 {
             let length = self.estimate_scroll_length(count);
 
-            debug!(
-                "Alread scrolled {} rows, estimated scroll length: {}",
-                self.scrolled_rows, length
-            );
+            for _ in 0..length {
+                // todo remove unwrap
+                self.system_control.mouse_scroll(1, false).unwrap();
+            }
 
-            self.mouse_scroll(length, false);
+            // self.mouse_scroll(length, false);
 
             utils::sleep(400);
 
@@ -336,8 +341,9 @@ impl GenshinRepositoryScanController {
         for _ in 0..count {
             match self.scroll_one_row() {
                 ScrollResult::Success | ScrollResult::Skip => continue,
+                ScrollResult::Interrupt => return ScrollResult::Interrupt,
                 v => {
-                    info!("Scrolling failed: {:?}", v);
+                    error!("Scrolling failed: {:?}", v);
                     return v;
                 },
             }
@@ -348,7 +354,7 @@ impl GenshinRepositoryScanController {
 
     pub fn wait_until_switched(&mut self) -> Result<()> {
         if self.game_info.is_cloud {
-            utils::sleep(self.config.cloud_wait_switch_item);
+            utils::sleep(self.config.cloud_wait_switch_item.try_into()?);
             return anyhow::Ok(());
         }
 
@@ -413,7 +419,7 @@ impl GenshinRepositoryScanController {
         self.scrolled_rows += 1;
         self.avg_scroll_one_row = current / self.scrolled_rows as f64;
 
-        debug!(
+        info!(
             "avg scroll one row: {} ({})",
             self.avg_scroll_one_row, self.scrolled_rows
         );

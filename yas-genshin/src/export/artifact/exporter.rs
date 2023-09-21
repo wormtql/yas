@@ -59,6 +59,8 @@ impl<'a> ArgumentsModifier for GenshinArtifactExporter<'a> {
                 .long("output-format")
                 .short('f')
                 .help("输出格式")
+                .value_parser(clap::builder::EnumValueParser::<GenshinArtifactExportFormat>::new())
+                .default_value("mona")
                 // .default_value("Mona")
         )
         .arg(

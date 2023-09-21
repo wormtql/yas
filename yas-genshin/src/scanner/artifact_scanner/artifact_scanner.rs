@@ -1,9 +1,9 @@
 use image::{RgbImage, GenericImageView};
 use log::{error, info, warn};
-use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info::WindowInfo}, inference::{model::OCRModel, pre_process::{pre_process, to_gray}}, game_info::GameInfo};
+use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info::WindowInfo}, inference::{model::OCRModel, pre_process::{pre_process, to_gray, ImageConvExt}}, game_info::GameInfo};
 use std::{ops::{Generator, GeneratorState}, pin::Pin, rc::Rc, cell::RefCell, sync::{mpsc::{Receiver, Sender, self}, Arc}, thread::JoinHandle, os::windows::thread, collections::HashSet, time::SystemTime};
 
-use crate::scanner_controller::repository_layout::{scan_logic::GenshinRepositoryScanController, config::GenshinRepositoryScannerLogicConfig};
+use crate::scanner_controller::repository_layout::{scan_logic::{GenshinRepositoryScanController, ReturnResult}, config::GenshinRepositoryScannerLogicConfig};
 
 use super::artifact_scanner_config::GenshinArtifactScannerConfig;
 use anyhow::Result;
@@ -53,11 +53,10 @@ impl ArtifactScannerWorker {
     fn model_inference(&self, pos: Rect, captured_img: &RgbImage) -> Result<String> {
         // todo move dump mode into a scanner
         // if dump_mode {
-        //     captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
+            // captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
         // }
 
-        let relative_rect = pos;
-        relative_rect.translate(Pos {
+        let relative_rect = pos.translate(Pos {
             x: -self.window_info.panel_pos.left,
             y: -self.window_info.panel_pos.top,
         });
@@ -66,7 +65,7 @@ impl ArtifactScannerWorker {
             relative_rect.left as u32, relative_rect.top as u32, relative_rect.width as u32, relative_rect.height as u32
         ).to_image();
         let raw_img_grayed = to_gray(&raw_img);
-        
+                
         // let raw_img = to_gray(captured_img)
         //     .view(
         //         relative_rect.left,
@@ -82,10 +81,10 @@ impl ArtifactScannerWorker {
         //         .save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
         // }
 
-        let processed_img = match pre_process(raw_img_grayed) {
-            Some(im) => im,
-            None => return Err(anyhow::anyhow!("图像预处理失败")),
-        };
+        let (processed_img, process_flag) = pre_process(raw_img_grayed);
+        if !process_flag {
+            return Ok(String::new());
+        }
 
         // if dump_mode {
         //     processed_img
@@ -148,7 +147,7 @@ impl ArtifactScannerWorker {
             // todo remove dump mode to another scanner
             let dump_mode = false;
             // let model = self.model.clone();
-            let panel_origin = Pos { x: self.window_info.panel_pos.left, y: self.window_info.panel_pos.top };
+            // let panel_origin = Pos { x: self.window_info.panel_pos.left, y: self.window_info.panel_pos.top };
 
             for (cnt, item) in rx.into_iter().enumerate() {
                 let item = match item {
@@ -275,7 +274,7 @@ impl RequireWindowInfo for GenshinArtifactScanner {
     fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
         <GenshinRepositoryScanController as RequireWindowInfo>::require_window_info(window_info_builder);
 
-        window_info_builder.add_required_key("window_origin");
+        // window_info_builder.add_required_key("window_origin");
         window_info_builder.add_required_key("genshin_artifact_title_pos");
         window_info_builder.add_required_key("genshin_artifact_main_stat_name_pos");
         window_info_builder.add_required_key("genshin_artifact_main_stat_value_pos");
@@ -285,6 +284,10 @@ impl RequireWindowInfo for GenshinArtifactScanner {
         window_info_builder.add_required_key("genshin_artifact_star");
         window_info_builder.add_required_key("genshin_repository_item_col");
         window_info_builder.add_required_key("genshin_repository_panel_pos");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat0");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat1");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat2");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat3");
     }
 }
 
@@ -352,7 +355,8 @@ impl GenshinArtifactScanner {
 
         // todo use better preprocess function set
         let im_grayed = to_gray(&im);
-        let im_preprocessed = pre_process(im_grayed).unwrap();
+        let (im_preprocessed, preprocess_flag) = pre_process(im_grayed);
+        assert!(preprocess_flag);
 
         let s = match ocr_model.inference_string(&im_preprocessed) {
             Ok(s) => s,
@@ -453,7 +457,17 @@ impl GenshinArtifactScanner {
 
                     // scanned_count += 1;
                 },
-                GeneratorState::Complete(_) => {
+                GeneratorState::Complete(result) => {
+                    match result {
+                        Err(e) => error!("扫描发生错误：{}", e),
+                        Ok(value) => {
+                            match value {
+                                ReturnResult::Interrupted => info!("用户中断"),
+                                ReturnResult::Finished => ()
+                            }
+                        }
+                    }
+
                     break;
                 }
             }

@@ -22,7 +22,7 @@ impl WindowsSystemControl {
     }
 
     pub fn mouse_scroll(&mut self, amount: i32, _try_find: bool) -> anyhow::Result<()> {
-        self.enigo.mouse_scroll_y(-amount);
+        self.enigo.mouse_scroll_y(amount);
 
         anyhow::Ok(())
     }

@@ -2,7 +2,7 @@
 #![allow(clippy::single_match)]
 
 use anyhow::Result;
-use env_logger::{Builder, Env};
+// use env_logger::{Builder, Env};
 use indicatif::{MultiProgress, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use once_cell::sync::OnceCell;

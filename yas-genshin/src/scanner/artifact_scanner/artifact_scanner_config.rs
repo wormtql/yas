@@ -1,10 +1,9 @@
-use log::info;
 use yas::arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder};
-use clap::{Arg, Command, FromArgMatches, ArgAction};
+use clap::{Arg, FromArgMatches, ArgAction};
 
-use crate::{export::export_format::GenshinArtifactExportFormat, scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig};
+use crate::scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig;
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct GenshinArtifactScannerConfig {
     /// Items with stars less than this will be ignored
     pub min_star: i32,
@@ -22,6 +21,19 @@ pub struct GenshinArtifactScannerConfig {
     pub genshin_repo_scan_logic_config: GenshinRepositoryScannerLogicConfig,
 }
 
+impl Default for GenshinArtifactScannerConfig {
+    fn default() -> Self {
+        GenshinArtifactScannerConfig {
+            min_star: 3,
+            min_level: 0,
+            ignore_dup: false,
+            verbose: false,
+            number: -1,
+            genshin_repo_scan_logic_config: Default::default()
+        }
+    }
+}
+
 impl ArgumentsModifier for GenshinArtifactScannerConfig {
     fn modify_arguments(builder: &mut ArgumentsBuilder) {
         // todo use custom command builder
@@ -31,14 +43,14 @@ impl ArgumentsModifier for GenshinArtifactScannerConfig {
                 Arg::new("ignore-dup")
                     .long("ignore-dup")
                     .help("忽略重复物品")
-                    // .num_args(0)
+                    .num_args(0)
                     .action(ArgAction::SetTrue)
             )
             .arg(
                 Arg::new("verbose")
                     .long("verbose")
                     .help("显示详细信息")
-                    // .num_args(0)
+                    .num_args(0)
                     .action(ArgAction::SetTrue)
             )
             .arg(
@@ -90,7 +102,7 @@ impl FromArgMatches for GenshinArtifactScannerConfig {
         Ok(result)
     }
 
-    fn update_from_arg_matches(&mut self, matches: &clap::ArgMatches) -> Result<(), clap::Error> {
+    fn update_from_arg_matches(&mut self, _matches: &clap::ArgMatches) -> Result<(), clap::Error> {
         // todo
         unimplemented!()
     }

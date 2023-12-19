@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use clap::{Arg, FromArgMatches};
 use yas::arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder};
@@ -89,7 +89,7 @@ impl<'a> FromArgMatches for GenshinArtifactExporter<'a> {
         Ok(value)
     }
 
-    fn update_from_arg_matches(&mut self, matches: &clap::ArgMatches) -> Result<(), clap::Error> {
+    fn update_from_arg_matches(&mut self, _matches: &clap::ArgMatches) -> Result<(), clap::Error> {
         // todo
         unimplemented!()
     }

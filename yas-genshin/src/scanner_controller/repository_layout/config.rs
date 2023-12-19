@@ -1,5 +1,5 @@
 use yas::arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder};
-use clap::{Arg, arg, FromArgMatches};
+use clap::{Arg, FromArgMatches};
 
 // todo add all the cmd arguments
 #[derive(Clone)]
@@ -57,7 +57,7 @@ impl FromArgMatches for GenshinRepositoryScannerLogicConfig {
         Ok(result)
     }
 
-    fn update_from_arg_matches(&mut self, matches: &clap::ArgMatches) -> Result<(), clap::Error> {
+    fn update_from_arg_matches(&mut self, _matches: &clap::ArgMatches) -> Result<(), clap::Error> {
         // todo
         Ok(())
     }

@@ -5,45 +5,29 @@ use std::{ops::{Generator, GeneratorState}, pin::Pin, rc::Rc, cell::RefCell, syn
 
 use crate::scanner_controller::repository_layout::scan_logic::{GenshinRepositoryScanController, ReturnResult};
 
-use super::artifact_scanner_config::GenshinArtifactScannerConfig;
 use anyhow::Result;
 
+use super::item_scanner_config::ItemScannerConfig;
+
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub struct GenshinArtifactScanResult {
+pub struct ItemScanResult {
     pub name: String,
-    pub main_stat_name: String,
-    pub main_stat_value: String,
-    pub sub_stat: [String; 4],
-    pub equip: String,
-    pub level: i32,
-    pub star: i32,
+    pub amount: i32
 }
 
-struct ArtifactScannerWorker {
+struct ItemScannerWorker {
     model: OCRModel,
-    window_info: ArtifactScannerWindowInfo,
-    config: GenshinArtifactScannerConfig,
+    window_info: ItemScannerWindowInfo,
+    config: ItemScannerConfig,
 }
 
-fn parse_level(s: &str) -> Result<i32> {
-    let pos = s.find('+');
-
-    if pos.is_none() {
-        let level = s.parse::<i32>()?;
-        return anyhow::Ok(level);
-    }
-
-    let level = s[pos.unwrap()..].parse::<i32>()?;
-    return anyhow::Ok(level);
-}
-
-impl ArtifactScannerWorker {
+impl ItemScannerWorker {
     pub fn new(
         model: OCRModel,
-        window_info: ArtifactScannerWindowInfo,
-        config: GenshinArtifactScannerConfig,
+        window_info: ItemScannerWindowInfo,
+        config: ItemScannerConfig,
     ) -> Self {
-        ArtifactScannerWorker {
+        ItemScannerWorker {
             model,
             window_info,
             config,
@@ -65,89 +49,36 @@ impl ArtifactScannerWorker {
             relative_rect.left as u32, relative_rect.top as u32, relative_rect.width as u32, relative_rect.height as u32
         ).to_image();
         let raw_img_grayed = to_gray(&raw_img);
-                
-        // let raw_img = to_gray(captured_img)
-        //     .view(
-        //         relative_rect.left,
-        //         relative_rect.top,
-        //         rect.size.width,
-        //         rect.size.height,
-        //     )
-        //     .to_image();
-
-        // if dump_mode {
-        //     raw_img
-        //         .to_common_grayscale()
-        //         .save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
-        // }
 
         let (processed_img, process_flag) = pre_process(raw_img_grayed);
         if !process_flag {
             return Ok(String::new());
         }
 
-        // if dump_mode {
-        //     processed_img
-        //         .to_common_grayscale()
-        //         .save(Path::new("dumps").join(format!("{}_{}.pp.png", name, cnt)))?;
-        // }
-
         let inference_result = self.model.inference_string(&processed_img)?;
-
-        // if dump_mode {
-        //     dump_text(
-        //         &inference_result,
-        //         Path::new("dumps").join(format!("{}_{}.txt", name, cnt)),
-        //     );
-        // }
 
         Ok(inference_result)
     }
 
-    fn scan_item_image(&self, item: SendItem) -> Result<GenshinArtifactScanResult> {
+    fn scan_item_image(&self, item: SendItem) -> Result<ItemScanResult> {
         let image = &item.panel_image;
 
         let str_title = self.model_inference(self.window_info.title_pos, &image)?;
-        let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_pos, &image)?;
-        let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_pos, &image)?;
         
-        let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_pos[0], &image)?;
-        let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_pos[1], &image)?;
-        let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_pos[2], &image)?;
-        let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_pos[3], &image)?;
-    
-        let str_level = self.model_inference(self.window_info.level_pos, &image)?;
-        let str_equip = self.model_inference(self.window_info.item_equip_pos, &image)?;
-    
-        anyhow::Ok(GenshinArtifactScanResult {
+        anyhow::Ok(ItemScanResult {
             name: str_title,
-            main_stat_name: str_main_stat_name,
-            main_stat_value: str_main_stat_value,
-            sub_stat: [
-                str_sub_stat0,
-                str_sub_stat1,
-                str_sub_stat2,
-                str_sub_stat3,
-            ],
-            level: parse_level(&str_level)?,
-            equip: str_equip,
-            star: item.star as i32,
+            amount: 0,
         })
     }
 
-    pub fn run(self, rx: Receiver<Option<SendItem>>) -> JoinHandle<Vec<GenshinArtifactScanResult>> {
+    pub fn run(self, rx: Receiver<Option<SendItem>>) -> JoinHandle<Vec<ItemScanResult>> {
         std::thread::spawn(move || {
             let mut results = Vec::new();
             let mut hash = HashSet::new();
             let mut consecutive_dup_count = 0;
 
             let is_verbose = self.config.verbose;
-            let min_level = self.config.min_level;
             let info = self.window_info.clone();
-            // todo remove dump mode to another scanner
-            // let dump_mode = false;
-            // let model = self.model.clone();
-            // let panel_origin = Pos { x: self.window_info.panel_pos.left, y: self.window_info.panel_pos.top };
 
             for (_cnt, item) in rx.into_iter().enumerate() {
                 let item = match item {
@@ -167,23 +98,6 @@ impl ArtifactScannerWorker {
                     info!("{:?}", result);
                 }
 
-                // progress_bar.inc(1);
-                // progress_bar.set_message(format!(
-                //     "{}{}: {}",
-                //     style(&result.name).bold().cyan(),
-                //     style(format!("({})", result.level)).yellow(),
-                //     style(&result.main_stat_name).dim()
-                // ));
-
-                if result.level < min_level {
-                    info!(
-                        "找到满足最低等级要求 {} 的物品({})，准备退出……",
-                        min_level, result.level
-                    );
-                    // token.cancel();
-                    break;
-                }
-
                 if hash.contains(&result) {
                     consecutive_dup_count += 1;
                     warn!("识别到重复物品: {:#?}", result);
@@ -193,22 +107,14 @@ impl ArtifactScannerWorker {
                     results.push(result);
                 }
 
-                if consecutive_dup_count >= info.col && !self.config.ignore_dup {
+                if consecutive_dup_count >= info.col {
                     error!("识别到连续多个重复物品，可能为翻页错误，或者为非背包顶部开始扫描");
                     // token.cancel();
                     break;
                 }
-
-                // if token.cancelled() {
-                    // error!("扫描任务被取消");
-                    // break;
-                // }
             }
 
             info!("识别结束，非重复物品数量: {}", hash.len());
-
-            // progress_bar.finish();
-            // MULTI_PROGRESS.remove(&progress_bar);
 
             results
         })
@@ -216,18 +122,11 @@ impl ArtifactScannerWorker {
 }
 
 #[derive(Clone)]
-struct ArtifactScannerWindowInfo {
+struct ItemScannerWindowInfo {
+    // window origin
     pub origin: Pos,
 
     pub title_pos: Rect,
-    pub main_stat_name_pos: Rect,
-    pub main_stat_value_pos: Rect,
-    pub sub_stat_pos: [Rect; 4],
-
-    pub level_pos: Rect,
-
-    pub item_equip_pos: Rect,
-    pub item_count_pos: Rect,
 
     pub star: Pos,
 
@@ -236,41 +135,29 @@ struct ArtifactScannerWindowInfo {
     pub col: i32,
 }
 
-impl From<&WindowInfo> for ArtifactScannerWindowInfo {
+impl From<&WindowInfo> for ItemScannerWindowInfo {
     fn from(value: &WindowInfo) -> Self {
-        ArtifactScannerWindowInfo {
+        ItemScannerWindowInfo {
             origin: value.get("window_origin").unwrap(),
             title_pos: value.get("genshin_artifact_title_pos").unwrap(),
-            main_stat_name_pos: value.get("genshin_artifact_main_stat_name_pos").unwrap(),
-            main_stat_value_pos: value.get("genshin_artifact_main_stat_value_pos").unwrap(),
-            level_pos: value.get("genshin_artifact_level_pos").unwrap(),
-            item_equip_pos: value.get("genshin_artifact_item_equip_pos").unwrap(),
-            item_count_pos: value.get("genshin_artifact_item_count_pos").unwrap(),
             star: value.get("genshin_artifact_star").unwrap(),
 
             panel_pos: value.get("genshin_repository_panel_pos").unwrap(),
             col: value.get("genshin_repository_item_col").unwrap(),
-
-            sub_stat_pos: [
-                value.get("genshin_artifact_sub_stat0").unwrap(),
-                value.get("genshin_artifact_sub_stat1").unwrap(),
-                value.get("genshin_artifact_sub_stat2").unwrap(),
-                value.get("genshin_artifact_sub_stat3").unwrap(),
-            ]
         }
     }
 }
 
-pub struct GenshinArtifactScanner {
-    scanner_config: GenshinArtifactScannerConfig,
+pub struct GenshinItemScanner {
+    scanner_config: ItemScannerConfig,
 
-    window_info: ArtifactScannerWindowInfo,
+    window_info: ItemScannerWindowInfo,
     window_info_clone: WindowInfo,
 
     game_info: GameInfo,
 }
 
-impl RequireWindowInfo for GenshinArtifactScanner {
+impl RequireWindowInfo for GenshinItemScanner {
     fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
         <GenshinRepositoryScanController as RequireWindowInfo>::require_window_info(window_info_builder);
 
@@ -297,18 +184,18 @@ struct SendItem {
 }
 
 // constructor
-impl GenshinArtifactScanner {
-    pub fn new(config: GenshinArtifactScannerConfig, window_info: &WindowInfo, game_info: GameInfo) -> Self {
-        GenshinArtifactScanner {
+impl GenshinItemScanner {
+    pub fn new(config: ItemScannerConfig, window_info: &WindowInfo, game_info: GameInfo) -> Self {
+        GenshinItemScanner {
             scanner_config: config,
-            window_info: ArtifactScannerWindowInfo::from(window_info),
+            window_info: ItemScannerWindowInfo::from(window_info),
             window_info_clone: window_info.clone(),
             game_info
         }
     }
 }
 
-impl GenshinArtifactScanner {
+impl GenshinItemScanner {
     pub fn get_star(&self) -> Result<usize> {
         let pos = self.window_info.origin + self.window_info.star;
         let color = capture::get_color(pos)?;
@@ -380,7 +267,7 @@ impl GenshinArtifactScanner {
         }
     }
 
-    pub fn scan(&mut self) -> Result<Vec<GenshinArtifactScanResult>> {
+    pub fn scan(&mut self) -> Result<Vec<ItemScanResult>> {
         info!("开始扫描，使用鼠标右键中断扫描");
 
         let now = SystemTime::now();

@@ -7,7 +7,7 @@ use yas::game_info::GameInfo;
 use yas::capture::capture;
 use yas::window_info::require_window_info::RequireWindowInfo;
 use yas::window_info::window_info::WindowInfo;
-use crate::scanner_controller::repository_layout::config::{GenshinRepositoryScannerLogicConfig};
+use crate::scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig;
 use anyhow::{Result, anyhow};
 use yas::common::positioning::{Pos, Rect, Size};
 use yas::utils;
@@ -194,7 +194,7 @@ impl GenshinRepositoryScanController {
                         utils::sleep(20);
 
                         // do not unwrap
-                        object.borrow_mut().wait_until_switched();
+                        let _ = object.borrow_mut().wait_until_switched();
 
                         // have to make sure at this point no mut ref exists
                         yield;
@@ -295,10 +295,8 @@ impl GenshinRepositoryScanController {
                 return ScrollResult::Interrupt;
             }
 
-            // FIXME: Why -5 for windows?
             #[cfg(windows)]
-            self.system_control.mouse_scroll(1, false);
-            // self.enigo.mouse_scroll_y(-5);
+            let _ = self.system_control.mouse_scroll(1, false);
 
             // self.mouse_scroll(1, count < 1);
 

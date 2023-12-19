@@ -21,7 +21,7 @@ impl CRNNModel {
         //     .into_optimized().unwrap()
         //     .into_runnable().unwrap();
         // let mut bytes = include_bytes!("../../models/model_acc100-epoch16.onnx");
-        let bytes = include_bytes!("../../models/model_training.onnx");
+        let bytes = include_bytes!("../../models/model_genshin.onnx");
         let bytes_starrail = include_bytes!("../../models/model_training_starrail.onnx");
 
         let model: ModelType;

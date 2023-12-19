@@ -85,6 +85,8 @@ pub enum ArtifactSetName {
     VourukashasGlow,
     MarechausseeHunter,
     GoldenTroupe,
+    SongOfDaysPast,
+    NighttimeWhispersInTheEchoingWoods,
 }
 
 #[derive(Debug, Clone)]
@@ -235,6 +237,8 @@ pub fn get_real_artifact_name_chs(raw: &str) -> Option<String> {
         "灵光明烁之心", "琦色灵彩之羽", "灵光源起之蕊", "久远花落之时", "无边酣乐之筵",
         "老兵的容颜", "杰作的序曲", "猎人的胸花", "裁判的时刻", "遗忘的容器",
         "黄金剧团的奖赏", "黄金飞鸟的落羽", "黄金乐曲的变奏", "黄金时代的先声", "黄金之夜的喧嚣",
+        "昔时传奏之诗", "昔时浮想之思", "昔时遗落之誓", "昔时回映之音", "昔时应许之梦",
+        "慈爱的淑女帽", "诚恳的蘸水笔", "无私的妆饰花", "忠实的砂时计", "慷慨的墨水瓶",
     ];
 
     let mut min_index = 0;
@@ -449,6 +453,8 @@ impl ArtifactSetName {
             "灵光明烁之心" | "琦色灵彩之羽" | "灵光源起之蕊" | "久远花落之时" | "无边酣乐之筵" => Some(ArtifactSetName::VourukashasGlow),
             "猎人的胸花" | "杰作的序曲" | "裁判的时刻" | "遗忘的容器" | "老兵的容颜" => Some(ArtifactSetName::MarechausseeHunter),
             "黄金乐曲的变奏" | "黄金飞鸟的落羽" | "黄金时代的先声" | "黄金之夜的喧嚣" | "黄金剧团的奖赏" => Some(ArtifactSetName::GoldenTroupe),
+            "昔时传奏之诗" | "昔时浮想之思" | "昔时遗落之誓" | "昔时回映之音" | "昔时应许之梦" => Some(ArtifactSetName::SongOfDaysPast),
+            "慈爱的淑女帽" | "诚恳的蘸水笔" | "无私的妆饰花" | "忠实的砂时计" | "慷慨的墨水瓶" => Some(ArtifactSetName::NighttimeWhispersInTheEchoingWoods),
             _ => None,
         }
     }
@@ -682,6 +688,16 @@ impl ArtifactSlot {
             "黄金时代的先声" => Some(ArtifactSlot::Sand),
             "黄金之夜的喧嚣" => Some(ArtifactSlot::Goblet),
             "黄金剧团的奖赏" => Some(ArtifactSlot::Head),
+            "昔时传奏之诗" => Some(ArtifactSlot::Head),
+            "昔时浮想之思" => Some(ArtifactSlot::Feather),
+            "昔时遗落之誓" => Some(ArtifactSlot::Flower),
+            "昔时回映之音" => Some(ArtifactSlot::Sand),
+            "昔时应许之梦" => Some(ArtifactSlot::Goblet),
+            "慈爱的淑女帽" => Some(ArtifactSlot::Head),
+            "诚恳的蘸水笔" => Some(ArtifactSlot::Feather),
+            "无私的妆饰花" => Some(ArtifactSlot::Flower),
+            "忠实的砂时计" => Some(ArtifactSlot::Sand),
+            "慷慨的墨水瓶" => Some(ArtifactSlot::Goblet),
             _ => None,
         }
     }

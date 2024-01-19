@@ -1,7 +1,7 @@
 use image::{RgbImage, GenericImageView};
 use log::{error, info, warn};
 use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info::WindowInfo}, inference::{model::OCRModel, pre_process::{pre_process, to_gray, ImageConvExt}}, game_info::GameInfo};
-use std::{ops::{Generator, GeneratorState}, pin::Pin, rc::Rc, cell::RefCell, sync::{mpsc::{Receiver, Sender, self}, Arc}, thread::JoinHandle, os::windows::thread, collections::HashSet, time::SystemTime};
+use std::{ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, cell::RefCell, sync::{mpsc::{Receiver, Sender, self}, Arc}, thread::JoinHandle, os::windows::thread, collections::HashSet, time::SystemTime};
 
 use crate::scanner_controller::repository_layout::{scan_logic::{GenshinRepositoryScanController, ReturnResult}, config::GenshinRepositoryScannerLogicConfig};
 
@@ -437,7 +437,7 @@ impl GenshinArtifactScanner {
         loop {
             let pinned_generator = Pin::new(&mut generator);
             match pinned_generator.resume(()) {
-                GeneratorState::Yielded(_) => {
+                CoroutineState::Yielded(_) => {
                     // let image = self.capture_panel().unwrap();
                     let image = controller.borrow().capture_panel().unwrap();
                     let star = self.get_star().unwrap();
@@ -457,7 +457,7 @@ impl GenshinArtifactScanner {
 
                     // scanned_count += 1;
                 },
-                GeneratorState::Complete(result) => {
+                CoroutineState::Complete(result) => {
                     match result {
                         Err(e) => error!("扫描发生错误：{}", e),
                         Ok(value) => {

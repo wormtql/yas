@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::ops::Generator;
+use std::ops::Coroutine;
 use std::rc::Rc;
 use image::RgbImage;
 use yas::common::color::Color;
@@ -137,7 +137,7 @@ pub enum ReturnResult {
 }
 
 impl GenshinRepositoryScanController {
-    pub fn into_generator(object: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Generator<Yield = (), Return = Result<ReturnResult>> {
+    pub fn into_generator(object: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
         let generator = move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;

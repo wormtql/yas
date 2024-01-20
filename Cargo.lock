@@ -2985,6 +2985,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "yas_scanner_starrail"
+version = "0.1.14"
+dependencies = [
+ "anyhow",
+ "clap",
+ "edit-distance",
+ "env_logger",
+ "image",
+ "lazy_static",
+ "log",
+ "regex",
+ "serde",
+ "serde_json",
+ "strum",
+ "strum_macros",
+ "winres",
+ "yas_scanner",
+]
+
+[[package]]
 name = "zune-inflate"
 version = "0.2.54"
 source = "registry+https://github.com/rust-lang/crates.io-index"

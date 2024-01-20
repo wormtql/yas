@@ -1,7 +1,6 @@
 use serde::{Serialize, Deserialize};
 
 pub mod cancel;
-pub mod character_name;
 pub mod color;
 
 

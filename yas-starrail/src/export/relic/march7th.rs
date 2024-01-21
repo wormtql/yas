@@ -38,7 +38,6 @@ impl RelicStatName {
 
 impl RelicSetName {
     pub fn to_march7th(&self) -> String {
-        let same = self.to_string();
         let temp = match self {
             RelicSetName::PasserbyofWanderingCloud => "PasserbyofWanderingCloud",
             RelicSetName::MusketeerofWildWheat => "MusketeerofWildWheat",
@@ -65,7 +64,6 @@ impl RelicSetName {
             RelicSetName::LongevousDisciple => "LongevousDisciple",
             RelicSetName::MessengerTraversingHackerspace => "MessengerTraversingHackerspace",
             // todo add more relic sets
-            _ => same.as_str(),
         };
         String::from(temp)
     }

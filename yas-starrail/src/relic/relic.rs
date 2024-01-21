@@ -1,7 +1,5 @@
-use edit_distance;
 use log::error;
 use regex::Regex;
-use std::cmp::Ordering::*;
 use std::hash::{Hash, Hasher};
 use strum_macros::Display;
 use crate::scanner::relic_scanner::StarRailRelicScanResult;
@@ -169,58 +167,6 @@ impl RelicStat {
             name: stat_name,
             value,
         })
-    }
-}
-
-pub fn get_real_relic_name_chs(raw: &str) -> Option<String> {
-    #[rustfmt::skip]
-    let all_relic_chs = [
-        "过客的逢春木簪", "过客的游龙臂鞲", "过客的残绣风衣", "过客的冥途游履",
-        "快枪手的野穗毡帽", "快枪手的粗革手套", "快枪手的猎风披肩", "快枪手的铆钉马靴",
-        "圣骑的宽恕盔面", "圣骑的沉默誓环", "圣骑的肃穆胸甲", "圣骑的秩序铁靴",
-        "雪猎的荒神兜帽", "雪猎的巨蜥手套", "雪猎的冰龙披风", "雪猎的鹿皮软靴",
-        "拳王的冠军护头", "拳王的重炮拳套", "拳王的贴身护胸", "拳王的弧步战靴",
-        "铁卫的铸铁面盔", "铁卫的银鳞手甲", "铁卫的旧制军服", "铁卫的白银护胫",
-        "火匠的黑耀目镜", "火匠的御火戒指", "火匠的阻燃围裙", "火匠的合金义肢",
-        "天才的超距遥感", "天才的频变捕手", "天才的元域深潜", "天才的引力漫步",
-        "乐队的偏光墨镜", "乐队的巡演手绳", "乐队的钉刺皮衣", "乐队的铆钉短靴",
-        "翔鹰的长喙头盔", "翔鹰的鹰击指环", "翔鹰的翼装束带", "翔鹰的绒羽绑带",
-        "怪盗的千人假面", "怪盗的绘纹手套", "怪盗的纤钢爪钩", "怪盗的流星快靴",
-        "废土客的呼吸面罩", "废土客的荒漠终端", "废土客的修士长袍", "废土客的动力腿甲",
-        "「黑塔」的空间站点", "「黑塔」的漫历轨迹",
-        "罗浮仙舟的天外楼船", "罗浮仙舟的建木枝蔓",
-        "公司的巨构总部", "公司的贸易航道",
-        "贝洛伯格的存护堡垒", "贝洛伯格的铁卫防线",
-        "螺丝星的机械烈阳", "螺丝星的环星孔带",
-        "萨尔索图的移动城市", "萨尔索图的晨昏界线",
-        "塔利亚的钉壳小镇", "塔利亚的裸皮电线",
-        "翁瓦克的诞生之岛", "翁瓦克的环岛海岸",
-        "泰科铵的镭射球场", "泰科铵的弧光赛道",
-        "伊须磨洲的残船鲸落", "伊须磨洲的坼裂缆索",
-        "莳者的复明义眼", "莳者的机巧木手", "莳者的承露羽衣", "莳者的天人丝履",
-        "信使的全息目镜", "信使的百变义手", "信使的密信挎包", "信使的酷跑板鞋",
-    ];
-
-    let mut min_index = 0;
-    let mut min_dis = edit_distance::edit_distance(raw, all_relic_chs[0]);
-    let mut same_flag = false;
-    for (i, &val) in all_relic_chs.iter().enumerate().skip(1) {
-        let dis = edit_distance::edit_distance(val, raw);
-        match dis.cmp(&min_dis) {
-            Less => {
-                min_dis = dis;
-                min_index = i;
-                same_flag = false;
-            },
-            Equal => same_flag = true,
-            Greater => {},
-        }
-    }
-
-    if same_flag {
-        None
-    } else {
-        Some(String::from(all_relic_chs[min_index]))
     }
 }
 

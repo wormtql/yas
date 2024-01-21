@@ -1,4 +1,4 @@
-use crate::common::{color::Color, *};
+use crate::common::color::Color;
 use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, RgbImage};
 
 use anyhow::Result;
@@ -73,5 +73,3 @@ pub fn get_color(pos: Pos) -> Result<Color> {
     let pixel = image.get_pixel(0, 0);
     Ok(Color::new(pixel[0], pixel[1], pixel[2]))
 }
-
-

@@ -18,11 +18,6 @@ impl ImageConvExt for GrayImageFloat {
     }
 }
 
-#[inline]
-fn get_index(width: u32, x: u32, y: u32) -> usize {
-    (y * width + x) as usize
-}
-
 pub fn to_gray(raw: &RgbImage) -> GrayImageFloat {
     let mut new_gray = GrayImageFloat::new(raw.width(), raw.height());
     for x in 0..raw.width() {
@@ -49,14 +44,12 @@ pub fn normalize(im: &mut GrayImageFloat, auto_inverse: bool) -> bool {
         println!("wrong width or height");
         return false;
     }
-    // info!("in normalize: width = {}, height = {}", width, height);
 
     let mut max: f32 = 0.0;
     let mut min: f32 = 256.0;
 
     for i in 0..width {
         for j in 0..height {
-            // info!("i = {}, j = {}, width = {}, index = {}", i, j, width, index);
             let p = im.get_pixel(i, j)[0];
             if p > max {
                 max = p;
@@ -80,13 +73,9 @@ pub fn normalize(im: &mut GrayImageFloat, auto_inverse: bool) -> bool {
             let pv = p[0];
             let mut new_pv = (pv - min) / (max - min);
             if auto_inverse && flag_pixel > 0.5 {
-                // println!("123");
                 new_pv = 1.0 - new_pv;
             }
             p[0] = new_pv;
-            // if data[index] < 0.6 {
-            //     data[index] = 0.0;
-            // }
         }
     }
 
@@ -141,31 +130,6 @@ pub fn crop(im: &GrayImageFloat) -> GrayImageFloat {
     cropped_im
 }
 
-// pub fn raw_to_img(im: &RawImage) -> GrayImage {
-//     let (width, height) = (im.size.width, im.size.height);
-//     let data = &im.data;
-
-//     ImageBuffer::from_fn(width, height, |x, y| {
-//         let index = get_index(width, x, y);
-//         let p = data[index];
-//         let pixel = (p * 255.0) as u32;
-//         let pixel: u8 = if pixel > 255 { 255 } else { pixel as u8 };
-//         Luma([pixel])
-//     })
-// }
-
-// pub fn uint8_raw_to_img(im: &RawImage) -> GrayImage {
-//     let (width, height) = (im.size.width, im.size.height);
-//     let data = &im.data;
-
-//     ImageBuffer::from_fn(width, height, |x, y| {
-//         let index = get_index(width, x, y);
-//         let pixel = data[index] as u32;
-//         let pixel: u8 = if pixel > 255 { 255 } else { pixel as u8 };
-//         Luma([pixel])
-//     })
-// }
-
 pub fn resize_and_pad(im: &GrayImageFloat) -> GrayImageFloat {
     let w = im.width();
     let h = im.height();
@@ -177,9 +141,6 @@ pub fn resize_and_pad(im: &GrayImageFloat) -> GrayImageFloat {
     };
 
     let new_height = std::cmp::min((384.0 / w as f64 * h as f64) as u32, 32);
-
-    //let img = raw_to_img(&im);
-    //let img = resize(&img, new_width, 32, image::imageops::FilterType::Triangle);
 
     let img = resize(
         im,
@@ -220,22 +181,3 @@ pub fn pre_process(im: GrayImageFloat) -> (GrayImageFloat, bool) {
 
     (im, true)
 }
-
-// pub fn image_to_raw(im: GrayImage) -> RawImage {
-//     let w = im.width();
-//     let h = im.height();
-
-//     let mut data: Vec<f32> = vec![0.0; (w * h) as usize];
-//     for i in 0..w {
-//         for j in 0..h {
-//             let pixel = im.get_pixel(i, j).0[0] as f32 / 255.0;
-//             let index = get_index(w, i, j);
-//             data[index] = pixel;
-//         }
-//     }
-
-//     RawImage {
-//         data,
-//         size: Size::new(w, h),
-//     }
-// }

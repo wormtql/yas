@@ -53,7 +53,7 @@ impl ArtifactScannerWorker {
     fn model_inference(&self, pos: Rect, captured_img: &RgbImage) -> Result<String> {
         // todo move dump mode into a scanner
         // if dump_mode {
-            // captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
+        //     captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
         // }
 
         let relative_rect = pos.translate(Pos {
@@ -65,7 +65,7 @@ impl ArtifactScannerWorker {
             relative_rect.left as u32, relative_rect.top as u32, relative_rect.width as u32, relative_rect.height as u32
         ).to_image();
         let raw_img_grayed = to_gray(&raw_img);
-                
+
         // let raw_img = to_gray(captured_img)
         //     .view(
         //         relative_rect.left,
@@ -110,15 +110,15 @@ impl ArtifactScannerWorker {
         let str_title = self.model_inference(self.window_info.title_pos, &image)?;
         let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_pos, &image)?;
         let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_pos, &image)?;
-        
+
         let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_pos[0], &image)?;
         let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_pos[1], &image)?;
         let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_pos[2], &image)?;
         let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_pos[3], &image)?;
-    
+
         let str_level = self.model_inference(self.window_info.level_pos, &image)?;
         let str_equip = self.model_inference(self.window_info.item_equip_pos, &image)?;
-    
+
         anyhow::Ok(GenshinArtifactScanResult {
             name: str_title,
             main_stat_name: str_main_stat_name,
@@ -145,11 +145,11 @@ impl ArtifactScannerWorker {
             let min_level = self.config.min_level;
             let info = self.window_info.clone();
             // todo remove dump mode to another scanner
-            let dump_mode = false;
+            // let dump_mode = false;
             // let model = self.model.clone();
             // let panel_origin = Pos { x: self.window_info.panel_pos.left, y: self.window_info.panel_pos.top };
 
-            for (cnt, item) in rx.into_iter().enumerate() {
+            for (_cnt, item) in rx.into_iter().enumerate() {
                 let item = match item {
                     Some(v) => v,
                     None => break,
@@ -166,14 +166,6 @@ impl ArtifactScannerWorker {
                 if is_verbose {
                     info!("{:?}", result);
                 }
-
-                // progress_bar.inc(1);
-                // progress_bar.set_message(format!(
-                //     "{}{}: {}",
-                //     style(&result.name).bold().cyan(),
-                //     style(format!("({})", result.level)).yellow(),
-                //     style(&result.main_stat_name).dim()
-                // ));
 
                 if result.level < min_level {
                     info!(
@@ -433,7 +425,7 @@ impl GenshinArtifactScanner {
             self.game_info.clone(),
         )));
         let mut generator = GenshinRepositoryScanController::into_generator(controller.clone());
-        
+
         loop {
             let pinned_generator = Pin::new(&mut generator);
             match pinned_generator.resume(()) {
@@ -472,7 +464,5 @@ impl GenshinArtifactScanner {
                 }
             }
         }
-
-        
     }
 }

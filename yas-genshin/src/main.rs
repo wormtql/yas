@@ -2,8 +2,8 @@
 extern crate log;
 
 use anyhow::Result;
-use clap::{Command, command, FromArgMatches};
-use yas::{arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder}, window_info::{require_window_info::RequireWindowInfo, window_info_builder::WindowInfoBuilder, window_info_prototypes::WindowInfoPrototypes, self}, load_window_info, game_info::{Resolution, GameInfoBuilder}, common::positioning::{Pos, Size}, export::ExportAssets};
+use clap::{Command, FromArgMatches};
+use yas::{arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder}, window_info::{require_window_info::RequireWindowInfo, window_info_builder::WindowInfoBuilder, window_info_prototypes::WindowInfoPrototypes}, load_window_info, game_info:: GameInfoBuilder, export::ExportAssets};
 use yas_scanner_genshin::{scanner::artifact_scanner::{GenshinArtifactScanner, GenshinArtifactScannerConfig}, export::artifact::GenshinArtifactExporter, artifact::GenshinArtifact};
 use yas::export::YasExporter;
 use yas::window_info::window_info::WindowInfo;
@@ -86,17 +86,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use yas::core::inference::CRNNModel;
-
-//     use super::*;
-
-//     #[test]
-//     fn test() {
-//         yas::init_env(yas::Game::Genshin).unwrap();
-
-//         CRNNModel::new(MODEL, CONTENT).expect("Failed to load model");
-//     }
-// }

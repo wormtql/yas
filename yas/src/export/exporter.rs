@@ -1,7 +1,8 @@
 use std::fmt::Display;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::fs::File;
+use log::info;
 
 pub struct ExportItem {
     // bytes
@@ -49,12 +50,9 @@ impl ExportAssets {
         let mut stat = ExportStatistics::new();
         stat.total = self.assets.len();
         for item in self.assets.iter() {
-            let mut is_failed = false;
-
             let mut file = match File::create(&item.filename) {
                 // todo
                 Err(why) => {
-                    is_failed = true;
                     crate::error_and_quit!("无法创建文件 {:?}: {}", &item.filename, why)
                 },
                 Ok(file) => {
@@ -64,15 +62,12 @@ impl ExportAssets {
 
             match file.write_all(&item.contents) {
                 Err(why) => {
-                    is_failed = true;
                     crate::error_and_quit!("无法写入文件 {:?}: {}", &item.filename, why)
                 },
                 Ok(_) => info!("结果已保存至 {:?}", &item.filename),
             }
 
-            if !is_failed {
-                stat.saved += 1;
-            }
+            stat.saved += 1;
         }
 
         stat

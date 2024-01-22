@@ -6,15 +6,13 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::SystemTime;
 
-use clap::ArgMatches;
+use clap::Parser;
 use enigo::*;
 use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 use tract_onnx::prelude::tract_itertools::Itertools;
 
-use crate::artifact::internal_relic::{
-    RelicSetName, RelicSlot, RelicStat, InternalRelic,
-};
+use crate::artifact::internal_relic::{InternalRelic, RelicSetName, RelicSlot, RelicStat};
 use crate::capture::{self};
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
@@ -29,66 +27,80 @@ use crate::info::info_starrail::ScanInfoStarRail;
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use crate::common::utils::mac_scroll;
 
-pub struct YasScannerConfig {
-    max_row: u32,
-    capture_only: bool,
-    min_star: u32,
-    min_level: u32,
-    max_wait_switch_relic: u32,
-    scroll_stop: u32,
-    number: u32,
-    verbose: bool,
-    dump_mode: bool,
-    cloud_wait_switch_relic: u32,
-    // offset_x: i32,
-    // offset_y: i32,
+#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+pub enum OutputFormat {
+    March7th,
 }
 
-impl YasScannerConfig {
-    pub fn from_match(matches: &ArgMatches) -> YasScannerConfig {
-        YasScannerConfig {
-            max_row: matches
-                .value_of("max-row")
-                .unwrap_or("1000")
-                .parse::<u32>()
-                .unwrap(),
-            capture_only: matches.is_present("capture-only"),
-            dump_mode: matches.is_present("dump"),
-            min_star: matches
-                .value_of("min-star")
-                .unwrap_or("4")
-                .parse::<u32>()
-                .unwrap(),
-            min_level: matches
-                .value_of("min-level")
-                .unwrap_or("0")
-                .parse::<u32>()
-                .unwrap(),
-            max_wait_switch_relic: matches
-                .value_of("max-wait-switch-relic")
-                .unwrap_or("800")
-                .parse::<u32>()
-                .unwrap(),
-            scroll_stop: matches
-                .value_of("scroll-stop")
-                .unwrap_or("80")
-                .parse::<u32>()
-                .unwrap(),
-            number: matches
-                .value_of("number")
-                .unwrap_or("0")
-                .parse::<u32>()
-                .unwrap(),
-            verbose: matches.is_present("verbose"),
-            cloud_wait_switch_relic: matches
-                .value_of("cloud-wait-switch-relic")
-                .unwrap_or("300")
-                .parse::<u32>()
-                .unwrap(),
-            // offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
-            // offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
-        }
+impl std::fmt::Display for OutputFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            OutputFormat::March7th => "march7th",
+        })
     }
+}
+
+#[derive(Debug, Parser)]
+#[command(name = "YAS - 崩坏：星穹铁道遗器导出器")]
+#[command(version = utils::VERSION)]
+#[command(author = "wormtql <584130248@qq.com>")]
+#[command(about = "Honkai: Star Rail Relic Exporter")]
+pub struct YasScannerConfig {
+    /// 最大扫描行数
+    #[arg(long)]
+    #[arg(default_value_t = 1000)]
+    pub max_row: u32,
+    /// 输出模型预测结果、二值化图像和灰度图像，debug专用
+    #[arg(long = "dump")]
+    pub dump_mode: bool,
+    /// 只保存截图，不进行扫描，debug专用
+    #[arg(long)]
+    pub capture_only: bool,
+    /// 最小星级
+    #[arg(long)]
+    #[arg(default_value_t = 4)]
+    pub min_star: u32,
+    /// 最小等级
+    #[arg(long)]
+    #[arg(default_value_t = 0)]
+    pub min_level: u32,
+    /// 切换遗器最大等待时间(ms)
+    #[arg(long)]
+    #[arg(default_value_t = 800)]
+    pub max_wait_switch_relic: u32,
+    /// 输出目录
+    #[arg(long)]
+    #[arg(short)]
+    #[arg(default_value_t = String::from("."))]
+    pub output_dir: String,
+    /// 翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）
+    #[arg(long)]
+    #[arg(default_value_t = 80)]
+    pub scroll_stop: u32,
+    /// 指定遗器数量（在自动识别数量不准确时使用）
+    #[arg(long)]
+    #[arg(default_value_t = 0)]
+    pub number: u32,
+    /// 显示详细信息
+    #[arg(long)]
+    pub verbose: bool,
+    /// 人为指定横坐标偏移（截图有偏移时可用该选项校正）
+    #[arg(long)]
+    #[arg(default_value_t = 0)]
+    pub offset_x: i32,
+    /// 人为指定纵坐标偏移（截图有偏移时可用该选项校正）
+    #[arg(long)]
+    #[arg(default_value_t = 0)]
+    pub offset_y: i32,
+    /// 输出格式
+    #[arg(long)]
+    #[arg(short = 'o')]
+    #[arg(default_value_t = OutputFormat::March7th)]
+    pub output_format: OutputFormat,
+    /// 指定云·崩坏：星穹铁道切换遗器等待时间(ms)
+    #[arg(long)]
+    #[arg(default_value_t = 0)]
+    pub cloud_wait_switch_relic: u32,
 }
 
 pub struct YasScanner {
@@ -161,7 +173,7 @@ impl YasScanResult {
         let sub4 = RelicStat::from_zh_cn_raw(&self.sub_stat_4);
 
         let equip = None;
-/*         let equip = if self.equip.contains("已装备") {
+        /*         let equip = if self.equip.contains("已装备") {
             //let equip_name = self.equip.clone();
             //equip_name.remove_matches("已装备");
             //let equip_name = &self.equip[..self.equip.len()-9];
@@ -333,7 +345,7 @@ impl YasScanner {
                     Ok(v) => v,
                     Err(_) => {
                         return Err(String::from("无法识别遗器数量"));
-                    }
+                    },
                 };
                 return Ok(count);
             }
@@ -704,22 +716,22 @@ impl YasScanner {
                     cnt,
                 );
 
-                let str_sub_stat_1_name = model_inference(
-                    &info.sub_stat1_name_pos, "sub_stat_1_name", &capture, cnt);
-                let str_sub_stat_1_value = model_inference(
-                    &info.sub_stat1_value_pos, "sub_stat_1_value", &capture, cnt);
-                let str_sub_stat_2_name = model_inference(
-                    &info.sub_stat2_name_pos, "sub_stat_2_name", &capture, cnt);
-                let str_sub_stat_2_value = model_inference(
-                    &info.sub_stat2_value_pos, "sub_stat_2_value", &capture, cnt);
-                let str_sub_stat_3_name = model_inference(
-                    &info.sub_stat3_name_pos, "sub_stat_3_name", &capture, cnt);
-                let str_sub_stat_3_value = model_inference(
-                    &info.sub_stat3_value_pos, "sub_stat_3_value", &capture, cnt);
-                let str_sub_stat_4_name = model_inference(
-                    &info.sub_stat4_name_pos, "sub_stat_4_name", &capture, cnt);
-                let str_sub_stat_4_value = model_inference(
-                    &info.sub_stat4_value_pos, "sub_stat_4_value", &capture, cnt);
+                let str_sub_stat_1_name =
+                    model_inference(&info.sub_stat1_name_pos, "sub_stat_1_name", &capture, cnt);
+                let str_sub_stat_1_value =
+                    model_inference(&info.sub_stat1_value_pos, "sub_stat_1_value", &capture, cnt);
+                let str_sub_stat_2_name =
+                    model_inference(&info.sub_stat2_name_pos, "sub_stat_2_name", &capture, cnt);
+                let str_sub_stat_2_value =
+                    model_inference(&info.sub_stat2_value_pos, "sub_stat_2_value", &capture, cnt);
+                let str_sub_stat_3_name =
+                    model_inference(&info.sub_stat3_name_pos, "sub_stat_3_name", &capture, cnt);
+                let str_sub_stat_3_value =
+                    model_inference(&info.sub_stat3_value_pos, "sub_stat_3_value", &capture, cnt);
+                let str_sub_stat_4_name =
+                    model_inference(&info.sub_stat4_name_pos, "sub_stat_4_name", &capture, cnt);
+                let str_sub_stat_4_value =
+                    model_inference(&info.sub_stat4_value_pos, "sub_stat_4_value", &capture, cnt);
 
                 let str_level = model_inference(&info.level_position, "level", &capture, cnt);
                 // let str_equip = model_inference(&info.equip_position, "equip", &capture, cnt);

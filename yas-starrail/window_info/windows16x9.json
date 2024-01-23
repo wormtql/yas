@@ -5,7 +5,7 @@
     },
     "resolution_family": "Windows16x9",
     "data": {
-        "starrail_repository_panel_pos": {
+        "starrail_repository_panel_rect": {
             "Rect": {
                 "top": 100,
                 "left": 1150,
@@ -19,7 +19,7 @@
                 "y": 158
             }
         },
-        "starrail_repository_item_gap": {
+        "starrail_repository_item_gap_size": {
             "Size": {
                 "width": 20,
                 "height": 40.8
@@ -31,13 +31,13 @@
                 "height": 83.4
             }
         },
-        "starrail_repository_scan_margin": {
+        "starrail_repository_scan_margin_pos": {
             "Pos": {
                 "x": 113,
                 "y": 172
             }
         },
-        "starrail_repository_pool_pos": {
+        "starrail_repository_pool_rect": {
             "Rect": {
                 "top": 118.2,
                 "left": 1218.7,
@@ -52,7 +52,7 @@
             "InvariantInt": 9
         },
 
-        "starrail_relic_item_count_pos": {
+        "starrail_relic_item_count_rect": {
             "Rect": {
                 "top": 813,
                 "left": 753,
@@ -60,13 +60,13 @@
                 "width": 207
             }
         },
-        "starrail_relic_star": {
+        "starrail_relic_star_pos": {
             "Pos": {
                 "x": 1500,
                 "y": 208
             }
         },
-        "starrail_relic_main_stat_name_pos": {
+        "starrail_relic_main_stat_name_rect": {
             "Rect": {
                 "top": 335,
                 "left": 1207,
@@ -74,7 +74,7 @@
                 "width": 172
             }
         },
-        "starrail_relic_main_stat_value_pos": {
+        "starrail_relic_main_stat_value_rect": {
             "Rect": {
                 "top": 335,
                 "left": 1465,
@@ -82,7 +82,7 @@
                 "width": 70
             }
         },
-        "starrail_relic_level_pos": {
+        "starrail_relic_level_rect": {
             "Rect": {
                 "top": 258,
                 "left": 1170,
@@ -90,7 +90,7 @@
                 "width": 70
             }
         },
-        "starrail_relic_sub_stat0_name_pos": {
+        "starrail_relic_sub_stat0_name_rect": {
             "Rect": {
                 "top": 370,
                 "left": 1204,
@@ -98,7 +98,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_sub_stat1_name_pos": {
+        "starrail_relic_sub_stat1_name_rect": {
             "Rect": {
                 "top": 402,
                 "left": 1204,
@@ -106,7 +106,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_sub_stat2_name_pos": {
+        "starrail_relic_sub_stat2_name_rect": {
             "Rect": {
                 "top": 435,
                 "left": 1204,
@@ -114,7 +114,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_sub_stat3_name_pos": {
+        "starrail_relic_sub_stat3_name_rect": {
             "Rect": {
                 "top": 467,
                 "left": 1204,
@@ -122,7 +122,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_sub_stat0_value_pos": {
+        "starrail_relic_sub_stat0_value_rect": {
             "Rect": {
                 "top": 370,
                 "left": 1369,
@@ -130,7 +130,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_sub_stat1_value_pos": {
+        "starrail_relic_sub_stat1_value_rect": {
             "Rect": {
                 "top": 402,
                 "left": 1369,
@@ -138,7 +138,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_sub_stat2_value_pos": {
+        "starrail_relic_sub_stat2_value_rect": {
             "Rect": {
                 "top": 435,
                 "left": 1369,
@@ -146,7 +146,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_sub_stat3_value_pos": {
+        "starrail_relic_sub_stat3_value_rect": {
             "Rect": {
                 "top": 467,
                 "left": 1369,
@@ -154,7 +154,7 @@
                 "width": 165
             }
         },
-        "starrail_relic_title_pos": {
+        "starrail_relic_title_rect": {
             "Rect": {
                 "top": 111,
                 "left": 1169,

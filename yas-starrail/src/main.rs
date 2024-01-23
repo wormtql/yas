@@ -50,7 +50,7 @@ fn main() -> Result<()> {
 
         let resolution = game_info.window.size();
         let mut wi = window_info_builder.build(&window_info_prototypes, resolution).unwrap();
-        wi.add_pos("window_origin", game_info.window.origin());
+        wi.add_pos("window_origin_pos", game_info.window.origin());
 
         wi
     };

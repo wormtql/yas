@@ -51,15 +51,15 @@ impl RelicScannerWorker {
         }
     }
 
-    fn model_inference(&self, pos: Rect, captured_img: &RgbImage) -> Result<String> {
+    fn model_inference(&self, rect: Rect, captured_img: &RgbImage) -> Result<String> {
         // todo move dump mode into a scanner
         // if dump_mode {
             // captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
         // }
 
-        let relative_rect = pos.translate(Pos {
-            x: -self.window_info.panel_pos.left,
-            y: -self.window_info.panel_pos.top,
+        let relative_rect = rect.translate(Pos {
+            x: -self.window_info.panel_rect.left,
+            y: -self.window_info.panel_rect.top,
         });
 
         let raw_img = captured_img.view(
@@ -108,20 +108,20 @@ impl RelicScannerWorker {
     fn scan_item_image(&self, item: SendItem) -> Result<StarRailRelicScanResult> {
         let image = &item.panel_image;
 
-        let str_title = self.model_inference(self.window_info.title_pos, &image)?;
-        let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_pos, &image)?;
-        let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_pos, &image)?;
+        let str_title = self.model_inference(self.window_info.title_rect, &image)?;
+        let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_rect, &image)?;
+        let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_rect, &image)?;
 
-        let str_sub_stat0_name = self.model_inference(self.window_info.sub_stat_name_pos[0], &image)?;
-        let str_sub_stat1_name = self.model_inference(self.window_info.sub_stat_name_pos[1], &image)?;
-        let str_sub_stat2_name = self.model_inference(self.window_info.sub_stat_name_pos[2], &image)?;
-        let str_sub_stat3_name = self.model_inference(self.window_info.sub_stat_name_pos[3], &image)?;
-        let str_sub_stat0_value = self.model_inference(self.window_info.sub_stat_value_pos[0], &image)?;
-        let str_sub_stat1_value = self.model_inference(self.window_info.sub_stat_value_pos[1], &image)?;
-        let str_sub_stat2_value = self.model_inference(self.window_info.sub_stat_value_pos[2], &image)?;
-        let str_sub_stat3_value = self.model_inference(self.window_info.sub_stat_value_pos[3], &image)?;
+        let str_sub_stat0_name = self.model_inference(self.window_info.sub_stat_name_rect[0], &image)?;
+        let str_sub_stat1_name = self.model_inference(self.window_info.sub_stat_name_rect[1], &image)?;
+        let str_sub_stat2_name = self.model_inference(self.window_info.sub_stat_name_rect[2], &image)?;
+        let str_sub_stat3_name = self.model_inference(self.window_info.sub_stat_name_rect[3], &image)?;
+        let str_sub_stat0_value = self.model_inference(self.window_info.sub_stat_value_rect[0], &image)?;
+        let str_sub_stat1_value = self.model_inference(self.window_info.sub_stat_value_rect[1], &image)?;
+        let str_sub_stat2_value = self.model_inference(self.window_info.sub_stat_value_rect[2], &image)?;
+        let str_sub_stat3_value = self.model_inference(self.window_info.sub_stat_value_rect[3], &image)?;
 
-        let str_level = self.model_inference(self.window_info.level_pos, &image)?;
+        let str_level = self.model_inference(self.window_info.level_rect, &image)?;
 
         anyhow::Ok(StarRailRelicScanResult {
             name: str_title,
@@ -157,7 +157,7 @@ impl RelicScannerWorker {
             // todo remove dump mode to another scanner
             // let dump_mode = false;
             // let model = self.model.clone();
-            // let panel_origin = Pos { x: self.window_info.panel_pos.left, y: self.window_info.panel_pos.top };
+            // let panel_origin = Pos { x: self.window_info.panel_rect.left, y: self.window_info.panel_rect.top };
 
             for (_cnt, item) in rx.into_iter().enumerate() {
                 let item = match item {
@@ -227,22 +227,22 @@ impl RelicScannerWorker {
 
 #[derive(Clone)]
 struct RelicScannerWindowInfo {
-    pub origin: Pos,
+    pub origin_pos: Pos,
 
-    pub title_pos: Rect,
-    pub main_stat_name_pos: Rect,
-    pub main_stat_value_pos: Rect,
-    pub sub_stat_name_pos: [Rect; 4],
-    pub sub_stat_value_pos: [Rect; 4],
+    pub title_rect: Rect,
+    pub main_stat_name_rect: Rect,
+    pub main_stat_value_rect: Rect,
+    pub sub_stat_name_rect: [Rect; 4],
+    pub sub_stat_value_rect: [Rect; 4],
 
-    pub level_pos: Rect,
+    pub level_rect: Rect,
 
-    // pub item_equip_pos: Rect,
-    pub item_count_pos: Rect,
+    // pub item_equip_rect: Rect,
+    pub item_count_rect: Rect,
 
-    pub star: Pos,
+    pub star_pos: Pos,
 
-    pub panel_pos: Rect,
+    pub panel_rect: Rect,
 
     pub col: i32,
 }
@@ -250,29 +250,29 @@ struct RelicScannerWindowInfo {
 impl From<&WindowInfo> for RelicScannerWindowInfo {
     fn from(value: &WindowInfo) -> Self {
         RelicScannerWindowInfo {
-            origin: value.get("window_origin").unwrap(),
-            title_pos: value.get("starrail_relic_title_pos").unwrap(),
-            main_stat_name_pos: value.get("starrail_relic_main_stat_name_pos").unwrap(),
-            main_stat_value_pos: value.get("starrail_relic_main_stat_value_pos").unwrap(),
-            level_pos: value.get("starrail_relic_level_pos").unwrap(),
-            // item_equip_pos: value.get("starrail_relic_item_equip_pos").unwrap(),
-            item_count_pos: value.get("starrail_relic_item_count_pos").unwrap(),
-            star: value.get("starrail_relic_star").unwrap(),
+            origin_pos: value.get("window_origin_pos").unwrap(),
+            title_rect: value.get("starrail_relic_title_rect").unwrap(),
+            main_stat_name_rect: value.get("starrail_relic_main_stat_name_rect").unwrap(),
+            main_stat_value_rect: value.get("starrail_relic_main_stat_value_rect").unwrap(),
+            level_rect: value.get("starrail_relic_level_rect").unwrap(),
+            // item_equip_rect: value.get("starrail_relic_item_equip_rect").unwrap(),
+            item_count_rect: value.get("starrail_relic_item_count_rect").unwrap(),
+            star_pos: value.get("starrail_relic_star_pos").unwrap(),
 
-            panel_pos: value.get("starrail_repository_panel_pos").unwrap(),
+            panel_rect: value.get("starrail_repository_panel_rect").unwrap(),
             col: value.get("starrail_repository_item_col").unwrap(),
 
-            sub_stat_name_pos: [
-                value.get("starrail_relic_sub_stat0_name_pos").unwrap(),
-                value.get("starrail_relic_sub_stat1_name_pos").unwrap(),
-                value.get("starrail_relic_sub_stat2_name_pos").unwrap(),
-                value.get("starrail_relic_sub_stat3_name_pos").unwrap(),
+            sub_stat_name_rect: [
+                value.get("starrail_relic_sub_stat0_name_rect").unwrap(),
+                value.get("starrail_relic_sub_stat1_name_rect").unwrap(),
+                value.get("starrail_relic_sub_stat2_name_rect").unwrap(),
+                value.get("starrail_relic_sub_stat3_name_rect").unwrap(),
             ],
-            sub_stat_value_pos: [
-                value.get("starrail_relic_sub_stat0_value_pos").unwrap(),
-                value.get("starrail_relic_sub_stat1_value_pos").unwrap(),
-                value.get("starrail_relic_sub_stat2_value_pos").unwrap(),
-                value.get("starrail_relic_sub_stat3_value_pos").unwrap(),
+            sub_stat_value_rect: [
+                value.get("starrail_relic_sub_stat0_value_rect").unwrap(),
+                value.get("starrail_relic_sub_stat1_value_rect").unwrap(),
+                value.get("starrail_relic_sub_stat2_value_rect").unwrap(),
+                value.get("starrail_relic_sub_stat3_value_rect").unwrap(),
             ],
         }
     }
@@ -291,24 +291,24 @@ impl RequireWindowInfo for StarRailRelicScanner {
     fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
         <StarRailRepositoryScanController as RequireWindowInfo>::require_window_info(window_info_builder);
 
-        // window_info_builder.add_required_key("window_origin");
-        window_info_builder.add_required_key("starrail_relic_title_pos");
-        window_info_builder.add_required_key("starrail_relic_main_stat_name_pos");
-        window_info_builder.add_required_key("starrail_relic_main_stat_value_pos");
-        window_info_builder.add_required_key("starrail_relic_level_pos");
-        // window_info_builder.add_required_key("starrail_relic_item_equip_pos");
-        window_info_builder.add_required_key("starrail_relic_item_count_pos");
-        window_info_builder.add_required_key("starrail_relic_star");
+        // window_info_builder.add_required_key("window_origin_pos");
+        window_info_builder.add_required_key("starrail_relic_title_rect");
+        window_info_builder.add_required_key("starrail_relic_main_stat_name_rect");
+        window_info_builder.add_required_key("starrail_relic_main_stat_value_rect");
+        window_info_builder.add_required_key("starrail_relic_level_rect");
+        // window_info_builder.add_required_key("starrail_relic_item_equip_rect");
+        window_info_builder.add_required_key("starrail_relic_item_count_rect");
+        window_info_builder.add_required_key("starrail_relic_star_pos");
         window_info_builder.add_required_key("starrail_repository_item_col");
-        window_info_builder.add_required_key("starrail_repository_panel_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat0_name_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat1_name_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat2_name_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat3_name_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat0_value_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat1_value_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat2_value_pos");
-        window_info_builder.add_required_key("starrail_relic_sub_stat3_value_pos");
+        window_info_builder.add_required_key("starrail_repository_panel_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat0_name_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat1_name_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat2_name_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat3_name_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat0_value_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat1_value_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat2_value_rect");
+        window_info_builder.add_required_key("starrail_relic_sub_stat3_value_rect");
     }
 }
 
@@ -331,7 +331,7 @@ impl StarRailRelicScanner {
 
 impl StarRailRelicScanner {
     pub fn get_star(&self) -> Result<usize> {
-        let pos = self.window_info.origin + self.window_info.star;
+        let pos = self.window_info.origin_pos + self.window_info.star_pos;
         let color = capture::get_color(pos)?;
 
         let match_colors = [
@@ -364,8 +364,8 @@ impl StarRailRelicScanner {
             return Ok(max_count.min(count));
         }
 
-        let im = match self.window_info.item_count_pos
-            .capture_relative(self.window_info.origin)
+        let im = match self.window_info.item_count_rect
+            .capture_relative(self.window_info.origin_pos)
         {
             Ok(im) => im,
             Err(e) => {

@@ -7,7 +7,7 @@ use yas::game_info::GameInfo;
 use yas::capture::capture;
 use yas::window_info::require_window_info::RequireWindowInfo;
 use yas::window_info::window_info::WindowInfo;
-use crate::scanner_controller::repository_layout::config::{GenshinRepositoryScannerLogicConfig};
+use crate::scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig;
 use anyhow::{Result, anyhow};
 use yas::common::positioning::{Pos, Rect, Size};
 use yas::utils;
@@ -27,25 +27,25 @@ pub enum ScrollResult {
 
 // todo use macros
 struct GenshinRepositoryScanControllerWindowInfo {
-    pub window_origin: Pos,
-    pub panel_pos: Rect,
+    pub window_origin_pos: Pos,
+    pub panel_rect: Rect,
     pub flag_pos: Pos,
-    pub item_gap: Size,
+    pub item_gap_size: Size,
     pub item_size: Size,
-    pub scan_margin: Pos,
-    pub pool_pos: Rect,
+    pub scan_margin_pos: Pos,
+    pub pool_rect: Rect,
 }
 
 impl From<&WindowInfo> for GenshinRepositoryScanControllerWindowInfo {
     fn from(value: &WindowInfo) -> Self {
         GenshinRepositoryScanControllerWindowInfo {
-            window_origin: value.get::<Pos>("window_origin").unwrap(),
-            panel_pos: value.get("genshin_repository_panel_pos").unwrap(),
+            window_origin_pos: value.get::<Pos>("window_origin_pos").unwrap(),
+            panel_rect: value.get("genshin_repository_panel_rect").unwrap(),
             flag_pos: value.get("genshin_repository_flag_pos").unwrap(),
-            item_gap: value.get("genshin_repository_item_gap").unwrap(),
+            item_gap_size: value.get("genshin_repository_item_gap_size").unwrap(),
             item_size: value.get("genshin_repository_item_size").unwrap(),
-            scan_margin: value.get("genshin_repository_scan_margin").unwrap(),
-            pool_pos: value.get("genshin_repository_pool_pos").unwrap(),
+            scan_margin_pos: value.get("genshin_repository_scan_margin_pos").unwrap(),
+            pool_rect: value.get("genshin_repository_pool_rect").unwrap(),
         }
     }
 }
@@ -77,13 +77,13 @@ pub struct GenshinRepositoryScanController {
 impl RequireWindowInfo for GenshinRepositoryScanController {
     fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
         window_info_builder
-            // .add_required_key("window_origin")
-            .add_required_key("genshin_repository_panel_pos")
+            // .add_required_key("window_origin_pos")
+            .add_required_key("genshin_repository_panel_rect")
             .add_required_key("genshin_repository_flag_pos")
-            .add_required_key("genshin_repository_item_gap")
+            .add_required_key("genshin_repository_item_gap_size")
             .add_required_key("genshin_repository_item_size")
-            .add_required_key("genshin_repository_scan_margin")
-            .add_required_key("genshin_repository_pool_pos")
+            .add_required_key("genshin_repository_scan_margin_pos")
+            .add_required_key("genshin_repository_pool_rect")
             .add_required_key("genshin_repository_item_row")
             .add_required_key("genshin_repository_item_col");
     }
@@ -238,12 +238,12 @@ impl GenshinRepositoryScanController {
     }
 
     pub fn capture_panel(&self) -> Result<RgbImage> {
-        self.window_info.panel_pos.capture_relative(self.window_info.window_origin)
+        self.window_info.panel_rect.capture_relative(self.window_info.window_origin_pos)
     }
 
     #[inline(always)]
     pub fn get_flag_color(&self) -> Result<Color> {
-        capture::get_color(self.window_info.flag_pos + self.window_info.window_origin)
+        capture::get_color(self.window_info.flag_pos + self.window_info.window_origin_pos)
     }
 
     #[inline(always)]
@@ -270,10 +270,10 @@ impl GenshinRepositoryScanController {
 
     pub fn move_to(&mut self, row: usize, col: usize) {
         let (row, col) = (row as u32, col as u32);
-        let origin = self.window_info.window_origin;
+        let origin = self.window_info.window_origin_pos;
 
-        let gap = self.window_info.item_gap;
-        let margin = self.window_info.scan_margin;
+        let gap = self.window_info.item_gap_size;
+        let margin = self.window_info.scan_margin_pos;
         let size = self.window_info.item_size;
 
         let left = origin.x + margin.x + (gap.width + size.width) * (col as f64) + size.width / 2.0;
@@ -363,8 +363,8 @@ impl GenshinRepositoryScanController {
         let mut consecutive_time = 0;
         let mut diff_flag = false;
         while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_item as u128 {
-            let im: RgbImage = self.window_info.pool_pos
-                .capture_relative(self.window_info.window_origin)?;
+            let im: RgbImage = self.window_info.pool_rect
+                .capture_relative(self.window_info.window_origin_pos)?;
 
             let pool = calc_pool(im.as_raw()) as f64;
 

@@ -4,7 +4,6 @@ use std::rc::Rc;
 use image::RgbImage;
 use yas::common::color::Color;
 use yas::game_info::GameInfo;
-use yas::capture::capture;
 use yas::window_info::require_window_info::RequireWindowInfo;
 use yas::window_info::window_info::WindowInfo;
 use crate::scanner_controller::repository_layout::config::StarRailRepositoryScannerLogicConfig;
@@ -29,7 +28,7 @@ pub enum ScrollResult {
 struct StarRailRepositoryScanControllerWindowInfo {
     pub window_origin_pos: Pos,
     pub panel_rect: Rect,
-    pub flag_pos: Pos,
+    pub flag_rect: Rect,
     pub item_gap_size: Size,
     pub item_size: Size,
     pub scan_margin_pos: Pos,
@@ -41,7 +40,7 @@ impl From<&WindowInfo> for StarRailRepositoryScanControllerWindowInfo {
         StarRailRepositoryScanControllerWindowInfo {
             window_origin_pos: value.get::<Pos>("window_origin_pos").unwrap(),
             panel_rect: value.get("starrail_repository_panel_rect").unwrap(),
-            flag_pos: value.get("starrail_repository_flag_pos").unwrap(),
+            flag_rect: value.get("starrail_repository_flag_rect").unwrap(),
             item_gap_size: value.get("starrail_repository_item_gap_size").unwrap(),
             item_size: value.get("starrail_repository_item_size").unwrap(),
             scan_margin_pos: value.get("starrail_repository_scan_margin_pos").unwrap(),
@@ -54,7 +53,8 @@ pub struct StarRailRepositoryScanController {
     // to detect whether an item changes
     pool: f64,
 
-    initial_color: Color,
+    // Stores initial gap colors for line gap detection
+    initial_flag: [Color; 50],
 
     // for scrolls
     scrolled_rows: u32,
@@ -79,7 +79,7 @@ impl RequireWindowInfo for StarRailRepositoryScanController {
         window_info_builder
             // .add_required_key("window_origin_pos")
             .add_required_key("starrail_repository_panel_rect")
-            .add_required_key("starrail_repository_flag_pos")
+            .add_required_key("starrail_repository_flag_rect")
             .add_required_key("starrail_repository_item_gap_size")
             .add_required_key("starrail_repository_item_size")
             .add_required_key("starrail_repository_scan_margin_pos")
@@ -116,7 +116,7 @@ impl StarRailRepositoryScanController {
 
             pool: 0.0,
 
-            initial_color: Color::new(0, 0, 0),
+            initial_flag: [Color::new(0, 0, 0); 50],
 
             scrolled_rows: 0,
             avg_scroll_one_row: 0.0,
@@ -162,8 +162,10 @@ impl StarRailRepositoryScanController {
             #[cfg(target_os = "macos")]
             utils::sleep(20);
 
-            // todo remove unwrap
-            object.borrow_mut().system_control.mouse_click().unwrap();
+            if let Err(e) = object.borrow_mut().system_control.mouse_click() {
+                error!("Mouse click failed: {:?}", e);
+                return Err(anyhow!("Mouse click failed"));
+            }
             utils::sleep(1000);
 
             object.borrow_mut().sample_initial_color().unwrap();
@@ -179,7 +181,7 @@ impl StarRailRepositoryScanController {
                     };
 
                     '_col: for col in 0..row_item_count {
-                        // 大于最大数量 或者 取消 或者 鼠标右键按下
+                        // Exit if right mouse button is down, or if we've scanned more than the maximum count
                         if utils::is_rmb_down() {
                             return Ok(ReturnResult::Interrupted);
                         }
@@ -241,24 +243,40 @@ impl StarRailRepositoryScanController {
     }
 
     #[inline(always)]
-    pub fn get_flag_color(&self) -> Result<Color> {
-        capture::get_color(self.window_info.flag_pos + self.window_info.window_origin_pos)
+    pub fn sample_initial_color(&mut self) -> Result<()> {
+        self.initial_flag = self.capture_flag()?;
+        Ok(())
     }
 
     #[inline(always)]
-    pub fn sample_initial_color(&mut self) -> Result<()> {
-        self.initial_color = self.get_flag_color()?;
-        anyhow::Ok(())
+    pub fn capture_flag(&self) -> Result<[Color; 50]> {
+        let mut flag = [Color::new(0, 0, 0); 50];
+        let im: RgbImage = self.window_info.flag_rect.capture_relative(self.window_info.window_origin_pos)?;
+
+        // Gap size between warehouse top and first item row varies with resolution.
+        // At 1920x1080, it's 20 pixels.
+        for y in 0..self.window_info.flag_rect.height as usize {
+            let color = im.get_pixel(0, y as u32);
+            flag[y] = Color::new(color.0[0], color.0[1], color.0[2]);
+        }
+
+        Ok(flag)
+    }
+
+    #[inline(always)]
+    pub fn check_flag(&self) -> Result<()> {
+        let flag = self.capture_flag()?;
+        for y in 0..self.window_info.flag_rect.height as usize {
+            if self.initial_flag[y].distance(&flag[y]) < 10 {
+                return Ok(());
+            }
+        }
+        Err(anyhow!("Flag changed"))
     }
 
     pub fn align_row(&mut self) {
         for _ in 0..10 {
-            let color = match self.get_flag_color() {
-                Ok(color) => color,
-                Err(_) => return,
-            };
-
-            if self.initial_color.distance(&color) > 10 {
+            if self.check_flag().is_err() {
                 self.mouse_scroll(1, false);
                 utils::sleep(self.config.scroll_delay.try_into().unwrap());
             } else {
@@ -294,26 +312,19 @@ impl StarRailRepositoryScanController {
                 return ScrollResult::Interrupt;
             }
 
-            // FIXME: Why -5 for windows?
             #[cfg(windows)]
             self.system_control.mouse_scroll(1, false);
-            // self.enigo.mouse_scroll_y(-5);
-
-            // self.mouse_scroll(1, count < 1);
 
             utils::sleep(self.config.scroll_delay.try_into().unwrap());
             count += 1;
 
-            let color = match self.get_flag_color() {
-                Ok(color) => color,
-                Err(_) => return ScrollResult::Failed,
-            };
-
-            if state == 0 && self.initial_color.distance(&color) > 10 {
-                state = 1;
-            } else if state == 1 && self.initial_color.distance(&color) <= 10 {
-                self.update_avg_row(count);
-                return ScrollResult::Success;
+            match (state, self.check_flag()) {
+                (0, Err(_)) => state = 1,
+                (1, Ok(_)) => {
+                    self.update_avg_row(count);
+                    return ScrollResult::Success;
+                }
+                _ => {}
             }
         }
 
@@ -325,11 +336,11 @@ impl StarRailRepositoryScanController {
             let length = self.estimate_scroll_length(count);
 
             for _ in 0..length {
-                // todo remove unwrap
-                self.system_control.mouse_scroll(1, false).unwrap();
+                if let Err(e) = self.system_control.mouse_scroll(1, false) {
+                    error!("Scrolling failed: {:?}", e);
+                    return ScrollResult::Interrupt;
+                }
             }
-
-            // self.mouse_scroll(length, false);
 
             utils::sleep(400);
 
@@ -354,14 +365,14 @@ impl StarRailRepositoryScanController {
     pub fn wait_until_switched(&mut self) -> Result<()> {
         if self.game_info.is_cloud {
             utils::sleep(self.config.cloud_wait_switch_item.try_into()?);
-            return anyhow::Ok(());
+            return Ok(());
         }
 
         let now = SystemTime::now();
 
         let mut consecutive_time = 0;
         let mut diff_flag = false;
-        while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_item as u128 {
+        while now.elapsed()?.as_millis() < self.config.max_wait_switch_item as u128 {
             let im: RgbImage = self.window_info.pool_rect
                 .capture_relative(self.window_info.window_origin_pos)?;
 

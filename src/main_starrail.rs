@@ -38,7 +38,7 @@ fn main() {
         warn!("检测到新版本，请手动更新：{}", v);
     }
 
-    let mut config = YasScannerConfig::parse();
+    let config = YasScannerConfig::parse();
 
     let rect: PixelRect;
     let is_cloud: bool;
@@ -161,9 +161,7 @@ fn main() {
     info.left += config.offset_x;
     info.top += config.offset_y;
 
-    let output_dir = std::mem::take(&mut config.output_dir);
-    let output_format = config.output_format;
-    let mut scanner = YasScanner::new(info.clone(), config, is_cloud);
+    let mut scanner = YasScanner::new(&info, &config, is_cloud);
 
     let now = SystemTime::now();
     #[cfg(target_os = "macos")]
@@ -175,8 +173,8 @@ fn main() {
     let t = now.elapsed().unwrap().as_secs_f64();
     info!("time: {}s", t);
 
-    let output_dir = Path::new(&output_dir);
-    match output_format {
+    let output_dir = Path::new(&config.output_dir);
+    match config.output_format {
         OutputFormat::March7th => {
             let output_filename = output_dir.join("march7th.json");
             let march7th = March7thFormat::new(&results);

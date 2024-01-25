@@ -40,7 +40,7 @@ fn main() {
         warn!("检测到新版本，请手动更新：{}", v);
     }
 
-    let mut config = YasScannerConfig::parse();
+    let config = YasScannerConfig::parse();
 
     let rect: PixelRect;
     let is_cloud: bool;

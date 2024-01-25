@@ -14,6 +14,7 @@ use tract_onnx::prelude::tract_itertools::Itertools;
 
 use crate::artifact::internal_relic::{InternalRelic, RelicSetName, RelicSlot, RelicStat};
 use crate::capture::{self};
+use crate::common::arguments::Arguments;
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 #[cfg(target_os = "macos")]
@@ -46,69 +47,44 @@ impl std::fmt::Display for OutputFormat {
 #[command(author = "wormtql <584130248@qq.com>")]
 #[command(about = "Honkai: Star Rail Relic Exporter")]
 pub struct YasScannerConfig {
-    /// 最大扫描行数
+    #[command(flatten)]
+    common: Arguments,
+
+    /// 输出格式
     #[arg(long)]
-    #[arg(default_value_t = 1000)]
-    pub max_row: u32,
-    /// 输出模型预测结果、二值化图像和灰度图像，debug专用
-    #[arg(long = "dump")]
-    pub dump_mode: bool,
-    /// 只保存截图，不进行扫描，debug专用
-    #[arg(long)]
-    pub capture_only: bool,
-    /// 最小星级
-    #[arg(long)]
-    #[arg(default_value_t = 4)]
-    pub min_star: u32,
-    /// 最小等级
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub min_level: u32,
+    #[arg(short = 'f')]
+    #[arg(default_value_t = OutputFormat::March7th)]
+    pub output_format: OutputFormat,
     /// 切换遗器最大等待时间(ms)
     #[arg(long)]
     #[arg(default_value_t = 800)]
     pub max_wait_switch_relic: u32,
-    /// 输出目录
-    #[arg(long)]
-    #[arg(short)]
-    #[arg(default_value_t = String::from("."))]
-    pub output_dir: String,
-    /// 翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）
-    #[arg(long)]
-    #[arg(default_value_t = 80)]
-    pub scroll_stop: u32,
-    /// 指定遗器数量（在自动识别数量不准确时使用）
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub number: u32,
-    /// 显示详细信息
-    #[arg(long)]
-    pub verbose: bool,
-    /// 人为指定横坐标偏移（截图有偏移时可用该选项校正）
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub offset_x: i32,
-    /// 人为指定纵坐标偏移（截图有偏移时可用该选项校正）
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub offset_y: i32,
-    /// 输出格式
-    #[arg(long)]
-    #[arg(short = 'o')]
-    #[arg(default_value_t = OutputFormat::March7th)]
-    pub output_format: OutputFormat,
     /// 指定云·崩坏：星穹铁道切换遗器等待时间(ms)
     #[arg(long)]
     #[arg(default_value_t = 0)]
     pub cloud_wait_switch_relic: u32,
 }
 
-pub struct YasScanner {
+impl std::ops::Deref for YasScannerConfig {
+    type Target = Arguments;
+
+    fn deref(&self) -> &Self::Target {
+        &self.common
+    }
+}
+
+impl std::ops::DerefMut for YasScannerConfig {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.common
+    }
+}
+
+pub struct YasScanner<'a> {
     model: CRNNModel,
     enigo: Enigo,
 
-    info: ScanInfoStarRail,
-    config: YasScannerConfig,
+    info: &'a ScanInfoStarRail,
+    config: &'a YasScannerConfig,
 
     row: u32,
     col: u32,
@@ -216,8 +192,8 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
     pool
 }
 
-impl YasScanner {
-    pub fn new(info: ScanInfoStarRail, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
+impl<'a> YasScanner<'a> {
+    pub fn new(info: &'a ScanInfoStarRail, config: &'a YasScannerConfig, is_cloud: bool) -> Self {
         let row = info.art_row;
         let col = info.art_col;
 
@@ -246,7 +222,7 @@ impl YasScanner {
     }
 }
 
-impl YasScanner {
+impl YasScanner<'_> {
     fn align_row(&mut self) -> bool {
         #[cfg(target_os = "macos")]
         let (_, ui) = get_pid_and_ui();
@@ -923,7 +899,7 @@ impl YasScanner {
     }
 }
 
-impl YasScanner {
+impl YasScanner<'_> {
     // pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
     //     set_dpi_awareness();
     //     let mut is_cloud = false;

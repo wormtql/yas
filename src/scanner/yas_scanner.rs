@@ -17,6 +17,7 @@ use crate::artifact::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact,
 };
 use crate::capture::{self};
+use crate::common::arguments::Arguments;
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 #[cfg(target_os = "macos")]
@@ -73,53 +74,13 @@ impl OutputFormat {
 #[command(author = "wormtql <584130248@qq.com>")]
 #[command(about = "Genshin Impact Artifact Exporter")]
 pub struct YasScannerConfig {
-    /// 最大扫描行数
-    #[arg(long)]
-    #[arg(default_value_t = 1000)]
-    pub max_row: u32,
-    /// 输出模型预测结果、二值化图像和灰度图像，debug 专用
-    #[arg(long = "dump")]
-    pub dump_mode: bool,
-    /// 只保存截图，不进行扫描，debug专用
-    #[arg(long)]
-    pub capture_only: bool,
-    /// 最小星级
-    #[arg(long)]
-    #[arg(default_value_t = 4)]
-    pub min_star: u32,
-    /// 最小等级
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub min_level: u32,
+    #[command(flatten)]
+    common: Arguments,
+
     /// 切换圣遗物最大等待时间(ms)
     #[arg(long)]
     #[arg(default_value_t = 800)]
     pub max_wait_switch_artifact: u32,
-    /// 输出目录
-    #[arg(long)]
-    #[arg(short)]
-    #[arg(default_value_t = String::from("."))]
-    pub output_dir: String,
-    /// 翻页时滚轮停顿时间（ms）（翻页不正确可以考虑加大该选项，默认为80）
-    #[arg(long)]
-    #[arg(default_value_t = 80)]
-    pub scroll_stop: u32,
-    /// 指定圣遗物数量（在自动识别数量不准确时使用）
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub number: u32,
-    /// 显示详细信息
-    #[arg(long)]
-    pub verbose: bool,
-    /// 人为指定横坐标偏移（截图有偏移时可用该选项校正）
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub offset_x: i32,
-    /// 人为指定纵坐标偏移（截图有偏移时可用该选项校正）
-    #[arg(long)]
-    #[arg(default_value_t = 0)]
-    pub offset_y: i32,
-    /// 输出格式
     #[arg(long)]
     #[arg(short = 'f')]
     #[arg(default_value_t = OutputFormat::Mona)]
@@ -127,6 +88,20 @@ pub struct YasScannerConfig {
     /// 指定云·原神切换圣遗物等待时间(ms)
     #[arg(long, default_value_t = 300)]
     pub cloud_wait_switch_artifact: u32,
+}
+
+impl std::ops::Deref for YasScannerConfig {
+    type Target = Arguments;
+
+    fn deref(&self) -> &Self::Target {
+        &self.common
+    }
+}
+
+impl std::ops::DerefMut for YasScannerConfig {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.common
+    }
 }
 
 pub struct YasScanner<'a> {

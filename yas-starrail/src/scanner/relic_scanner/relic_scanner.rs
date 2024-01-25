@@ -335,11 +335,11 @@ impl StarRailRelicScanner {
         let color = capture::get_color(pos)?;
 
         let match_colors = [
-            Color::new(113, 119, 139),
-            Color::new(42, 143, 114),
-            Color::new(81, 127, 203),
-            Color::new(161, 86, 224),
-            Color::new(188, 105, 50),
+            Color::new(113, 119, 139), // todo
+            Color::new(42, 143, 114), // todo
+            Color::new(96, 142, 197), // 3
+            Color::new(157, 117, 206), // 4
+            Color::new(193, 158, 112), // 5
         ];
 
         let mut min_dis: u32 = 0xdeadbeef;

@@ -51,9 +51,14 @@ impl RelicSetName {
             RelicSetName::EagleofTwilightLine => "EagleofTwilightLine",
             RelicSetName::ThiefofShootingMeteor => "ThiefofShootingMeteor",
             RelicSetName::WastelanderofBanditryDesert => "WastelanderofBanditryDesert",
+            RelicSetName::LongevousDisciple => "LongevousDisciple",
+            RelicSetName::MessengerTraversingHackerspace => "MessengerTraversingHackerspace",
+            RelicSetName::TheAshblazingGrandDuke => "TheAshblazingGrandDuke",
+            RelicSetName::PrisonerinDeepConfinement => "PrisonerinDeepConfinement",
+
             RelicSetName::SpaceSealingStation => "SpaceSealingStation",
             RelicSetName::FleetoftheAgeless => "FleetoftheAgeless",
-            RelicSetName::PanGalacticCommercialEnterprise => "PanGalacticCommercialEnterprise",
+            RelicSetName::PanCosmicCommercialEnterprise => "PanCosmicCommercialEnterprise",
             RelicSetName::BelobogoftheArchitects => "BelobogoftheArchitects",
             RelicSetName::CelestialDifferentiator => "CelestialDifferentiator",
             RelicSetName::InertSalsotto => "InertSalsotto",
@@ -61,9 +66,8 @@ impl RelicSetName {
             RelicSetName::SprightlyVonwacq => "SprightlyVonwacq",
             RelicSetName::RutilantArena => "RutilantArena",
             RelicSetName::BrokenKeel => "BrokenKeel",
-            RelicSetName::LongevousDisciple => "LongevousDisciple",
-            RelicSetName::MessengerTraversingHackerspace => "MessengerTraversingHackerspace",
-            // todo add more relic sets
+            RelicSetName::FirmamentFrontlineGlamoth => "FirmamentFrontlineGlamoth",
+            RelicSetName::PenaconyLandoftheDreams => "PenaconyLandoftheDreams",
         };
         String::from(temp)
     }

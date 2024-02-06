@@ -55,6 +55,8 @@ impl RelicSetName {
             RelicSetName::MessengerTraversingHackerspace => "MessengerTraversingHackerspace",
             RelicSetName::TheAshblazingGrandDuke => "TheAshblazingGrandDuke",
             RelicSetName::PrisonerinDeepConfinement => "PrisonerinDeepConfinement",
+            RelicSetName::PioneerDiverofDeadWaters => "PioneerDiverofDeadWaters",
+            RelicSetName::WatchmakerMasterofDreamMachinations => "WatchmakerMasterofDreamMachinations",
 
             RelicSetName::SpaceSealingStation => "SpaceSealingStation",
             RelicSetName::FleetoftheAgeless => "FleetoftheAgeless",

@@ -18,6 +18,8 @@ pub struct StarRailRelicScanResult {
     // pub equip: String,
     pub level: i32,
     pub star: i32,
+    pub lock: bool,
+    pub discard: bool,
 }
 
 struct RelicScannerWorker {
@@ -142,6 +144,8 @@ impl RelicScannerWorker {
             level: parse_level(&str_level)?,
             // equip: "".to_string(),
             star: item.star as i32,
+            lock: item.lock,
+            discard: item.discard,
         })
     }
 
@@ -241,6 +245,8 @@ struct RelicScannerWindowInfo {
     pub item_count_rect: Rect,
 
     pub star_pos: Pos,
+    pub lock_pos: Pos,
+    pub discard_pos: Pos,
 
     pub panel_rect: Rect,
 
@@ -258,6 +264,8 @@ impl From<&WindowInfo> for RelicScannerWindowInfo {
             // item_equip_rect: value.get("starrail_relic_item_equip_rect").unwrap(),
             item_count_rect: value.get("starrail_relic_item_count_rect").unwrap(),
             star_pos: value.get("starrail_relic_star_pos").unwrap(),
+            lock_pos: value.get("starrail_relic_lock_pos").unwrap(),
+            discard_pos: value.get("starrail_relic_discard_pos").unwrap(),
 
             panel_rect: value.get("starrail_repository_panel_rect").unwrap(),
             col: value.get("starrail_repository_item_col").unwrap(),
@@ -299,6 +307,8 @@ impl RequireWindowInfo for StarRailRelicScanner {
         // window_info_builder.add_required_key("starrail_relic_item_equip_rect");
         window_info_builder.add_required_key("starrail_relic_item_count_rect");
         window_info_builder.add_required_key("starrail_relic_star_pos");
+        window_info_builder.add_required_key("starrail_relic_lock_pos");
+        window_info_builder.add_required_key("starrail_relic_discard_pos");
         window_info_builder.add_required_key("starrail_repository_item_col");
         window_info_builder.add_required_key("starrail_repository_panel_rect");
         window_info_builder.add_required_key("starrail_relic_sub_stat0_name_rect");
@@ -315,6 +325,8 @@ impl RequireWindowInfo for StarRailRelicScanner {
 struct SendItem {
     panel_image: RgbImage,
     star: usize,
+    lock: bool,
+    discard: bool,
 }
 
 // constructor
@@ -353,6 +365,52 @@ impl StarRailRelicScanner {
         }
 
         anyhow::Ok(ret)
+    }
+
+    pub fn get_lock(&self) -> Result<bool> {
+        let pos = self.window_info.origin_pos + self.window_info.lock_pos;
+        let color = capture::get_color(pos)?;
+
+        let match_colors = [
+            Color::new(18, 18, 18), // locked
+            Color::new(249, 249, 249), // unlocked
+            Color::new(116, 108, 99), // discard
+        ];
+
+        let mut min_dis: u32 = 0xdeadbeef;
+        let mut ret: usize = 1;
+        for (i, match_color) in match_colors.iter().enumerate() {
+            let dis = match_color.distance(&color);
+            if dis < min_dis {
+                min_dis = dis;
+                ret = i + 1;
+            }
+        }
+
+        anyhow::Ok(ret == 1)
+    }
+
+    pub fn get_discard(&self) -> Result<bool> {
+        let pos = self.window_info.origin_pos + self.window_info.discard_pos;
+        let color = capture::get_color(pos)?;
+
+        let match_colors = [
+            Color::new(235, 77, 61), // discard
+            Color::new(249, 249, 249), // not discard
+            Color::new(115, 108, 98), // locked
+        ];
+
+        let mut min_dis: u32 = 0xdeadbeef;
+        let mut ret: usize = 1;
+        for (i, match_color) in match_colors.iter().enumerate() {
+            let dis = match_color.distance(&color);
+            if dis < min_dis {
+                min_dis = dis;
+                ret = i + 1;
+            }
+        }
+
+        anyhow::Ok(ret == 1)
     }
 
     pub fn get_item_count(&self, ocr_model: &OCRModel) -> Result<i32> {
@@ -462,6 +520,8 @@ impl StarRailRelicScanner {
                     // let image = self.capture_panel().unwrap();
                     let image = controller.borrow().capture_panel().unwrap();
                     let star = self.get_star().unwrap();
+                    let lock = self.get_lock().unwrap();
+                    let discard = self.get_discard().unwrap();
 
                     // todo normalize types
                     if (star as i32) < self.scanner_config.min_star {
@@ -472,7 +532,7 @@ impl StarRailRelicScanner {
                         break;
                     }
 
-                    if tx.send(Some(SendItem { panel_image: image, star: star })).is_err() {
+                    if tx.send(Some(SendItem { panel_image: image, star: star, lock: lock, discard: discard })).is_err() {
                         break;
                     }
 

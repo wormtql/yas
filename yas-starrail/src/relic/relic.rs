@@ -92,6 +92,8 @@ pub struct StarRailRelic {
     pub sub_stat_3: Option<RelicStat>,
     pub sub_stat_4: Option<RelicStat>,
     pub equip: Option<String>,
+    pub lock: bool,
+    pub discard: bool,
 }
 
 impl Hash for RelicStat {
@@ -183,7 +185,6 @@ impl TryFrom<&StarRailRelicScanResult> for StarRailRelic {
     fn try_from(value: &StarRailRelicScanResult) -> Result<Self, Self::Error> {
         let set_name = RelicSetName::from_zh_cn(&value.name).ok_or(())?;
         let slot = RelicSlot::from_zh_cn(&value.name).ok_or(())?;
-        let star = value.star;
 
         let main_stat = RelicStat::from_zh_cn_raw(
             (value.main_stat_name.clone() + "+" + value.main_stat_value.as_str()).as_str(),
@@ -199,7 +200,7 @@ impl TryFrom<&StarRailRelicScanResult> for StarRailRelic {
         Ok(StarRailRelic {
             set_name,
             slot,
-            star,
+            star: value.star,
             level: value.level,
             main_stat,
             sub_stat_1: sub1,
@@ -207,6 +208,8 @@ impl TryFrom<&StarRailRelicScanResult> for StarRailRelic {
             sub_stat_3: sub3,
             sub_stat_4: sub4,
             equip,
+            lock: value.lock,
+            discard: value.discard,
         })
     }
 }

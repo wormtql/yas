@@ -15,7 +15,7 @@ pub struct StarRailRelicScanResult {
     pub main_stat_value: String,
     pub sub_stat_name: [String; 4],
     pub sub_stat_value: [String; 4],
-    // pub equip: String,
+    pub equip: String,
     pub level: i32,
     pub star: i32,
     pub lock: bool,
@@ -33,11 +33,11 @@ fn parse_level(s: &str) -> Result<i32> {
 
     if pos.is_none() {
         let level = s.parse::<i32>()?;
-        return anyhow::Ok(level);
+        return Ok(level);
     }
 
     let level = s[pos.unwrap()..].parse::<i32>()?;
-    return anyhow::Ok(level);
+    return Ok(level);
 }
 
 impl RelicScannerWorker {
@@ -124,8 +124,9 @@ impl RelicScannerWorker {
         let str_sub_stat3_value = self.model_inference(self.window_info.sub_stat_value_rect[3], &image)?;
 
         let str_level = self.model_inference(self.window_info.level_rect, &image)?;
+        let str_equip = self.model_inference(self.window_info.equip_rect, &image)?;
 
-        anyhow::Ok(StarRailRelicScanResult {
+        Ok(StarRailRelicScanResult {
             name: str_title,
             main_stat_name: str_main_stat_name,
             main_stat_value: str_main_stat_value,
@@ -142,7 +143,7 @@ impl RelicScannerWorker {
                 str_sub_stat3_value,
             ],
             level: parse_level(&str_level)?,
-            // equip: "".to_string(),
+            equip: item.equip + &str_equip,
             star: item.star as i32,
             lock: item.lock,
             discard: item.discard,
@@ -241,7 +242,8 @@ struct RelicScannerWindowInfo {
 
     pub level_rect: Rect,
 
-    // pub item_equip_rect: Rect,
+    pub equip_rect: Rect,
+    pub equipper_pos: Pos,
     pub item_count_rect: Rect,
 
     pub star_pos: Pos,
@@ -261,7 +263,8 @@ impl From<&WindowInfo> for RelicScannerWindowInfo {
             main_stat_name_rect: value.get("starrail_relic_main_stat_name_rect").unwrap(),
             main_stat_value_rect: value.get("starrail_relic_main_stat_value_rect").unwrap(),
             level_rect: value.get("starrail_relic_level_rect").unwrap(),
-            // item_equip_rect: value.get("starrail_relic_item_equip_rect").unwrap(),
+            equip_rect: value.get("starrail_relic_equip_rect").unwrap(),
+            equipper_pos: value.get("starrail_relic_equipper_pos").unwrap(),
             item_count_rect: value.get("starrail_relic_item_count_rect").unwrap(),
             star_pos: value.get("starrail_relic_star_pos").unwrap(),
             lock_pos: value.get("starrail_relic_lock_pos").unwrap(),
@@ -293,6 +296,11 @@ pub struct StarRailRelicScanner {
     window_info_clone: WindowInfo,
 
     game_info: GameInfo,
+
+    match_colors_star: [Color; 5],
+    match_colors_lock: [Color; 3],
+    match_colors_discard: [Color; 3],
+    match_colors_equipper: [(&'static str, Color); 43],
 }
 
 impl RequireWindowInfo for StarRailRelicScanner {
@@ -304,7 +312,8 @@ impl RequireWindowInfo for StarRailRelicScanner {
         window_info_builder.add_required_key("starrail_relic_main_stat_name_rect");
         window_info_builder.add_required_key("starrail_relic_main_stat_value_rect");
         window_info_builder.add_required_key("starrail_relic_level_rect");
-        // window_info_builder.add_required_key("starrail_relic_item_equip_rect");
+        window_info_builder.add_required_key("starrail_relic_equip_rect");
+        window_info_builder.add_required_key("starrail_relic_equipper_pos");
         window_info_builder.add_required_key("starrail_relic_item_count_rect");
         window_info_builder.add_required_key("starrail_relic_star_pos");
         window_info_builder.add_required_key("starrail_relic_lock_pos");
@@ -324,6 +333,7 @@ impl RequireWindowInfo for StarRailRelicScanner {
 
 struct SendItem {
     panel_image: RgbImage,
+    equip: String,
     star: usize,
     lock: bool,
     discard: bool,
@@ -336,7 +346,70 @@ impl StarRailRelicScanner {
             scanner_config: config,
             window_info: RelicScannerWindowInfo::from(window_info),
             window_info_clone: window_info.clone(),
-            game_info
+            game_info,
+            match_colors_star: [
+                Color::new(113, 119, 139), // todo
+                Color::new(42, 143, 114), // todo
+                Color::new(96, 142, 197), // 3
+                Color::new(157, 117, 206), // 4
+                Color::new(193, 158, 112), // 5
+            ],
+            match_colors_lock: [
+                Color::new(18, 18, 18), // locked
+                Color::new(249, 249, 249), // unlocked
+                Color::new(116, 108, 99), // discard
+            ],
+            match_colors_discard: [
+                Color::new(235, 77, 61), // discard
+                Color::new(249, 249, 249), // not discard
+                Color::new(115, 108, 98), // locked
+            ],
+            // todo use better match color set
+            match_colors_equipper: [
+                ("Argenti", Color::new(216, 174, 161)),
+                ("Arlan", Color::new(146, 134, 124)),
+                ("Asta", Color::new(188, 130, 117)),
+                ("Bailu", Color::new(160, 127, 174)),
+                ("BlackSwan", Color::new(252, 242, 239)),
+                ("Blade", Color::new(191, 162, 162)),
+                ("Bronya", Color::new(83, 66, 83)),
+                ("Clara", Color::new(181, 107, 129)),
+                ("DanHeng", Color::new(124, 100, 100)),
+                ("DanHengImbibitorLunae", Color::new(181, 169, 163)),
+                ("DrRatio", Color::new(134, 120, 143)),
+                ("FuXuan", Color::new(231, 166, 145)),
+                ("Gepard", Color::new(192, 199, 223)),
+                ("Guinaifen", Color::new(219, 137, 111)),
+                ("Hanya", Color::new(247, 238, 232)),
+                ("Herta", Color::new(246, 239, 227)),
+                ("Himeko", Color::new(177, 92, 85)),
+                ("Hook", Color::new(190, 161, 86)),
+                ("Huohuo", Color::new(230, 250, 250)),
+                ("Jingliu", Color::new(193, 194, 218)),
+                ("JingYuan", Color::new(169, 154, 147)),
+                ("Kafka", Color::new(126, 50, 80)),
+                ("Luka", Color::new(218, 198, 183)),
+                ("Luocha", Color::new(191, 160, 116)),
+                ("Lynx", Color::new(247, 213, 197)),
+                ("March7th", Color::new(251, 243, 243)),
+                ("Misha", Color::new(234, 215, 213)),
+                ("Natasha", Color::new(238, 208, 196)),
+                ("Pela", Color::new(241, 217, 217)),
+                ("Qingque", Color::new(18, 27, 11)),
+                ("RuanMei", Color::new(129, 101, 101)),
+                ("Sampo", Color::new(241, 217, 213)),
+                ("Seele", Color::new(91, 65, 111)),
+                ("Serval", Color::new(158, 141, 150)),
+                ("SilverWolf", Color::new(222, 210, 210)),
+                ("Sushang", Color::new(101, 65, 58)),
+                ("Tingyun", Color::new(127, 116, 57)),
+                ("TopazNumby", Color::new(254, 250, 246)),
+                ("Trailblazer_Preservation", Color::new(153, 125, 111)),
+                ("Welt", Color::new(158, 114, 99)),
+                ("Xueyi", Color::new(250, 242, 230)),
+                ("Yanqing", Color::new(255, 242, 232)),
+                ("Yukong", Color::new(174, 167, 174))
+            ],
         }
     }
 }
@@ -346,71 +419,51 @@ impl StarRailRelicScanner {
         let pos = self.window_info.origin_pos + self.window_info.star_pos;
         let color = capture::get_color(pos)?;
 
-        let match_colors = [
-            Color::new(113, 119, 139), // todo
-            Color::new(42, 143, 114), // todo
-            Color::new(96, 142, 197), // 3
-            Color::new(157, 117, 206), // 4
-            Color::new(193, 158, 112), // 5
-        ];
+        let (index, _) = self.match_colors_star
+            .iter()
+            .enumerate()
+            .min_by_key(|&(_, match_color)| match_color.distance(&color))
+            .unwrap();
 
-        let mut min_dis: u32 = 0xdeadbeef;
-        let mut ret: usize = 1;
-        for (i, match_color) in match_colors.iter().enumerate() {
-            let dis = match_color.distance(&color);
-            if dis < min_dis {
-                min_dis = dis;
-                ret = i + 1;
-            }
-        }
-
-        anyhow::Ok(ret)
+        Ok(index + 1)
     }
 
     pub fn get_lock(&self) -> Result<bool> {
         let pos = self.window_info.origin_pos + self.window_info.lock_pos;
         let color = capture::get_color(pos)?;
 
-        let match_colors = [
-            Color::new(18, 18, 18), // locked
-            Color::new(249, 249, 249), // unlocked
-            Color::new(116, 108, 99), // discard
-        ];
+        let (index, _) = self.match_colors_lock
+            .iter()
+            .enumerate()
+            .min_by_key(|&(_, match_color)| match_color.distance(&color))
+            .unwrap();
 
-        let mut min_dis: u32 = 0xdeadbeef;
-        let mut ret: usize = 1;
-        for (i, match_color) in match_colors.iter().enumerate() {
-            let dis = match_color.distance(&color);
-            if dis < min_dis {
-                min_dis = dis;
-                ret = i + 1;
-            }
-        }
-
-        anyhow::Ok(ret == 1)
+        Ok(index == 0)
     }
 
     pub fn get_discard(&self) -> Result<bool> {
         let pos = self.window_info.origin_pos + self.window_info.discard_pos;
         let color = capture::get_color(pos)?;
 
-        let match_colors = [
-            Color::new(235, 77, 61), // discard
-            Color::new(249, 249, 249), // not discard
-            Color::new(115, 108, 98), // locked
-        ];
+        let (index, _) = self.match_colors_discard
+            .iter()
+            .enumerate()
+            .min_by_key(|&(_, match_color)| match_color.distance(&color))
+            .unwrap();
 
-        let mut min_dis: u32 = 0xdeadbeef;
-        let mut ret: usize = 1;
-        for (i, match_color) in match_colors.iter().enumerate() {
-            let dis = match_color.distance(&color);
-            if dis < min_dis {
-                min_dis = dis;
-                ret = i + 1;
-            }
-        }
+        Ok(index == 0)
+    }
 
-        anyhow::Ok(ret == 1)
+    pub fn get_equipper(&self) -> Result<String> {
+        let pos = self.window_info.origin_pos + self.window_info.equipper_pos;
+        let color = capture::get_color(pos)?;
+
+        let (name, _) = self.match_colors_equipper
+            .iter()
+            .min_by_key(|&(_, match_color)| match_color.distance(&color))
+            .unwrap();
+
+        Ok(name.to_string())
     }
 
     pub fn get_item_count(&self, ocr_model: &OCRModel) -> Result<i32> {
@@ -518,7 +571,8 @@ impl StarRailRelicScanner {
             match pinned_generator.resume(()) {
                 CoroutineState::Yielded(_) => {
                     // let image = self.capture_panel().unwrap();
-                    let image = controller.borrow().capture_panel().unwrap();
+                    let panel_image = controller.borrow().capture_panel().unwrap();
+                    let equip = self.get_equipper().unwrap();
                     let star = self.get_star().unwrap();
                     let lock = self.get_lock().unwrap();
                     let discard = self.get_discard().unwrap();
@@ -532,7 +586,7 @@ impl StarRailRelicScanner {
                         break;
                     }
 
-                    if tx.send(Some(SendItem { panel_image: image, star: star, lock: lock, discard: discard })).is_err() {
+                    if tx.send(Some(SendItem { panel_image, equip, star, lock, discard })).is_err() {
                         break;
                     }
 

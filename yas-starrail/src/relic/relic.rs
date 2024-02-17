@@ -195,7 +195,13 @@ impl TryFrom<&StarRailRelicScanResult> for StarRailRelic {
         let sub3 = RelicStat::from_zh_cn_raw(&(value.sub_stat_name[2].clone() + "+" + value.sub_stat_value[2].as_str()));
         let sub4 = RelicStat::from_zh_cn_raw(&(value.sub_stat_name[3].clone() + "+" + value.sub_stat_value[3].as_str()));
 
-        let equip = None;
+        let equip = if value.equip.ends_with("装备中") {
+            let chars = value.equip.chars().collect::<Vec<_>>();
+            let equip_name = chars[..chars.len() - 3].iter().collect::<String>();
+            Some(equip_name)
+        } else {
+            None
+        };
 
         Ok(StarRailRelic {
             set_name,

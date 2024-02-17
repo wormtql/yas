@@ -342,7 +342,7 @@ impl StarRailRepositoryScanController {
                 }
             }
 
-            utils::sleep(400);
+            utils::sleep(self.config.scroll_delay.try_into().unwrap());
 
             self.align_row();
             return ScrollResult::Skip;

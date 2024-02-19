@@ -15,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0 # For $commitCount
           lfs: true
 
       - name: Extract git-rev

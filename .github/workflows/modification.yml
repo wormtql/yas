@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0 # For $commitCount
           lfs: true
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/

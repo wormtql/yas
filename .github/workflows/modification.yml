@@ -23,7 +23,7 @@ jobs:
           $commitCount = git rev-list --count HEAD
           $shortHash = git rev-parse --short HEAD
           "GIT_REV=r$commitCount.$shortHash" | Out-File -FilePath $env:GITHUB_ENV -Append
-          $env:GIT_REV
+          Write-Output $env:GIT_REV
 
       - name: Setup Toolchain
         run: rustup default nightly-msvc

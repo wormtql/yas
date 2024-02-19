@@ -3,28 +3,6 @@ use crate::utils;
 use winapi::shared::windef::HWND;
 use anyhow::{Result, anyhow};
 
-fn window_not_found(game_name: &str) -> ! {
-    crate::error_and_quit!(
-        "未找到游戏窗口，请确认{}已经开启",
-        game_name
-    )
-}
-
-// fn get_game_window_name() -> &'static [&'static str] {
-//     match crate::TARGET_GAME.get().unwrap() {
-//         Game::Genshin => &["原神", "Genshin Impact"],
-//         Game::StarRail => &["崩坏：星穹铁道", "Honkai: Star Rail"],
-//         _ => unimplemented!("不支持的游戏"),
-//     }
-// }
-
-// fn get_cloud_window_name() -> &'static [&'static str] {
-//     match crate::TARGET_GAME.get().unwrap() {
-//         Game::Genshin => &["云·原神"],
-//         _ => unimplemented!("不支持的游戏"),
-//     }
-// }
-
 fn get_window(window_names: &[&str]) -> Result<(HWND, bool)> {
     // local game names
     // let local_game_names = ["原神", "Genshin Impact"];

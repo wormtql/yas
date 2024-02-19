@@ -6,12 +6,6 @@ use serde::Deserialize;
 use std::io::stdin;
 use std::process;
 
-// use crate::core::VERSION;
-
-use super::*;
-use reqwest::blocking::Client;
-use reqwest::header::{HeaderValue, USER_AGENT};
-
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "macos")]
@@ -56,37 +50,6 @@ pub fn is_rmb_down() -> bool {
 #[derive(Deserialize)]
 pub struct GithubTag {
     pub name: String,
-}
-
-pub fn check_update() -> Option<String> {
-    None
-    // todo update should be related to individual scanner instead of the package
-    // let client = Client::new();
-
-    // let resp = client
-    //     .get("https://api.github.com/repos/wormtql/yas/tags")
-    //     .timeout(Duration::from_secs(5))
-    //     .header(USER_AGENT, HeaderValue::from_static("reqwest"))
-    //     .send()
-    //     .ok()?
-    //     .json::<Vec<GithubTag>>()
-    //     .ok()?;
-
-    // let latest = if resp.is_empty() {
-    //     return None;
-    // } else {
-    //     resp[0].name.clone()
-    // };
-    // let latest = &latest[1..];
-
-    // let latest_sem: semver::Version = semver::Version::parse(latest).unwrap();
-    // let current_sem: semver::Version = semver::Version::parse(VERSION).unwrap();
-
-    // if latest_sem > current_sem {
-    //     Some(String::from(latest))
-    // } else {
-    //     None
-    // }
 }
 
 pub fn ensure_dir(path: &str) {

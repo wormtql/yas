@@ -40,7 +40,7 @@ jobs:
           )
           [regex]$pattern = '(?<=version = ").*(?=")'
           foreach ($file in $files) {
-              $pattern.Replace((Get-Content -Raw $file), "0.0.0-r$env:GIT_REV", 1) | Out-File -FilePath $file
+              $pattern.Replace((Get-Content -Raw $file), "0.0.0-$env:GIT_REV", 1) | Out-File -FilePath $file
           }
 
       - name: Build (Release)

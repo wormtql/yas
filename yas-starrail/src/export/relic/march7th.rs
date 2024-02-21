@@ -1,9 +1,11 @@
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::convert::From;
 
-use crate::core::starrail::{RelicSetName, RelicSlot, RelicStat, RelicStatName, StarrailRelic};
+use crate::relic::{
+    RelicSetName, RelicSlot, RelicStat, RelicStatName, StarRailRelic,
+};
 
-type March7thRelic = StarrailRelic;
+type March7thRelic = StarRailRelic;
 
 impl RelicStatName {
     pub fn to_march7th(&self) -> String {
@@ -49,9 +51,16 @@ impl RelicSetName {
             RelicSetName::EagleofTwilightLine => "EagleofTwilightLine",
             RelicSetName::ThiefofShootingMeteor => "ThiefofShootingMeteor",
             RelicSetName::WastelanderofBanditryDesert => "WastelanderofBanditryDesert",
+            RelicSetName::LongevousDisciple => "LongevousDisciple",
+            RelicSetName::MessengerTraversingHackerspace => "MessengerTraversingHackerspace",
+            RelicSetName::TheAshblazingGrandDuke => "TheAshblazingGrandDuke",
+            RelicSetName::PrisonerinDeepConfinement => "PrisonerinDeepConfinement",
+            RelicSetName::PioneerDiverofDeadWaters => "PioneerDiverofDeadWaters",
+            RelicSetName::WatchmakerMasterofDreamMachinations => "WatchmakerMasterofDreamMachinations",
+
             RelicSetName::SpaceSealingStation => "SpaceSealingStation",
             RelicSetName::FleetoftheAgeless => "FleetoftheAgeless",
-            RelicSetName::PanGalacticCommercialEnterprise => "PanGalacticCommercialEnterprise",
+            RelicSetName::PanCosmicCommercialEnterprise => "PanCosmicCommercialEnterprise",
             RelicSetName::BelobogoftheArchitects => "BelobogoftheArchitects",
             RelicSetName::CelestialDifferentiator => "CelestialDifferentiator",
             RelicSetName::InertSalsotto => "InertSalsotto",
@@ -59,8 +68,8 @@ impl RelicSetName {
             RelicSetName::SprightlyVonwacq => "SprightlyVonwacq",
             RelicSetName::RutilantArena => "RutilantArena",
             RelicSetName::BrokenKeel => "BrokenKeel",
-            RelicSetName::LongevousDisciple => "LongevousDisciple",
-            RelicSetName::MessengerTraversingHackerspace => "MessengerTraversingHackerspace",
+            RelicSetName::FirmamentFrontlineGlamoth => "FirmamentFrontlineGlamoth",
+            RelicSetName::PenaconyLandoftheDreams => "PenaconyLandoftheDreams",
         };
         String::from(temp)
     }
@@ -116,21 +125,13 @@ impl Serialize for March7thRelic {
         if let Some(ref s) = self.sub_stat_4 {
             sub_stats.push(s);
         }
-        // let mut subs = serializer.serialize_seq(Some(sub_stats.len()))?;
-        //
-        // for i in sub_stats {
-        //     subs.serialize_element(i);
-        // }
-        // subs.end();
-        // subs.
 
         root.serialize_entry("normalTags", &sub_stats)?;
-        root.serialize_entry("omit", &false)?;
         root.serialize_entry("level", &self.level)?;
         root.serialize_entry("star", &self.star)?;
         root.serialize_entry("equip", &self.equip)?;
-        // let random_id = thread_rng().gen::<u64>();
-        // root.serialize_entry("id", &random_id);
+        root.serialize_entry("lock", &self.lock)?;
+        root. serialize_entry("discard", &self.discard)?;
 
         root.end()
     }
@@ -164,7 +165,7 @@ impl<'a> Serialize for March7thFormat<'a> {
 }
 
 impl<'a> March7thFormat<'a> {
-    pub fn new(results: &[StarrailRelic]) -> March7thFormat {
+    pub fn new(results: &'a [StarRailRelic]) -> March7thFormat {
         let mut head: Vec<&March7thRelic> = Vec::new();
         let mut hands: Vec<&March7thRelic> = Vec::new();
         let mut body: Vec<&March7thRelic> = Vec::new();

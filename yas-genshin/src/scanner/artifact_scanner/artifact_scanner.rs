@@ -1,7 +1,7 @@
 use image::{RgbImage, GenericImageView};
 use log::{error, info, warn};
-use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info::WindowInfo}, inference::{model::OCRModel, pre_process::{pre_process, to_gray}}, game_info::GameInfo};
-use std::{ops::{Generator, GeneratorState}, pin::Pin, rc::Rc, cell::RefCell, sync::mpsc::{Receiver, Sender, self}, thread::JoinHandle, collections::HashSet, time::SystemTime};
+use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info::WindowInfo}, inference::{model::OCRModel, pre_process::{pre_process, to_gray, ImageConvExt}}, game_info::GameInfo};
+use std::{ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, cell::RefCell, sync::{mpsc::{Receiver, Sender, self}, Arc}, thread::JoinHandle, os::windows::thread, collections::HashSet, time::SystemTime};
 
 use crate::scanner_controller::repository_layout::scan_logic::{GenshinRepositoryScanController, ReturnResult};
 
@@ -50,22 +50,22 @@ impl ArtifactScannerWorker {
         }
     }
 
-    fn model_inference(&self, pos: Rect, captured_img: &RgbImage) -> Result<String> {
+    fn model_inference(&self, rect: Rect, captured_img: &RgbImage) -> Result<String> {
         // todo move dump mode into a scanner
         // if dump_mode {
-            // captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
+        //     captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
         // }
 
-        let relative_rect = pos.translate(Pos {
-            x: -self.window_info.panel_pos.left,
-            y: -self.window_info.panel_pos.top,
+        let relative_rect = rect.translate(Pos {
+            x: -self.window_info.panel_rect.left,
+            y: -self.window_info.panel_rect.top,
         });
 
         let raw_img = captured_img.view(
             relative_rect.left as u32, relative_rect.top as u32, relative_rect.width as u32, relative_rect.height as u32
         ).to_image();
         let raw_img_grayed = to_gray(&raw_img);
-                
+
         // let raw_img = to_gray(captured_img)
         //     .view(
         //         relative_rect.left,
@@ -107,18 +107,18 @@ impl ArtifactScannerWorker {
     fn scan_item_image(&self, item: SendItem) -> Result<GenshinArtifactScanResult> {
         let image = &item.panel_image;
 
-        let str_title = self.model_inference(self.window_info.title_pos, &image)?;
-        let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_pos, &image)?;
-        let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_pos, &image)?;
-        
-        let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_pos[0], &image)?;
-        let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_pos[1], &image)?;
-        let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_pos[2], &image)?;
-        let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_pos[3], &image)?;
-    
-        let str_level = self.model_inference(self.window_info.level_pos, &image)?;
-        let str_equip = self.model_inference(self.window_info.item_equip_pos, &image)?;
-    
+        let str_title = self.model_inference(self.window_info.title_rect, &image)?;
+        let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_rect, &image)?;
+        let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_rect, &image)?;
+
+        let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_rect[0], &image)?;
+        let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_rect[1], &image)?;
+        let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_rect[2], &image)?;
+        let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_rect[3], &image)?;
+
+        let str_level = self.model_inference(self.window_info.level_rect, &image)?;
+        let str_equip = self.model_inference(self.window_info.item_equip_rect, &image)?;
+
         anyhow::Ok(GenshinArtifactScanResult {
             name: str_title,
             main_stat_name: str_main_stat_name,
@@ -147,7 +147,7 @@ impl ArtifactScannerWorker {
             // todo remove dump mode to another scanner
             // let dump_mode = false;
             // let model = self.model.clone();
-            // let panel_origin = Pos { x: self.window_info.panel_pos.left, y: self.window_info.panel_pos.top };
+            // let panel_origin = Pos { x: self.window_info.panel_rect.left, y: self.window_info.panel_rect.top };
 
             for (_cnt, item) in rx.into_iter().enumerate() {
                 let item = match item {
@@ -166,14 +166,6 @@ impl ArtifactScannerWorker {
                 if is_verbose {
                     info!("{:?}", result);
                 }
-
-                // progress_bar.inc(1);
-                // progress_bar.set_message(format!(
-                //     "{}{}: {}",
-                //     style(&result.name).bold().cyan(),
-                //     style(format!("({})", result.level)).yellow(),
-                //     style(&result.main_stat_name).dim()
-                // ));
 
                 if result.level < min_level {
                     info!(
@@ -217,21 +209,21 @@ impl ArtifactScannerWorker {
 
 #[derive(Clone)]
 struct ArtifactScannerWindowInfo {
-    pub origin: Pos,
+    pub origin_pos: Pos,
 
-    pub title_pos: Rect,
-    pub main_stat_name_pos: Rect,
-    pub main_stat_value_pos: Rect,
-    pub sub_stat_pos: [Rect; 4],
+    pub title_rect: Rect,
+    pub main_stat_name_rect: Rect,
+    pub main_stat_value_rect: Rect,
+    pub sub_stat_rect: [Rect; 4],
 
-    pub level_pos: Rect,
+    pub level_rect: Rect,
 
-    pub item_equip_pos: Rect,
-    pub item_count_pos: Rect,
+    pub item_equip_rect: Rect,
+    pub item_count_rect: Rect,
 
-    pub star: Pos,
+    pub star_pos: Pos,
 
-    pub panel_pos: Rect,
+    pub panel_rect: Rect,
 
     pub col: i32,
 }
@@ -239,23 +231,23 @@ struct ArtifactScannerWindowInfo {
 impl From<&WindowInfo> for ArtifactScannerWindowInfo {
     fn from(value: &WindowInfo) -> Self {
         ArtifactScannerWindowInfo {
-            origin: value.get("window_origin").unwrap(),
-            title_pos: value.get("genshin_artifact_title_pos").unwrap(),
-            main_stat_name_pos: value.get("genshin_artifact_main_stat_name_pos").unwrap(),
-            main_stat_value_pos: value.get("genshin_artifact_main_stat_value_pos").unwrap(),
-            level_pos: value.get("genshin_artifact_level_pos").unwrap(),
-            item_equip_pos: value.get("genshin_artifact_item_equip_pos").unwrap(),
-            item_count_pos: value.get("genshin_artifact_item_count_pos").unwrap(),
-            star: value.get("genshin_artifact_star").unwrap(),
+            origin_pos: value.get("window_origin_pos").unwrap(),
+            title_rect: value.get("genshin_artifact_title_rect").unwrap(),
+            main_stat_name_rect: value.get("genshin_artifact_main_stat_name_rect").unwrap(),
+            main_stat_value_rect: value.get("genshin_artifact_main_stat_value_rect").unwrap(),
+            level_rect: value.get("genshin_artifact_level_rect").unwrap(),
+            item_equip_rect: value.get("genshin_artifact_item_equip_rect").unwrap(),
+            item_count_rect: value.get("genshin_artifact_item_count_rect").unwrap(),
+            star_pos: value.get("genshin_artifact_star_pos").unwrap(),
 
-            panel_pos: value.get("genshin_repository_panel_pos").unwrap(),
+            panel_rect: value.get("genshin_repository_panel_rect").unwrap(),
             col: value.get("genshin_repository_item_col").unwrap(),
 
-            sub_stat_pos: [
-                value.get("genshin_artifact_sub_stat0").unwrap(),
-                value.get("genshin_artifact_sub_stat1").unwrap(),
-                value.get("genshin_artifact_sub_stat2").unwrap(),
-                value.get("genshin_artifact_sub_stat3").unwrap(),
+            sub_stat_rect: [
+                value.get("genshin_artifact_sub_stat0_rect").unwrap(),
+                value.get("genshin_artifact_sub_stat1_rect").unwrap(),
+                value.get("genshin_artifact_sub_stat2_rect").unwrap(),
+                value.get("genshin_artifact_sub_stat3_rect").unwrap(),
             ]
         }
     }
@@ -274,20 +266,20 @@ impl RequireWindowInfo for GenshinArtifactScanner {
     fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
         <GenshinRepositoryScanController as RequireWindowInfo>::require_window_info(window_info_builder);
 
-        // window_info_builder.add_required_key("window_origin");
-        window_info_builder.add_required_key("genshin_artifact_title_pos");
-        window_info_builder.add_required_key("genshin_artifact_main_stat_name_pos");
-        window_info_builder.add_required_key("genshin_artifact_main_stat_value_pos");
-        window_info_builder.add_required_key("genshin_artifact_level_pos");
-        window_info_builder.add_required_key("genshin_artifact_item_equip_pos");
-        window_info_builder.add_required_key("genshin_artifact_item_count_pos");
-        window_info_builder.add_required_key("genshin_artifact_star");
+        // window_info_builder.add_required_key("window_origin_pos");
+        window_info_builder.add_required_key("genshin_artifact_title_rect");
+        window_info_builder.add_required_key("genshin_artifact_main_stat_name_rect");
+        window_info_builder.add_required_key("genshin_artifact_main_stat_value_rect");
+        window_info_builder.add_required_key("genshin_artifact_level_rect");
+        window_info_builder.add_required_key("genshin_artifact_item_equip_rect");
+        window_info_builder.add_required_key("genshin_artifact_item_count_rect");
+        window_info_builder.add_required_key("genshin_artifact_star_pos");
         window_info_builder.add_required_key("genshin_repository_item_col");
-        window_info_builder.add_required_key("genshin_repository_panel_pos");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat0");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat1");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat2");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat3");
+        window_info_builder.add_required_key("genshin_repository_panel_rect");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat0_rect");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat1_rect");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat2_rect");
+        window_info_builder.add_required_key("genshin_artifact_sub_stat3_rect");
     }
 }
 
@@ -310,7 +302,7 @@ impl GenshinArtifactScanner {
 
 impl GenshinArtifactScanner {
     pub fn get_star(&self) -> Result<usize> {
-        let pos = self.window_info.origin + self.window_info.star;
+        let pos = self.window_info.origin_pos + self.window_info.star_pos;
         let color = capture::get_color(pos)?;
 
         let match_colors = [
@@ -343,8 +335,8 @@ impl GenshinArtifactScanner {
             return Ok(max_count.min(count));
         }
 
-        let im = match self.window_info.item_count_pos
-            .capture_relative(self.window_info.origin)
+        let im = match self.window_info.item_count_rect
+            .capture_relative(self.window_info.origin_pos)
         {
             Ok(im) => im,
             Err(e) => {
@@ -433,11 +425,11 @@ impl GenshinArtifactScanner {
             self.game_info.clone(),
         )));
         let mut generator = GenshinRepositoryScanController::into_generator(controller.clone());
-        
+
         loop {
             let pinned_generator = Pin::new(&mut generator);
             match pinned_generator.resume(()) {
-                GeneratorState::Yielded(_) => {
+                CoroutineState::Yielded(_) => {
                     // let image = self.capture_panel().unwrap();
                     let image = controller.borrow().capture_panel().unwrap();
                     let star = self.get_star().unwrap();
@@ -457,7 +449,7 @@ impl GenshinArtifactScanner {
 
                     // scanned_count += 1;
                 },
-                GeneratorState::Complete(result) => {
+                CoroutineState::Complete(result) => {
                     match result {
                         Err(e) => error!("扫描发生错误：{}", e),
                         Ok(value) => {
@@ -472,7 +464,5 @@ impl GenshinArtifactScanner {
                 }
             }
         }
-
-        
     }
 }

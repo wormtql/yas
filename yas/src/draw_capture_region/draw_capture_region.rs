@@ -8,7 +8,6 @@ pub trait DrawCaptureRegion {
 impl DrawCaptureRegion for Pos {
     fn draw_capture_region(&self, image: &mut image::RgbImage) {
         let blue = image::Rgb([0, 0, 255]);
-        let x = 1.0;
 
         let x = self.x as u32;
         let y = self.y as u32;
@@ -53,22 +52,3 @@ impl DrawCaptureRegion for Rect {
         }
     }
 }
-
-// impl DrawConfig for SharedScanInfo {
-//     fn draw_capture_region(&self, image: &mut image::RgbImage) {
-//         self.title_pos.draw_config(image);
-//         self.main_stat_name_pos.draw_config(image);
-//         self.main_stat_value_pos.draw_config(image);
-//
-//         self.level_pos.draw_config(image);
-//         self.panel_pos.draw_config(image);
-//
-//         self.item_equip_pos.draw_config(image);
-//         self.item_count_pos.draw_config(image);
-//
-//         self.pool_pos.draw_config(image);
-//
-//         self.flag.draw_config(image);
-//         self.star.draw_config(image);
-//     }
-// }

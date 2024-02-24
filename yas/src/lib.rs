@@ -1,3 +1,5 @@
+#![feature(decl_macro)]
+
 extern crate log;
 extern crate lazy_static;
 
@@ -12,3 +14,4 @@ pub mod game_info;
 pub mod arguments_builder;
 pub mod window_info;
 pub mod system_control;
+pub mod ocr;

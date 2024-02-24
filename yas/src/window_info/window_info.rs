@@ -11,6 +11,7 @@ pub enum WindowInfoType {
     Pos(Pos),
     Size(Size),
     Float(f64),
+    /// invariant means, when window size scales, this amount will not scale
     InvariantInt(i32),
     InvariantFloat(f64),
 }

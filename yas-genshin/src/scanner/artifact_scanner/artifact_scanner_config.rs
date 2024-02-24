@@ -14,10 +14,13 @@ pub struct GenshinArtifactScannerConfig {
     /// Ignore duplicated items
     pub ignore_dup: bool,
 
+    /// it will output very verbose messages
     pub verbose: bool,
 
+    /// the exact amount to scan
     pub number: i32,
 
+    /// config of the scanner controller
     pub genshin_repo_scan_logic_config: GenshinRepositoryScannerLogicConfig,
 }
 

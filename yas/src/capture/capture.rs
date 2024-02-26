@@ -3,6 +3,7 @@ use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Trian
 
 use anyhow::Result;
 use crate::common::positioning::{Pos, Rect};
+use xcap::{image::DynamicImage, Monitor};
 
 pub trait Capturable<ResultType> {
     fn capture(&self) -> Result<ResultType>;
@@ -20,28 +21,18 @@ impl RelativeCapturable<RgbImage> for Rect {
 
 impl Capturable<RgbImage> for Rect {
     fn capture(&self) -> Result<RgbImage> {
-        // todo optimize screen logic
-        let screen = screenshots::Screen::all()?[0];
+        let monitors = Monitor::all().unwrap();
+        let monitor = monitors.first().unwrap();
 
-        let left = self.left as i32;
-        let top = self.top as i32;
+        let left = self.left as u32;
+        let top = self.top as u32;
         let width = self.width as u32;
         let height = self.height as u32;
 
-        let mut rgb_img: RgbImage = screen
-            .capture_area(
-                left,
-                top,
-                width,
-                height,
-            )?
-            .convert();
-
-        // why is this step
-        if rgb_img.width() > width && rgb_img.height() > height {
-            rgb_img = resize(&rgb_img, self.width as u32, self.height as u32, Triangle);
-        }
-
+        let image = monitor.capture_image().unwrap();
+        let rgb_img = DynamicImage::from(image)
+            .crop(left, top, width, height)
+            .to_rgb8();
         Ok(rgb_img)
     }
 }

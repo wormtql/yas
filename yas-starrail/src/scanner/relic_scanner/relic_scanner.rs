@@ -1,6 +1,6 @@
 use image::{RgbImage, GenericImageView};
 use log::{error, info, warn};
-use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info::WindowInfo}, inference::{model::OCRModel, pre_process::{pre_process, to_gray, ImageConvExt}}, game_info::GameInfo};
+use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info_repository::WindowInfoRepository}, inference::{model::OCRModel, pre_process::{pre_process, to_gray, ImageConvExt}}, game_info::GameInfo};
 use std::{ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, cell::RefCell, sync::{mpsc::{Receiver, Sender, self}, Arc}, thread::JoinHandle, os::windows::thread, collections::HashSet, time::SystemTime};
 
 use crate::scanner_controller::repository_layout::{scan_logic::{StarRailRepositoryScanController, ReturnResult}, config::StarRailRepositoryScannerLogicConfig};
@@ -255,8 +255,8 @@ struct RelicScannerWindowInfo {
     pub col: i32,
 }
 
-impl From<&WindowInfo> for RelicScannerWindowInfo {
-    fn from(value: &WindowInfo) -> Self {
+impl From<&WindowInfoRepository> for RelicScannerWindowInfo {
+    fn from(value: &WindowInfoRepository) -> Self {
         RelicScannerWindowInfo {
             origin_pos: value.get("window_origin_pos").unwrap(),
             title_rect: value.get("starrail_relic_title_rect").unwrap(),
@@ -293,7 +293,7 @@ pub struct StarRailRelicScanner {
     scanner_config: StarRailRelicScannerConfig,
 
     window_info: RelicScannerWindowInfo,
-    window_info_clone: WindowInfo,
+    window_info_clone: WindowInfoRepository,
 
     game_info: GameInfo,
 
@@ -341,7 +341,7 @@ struct SendItem {
 
 // constructor
 impl StarRailRelicScanner {
-    pub fn new(config: StarRailRelicScannerConfig, window_info: &WindowInfo, game_info: GameInfo) -> Self {
+    pub fn new(config: StarRailRelicScannerConfig, window_info: &WindowInfoRepository, game_info: GameInfo) -> Self {
         StarRailRelicScanner {
             scanner_config: config,
             window_info: RelicScannerWindowInfo::from(window_info),

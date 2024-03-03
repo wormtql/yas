@@ -10,7 +10,7 @@ use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
 use yas::window_info::require_window_info::RequireWindowInfo;
-use yas::window_info::window_info::WindowInfo;
+use yas::window_info::window_info_repository::WindowInfoRepository;
 
 use crate::scanner::artifact_scanner::artifact_scanner_window_info::ArtifactScannerWindowInfo;
 use crate::scanner::artifact_scanner::artifact_scanner_worker::ArtifactScannerWorker;
@@ -24,7 +24,7 @@ pub struct GenshinArtifactScanner {
     scanner_config: GenshinArtifactScannerConfig,
 
     window_info: ArtifactScannerWindowInfo,
-    window_info_clone: WindowInfo,
+    window_info_clone: WindowInfoRepository,
 
     game_info: GameInfo,
 }
@@ -53,7 +53,7 @@ impl RequireWindowInfo for GenshinArtifactScanner {
 
 // constructor
 impl GenshinArtifactScanner {
-    pub fn new(config: GenshinArtifactScannerConfig, window_info: &WindowInfo, game_info: GameInfo) -> Self {
+    pub fn new(config: GenshinArtifactScannerConfig, window_info: &WindowInfoRepository, game_info: GameInfo) -> Self {
         GenshinArtifactScanner {
             scanner_config: config,
             window_info: ArtifactScannerWindowInfo::from(window_info),

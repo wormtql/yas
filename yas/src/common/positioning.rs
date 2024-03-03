@@ -2,7 +2,7 @@ use std::ops::{Add, Sub};
 use std::fmt::Display;
 use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Copy, Hash, Serialize, Deserialize)]
 pub struct Rect {
     pub left: f64,
     pub top: f64,
@@ -10,13 +10,13 @@ pub struct Rect {
     pub height: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Copy, Hash, Serialize, Deserialize)]
 pub struct Pos {
     pub x: f64,
     pub y: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Copy, Hash, Serialize, Deserialize)]
 pub struct Size {
     pub height: f64,
     pub width: f64,

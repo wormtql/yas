@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use anyhow::{Result, anyhow};
 use crate::{game_info::Resolution, common::positioning::{Size, Scalable}};
 
-use super::{window_info::WindowInfo, window_info_prototypes::WindowInfoPrototypes};
+use super::{window_info_repository::WindowInfoRepository, window_info_prototypes::WindowInfoPrototypes};
 
 pub struct WindowInfoBuilder {
     pub required_key: HashSet<String>,
@@ -23,7 +23,7 @@ impl WindowInfoBuilder {
         self
     }
 
-    pub fn build(&self, prototypes: &WindowInfoPrototypes, resolution: Size) -> Result<WindowInfo> {
+    pub fn build_window_info(&self, prototypes: &WindowInfoPrototypes, resolution: Size) -> Result<WindowInfoRepository> {
         let resolution_family = Resolution::new(resolution);
         let proto = match prototypes.get_window_info(resolution_family) {
             Some(v) => v,
@@ -35,7 +35,7 @@ impl WindowInfoBuilder {
         let factor = resolution.height / proto.current_resolution.height;
         // let result = proto.scale(factor);
 
-        let mut result = WindowInfo::new(resolution, resolution_family);
+        let mut result = WindowInfoRepository::new(resolution, resolution_family);
         for key in self.required_key.iter() {
             if !proto.data.contains_key(key) {
                 return Err(anyhow!("window info {} is not present", key));

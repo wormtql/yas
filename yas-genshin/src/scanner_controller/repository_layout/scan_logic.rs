@@ -6,7 +6,7 @@ use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::capture::capture;
 use yas::window_info::require_window_info::RequireWindowInfo;
-use yas::window_info::window_info::WindowInfo;
+use yas::window_info::window_info_repository::WindowInfoRepository;
 use crate::scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig;
 use anyhow::{Result, anyhow};
 use yas::common::positioning::{Pos, Rect, Size};
@@ -36,8 +36,8 @@ struct GenshinRepositoryScanControllerWindowInfo {
     pub pool_rect: Rect,
 }
 
-impl From<&WindowInfo> for GenshinRepositoryScanControllerWindowInfo {
-    fn from(value: &WindowInfo) -> Self {
+impl From<&WindowInfoRepository> for GenshinRepositoryScanControllerWindowInfo {
+    fn from(value: &WindowInfoRepository) -> Self {
         GenshinRepositoryScanControllerWindowInfo {
             window_origin_pos: value.get::<Pos>("window_origin_pos").unwrap(),
             panel_rect: value.get("genshin_repository_panel_rect").unwrap(),
@@ -101,7 +101,7 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
 
 // constructor
 impl GenshinRepositoryScanController {
-    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: &WindowInfo, item_count: usize, game_info: GameInfo) -> Self {
+    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: &WindowInfoRepository, item_count: usize, game_info: GameInfo) -> Self {
         let item_row = window_info.get::<i32>("genshin_repository_item_row").unwrap();
         let item_col = window_info.get::<i32>("genshin_repository_item_col").unwrap();
 

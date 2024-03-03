@@ -1,5 +1,5 @@
 use yas::common::positioning::{Pos, Rect};
-use yas::window_info::window_info::WindowInfo;
+use yas::window_info::window_info_repository::WindowInfoRepository;
 
 #[derive(Clone)]
 pub struct ArtifactScannerWindowInfo {
@@ -33,8 +33,8 @@ pub struct ArtifactScannerWindowInfo {
     pub col: i32,
 }
 
-impl From<&WindowInfo> for ArtifactScannerWindowInfo {
-    fn from(value: &WindowInfo) -> Self {
+impl From<&WindowInfoRepository> for ArtifactScannerWindowInfo {
+    fn from(value: &WindowInfoRepository) -> Self {
         ArtifactScannerWindowInfo {
             origin_pos: value.get("window_origin_pos").unwrap(),
             title_rect: value.get("genshin_artifact_title_rect").unwrap(),

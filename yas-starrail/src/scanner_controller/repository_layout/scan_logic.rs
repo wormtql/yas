@@ -5,7 +5,7 @@ use image::RgbImage;
 use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::window_info::require_window_info::RequireWindowInfo;
-use yas::window_info::window_info::WindowInfo;
+use yas::window_info::window_info_repository::WindowInfoRepository;
 use crate::scanner_controller::repository_layout::config::StarRailRepositoryScannerLogicConfig;
 use anyhow::{Result, anyhow};
 use yas::common::positioning::{Pos, Rect, Size};
@@ -35,8 +35,8 @@ struct StarRailRepositoryScanControllerWindowInfo {
     pub pool_rect: Rect,
 }
 
-impl From<&WindowInfo> for StarRailRepositoryScanControllerWindowInfo {
-    fn from(value: &WindowInfo) -> Self {
+impl From<&WindowInfoRepository> for StarRailRepositoryScanControllerWindowInfo {
+    fn from(value: &WindowInfoRepository) -> Self {
         StarRailRepositoryScanControllerWindowInfo {
             window_origin_pos: value.get::<Pos>("window_origin_pos").unwrap(),
             panel_rect: value.get("starrail_repository_panel_rect").unwrap(),
@@ -101,7 +101,7 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
 
 // constructor
 impl StarRailRepositoryScanController {
-    pub fn new(config: StarRailRepositoryScannerLogicConfig, window_info: &WindowInfo, item_count: usize, game_info: GameInfo) -> Self {
+    pub fn new(config: StarRailRepositoryScannerLogicConfig, window_info: &WindowInfoRepository, item_count: usize, game_info: GameInfo) -> Self {
         let item_row = window_info.get::<i32>("starrail_repository_item_row").unwrap();
         let item_col = window_info.get::<i32>("starrail_repository_item_col").unwrap();
 

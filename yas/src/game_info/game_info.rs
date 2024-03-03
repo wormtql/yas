@@ -20,24 +20,26 @@ pub enum Resolution {
 }
 
 impl Resolution {
-    pub fn new(size: Size) -> Self {
+    pub fn new(size: Size) -> Option<Self> {
+        // todo get OS in run time
+
         let height = size.height as u32;
         let width = size.width as u32;
 
         if height * 43 == width * 18 {
-            Resolution::Windows43x18
+            Some(Resolution::Windows43x18)
         } else if height * 16 == width * 9 {
-            Resolution::Windows16x9
+            Some(Resolution::Windows16x9)
         } else if height * 8 == width * 5 {
-            Resolution::Windows8x5
+            Some(Resolution::Windows8x5)
         } else if height * 4 == width * 3 {
-            Resolution::Windows4x3
+            Some(Resolution::Windows4x3)
         } else if height * 7 == width * 3 {
-            Resolution::WIndows7x3
+            Some(Resolution::WIndows7x3)
         } else if (height as i32 * 8 - width as i32 * 5).abs() < 20 {
-            Resolution::MacOS8x5
+            Some(Resolution::MacOS8x5)
         } else {
-            crate::error_and_quit!("不支持的分辨率")
+            None
         }
     }
 }

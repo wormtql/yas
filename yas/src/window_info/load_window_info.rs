@@ -1,0 +1,33 @@
+use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+use crate::common::positioning::Size;
+use crate::window_info::window_info_type::WindowInfoType;
+use crate::window_info::window_info_repository::WindowInfoRepository;
+
+/// Which is a format, where the whole file are recorded under a certain resolution
+#[derive(Serialize, Deserialize)]
+struct WindowInfoTemplatePerSize {
+    pub current_resolution: Size,
+    pub data: HashMap<String, WindowInfoType>
+}
+
+impl WindowInfoTemplatePerSize {
+    pub fn inject_into_window_info_repo(&self, repo: &mut WindowInfoRepository) {
+        for (name, value) in self.data.iter() {
+            repo.add(&name, self.current_resolution, *value);
+        }
+    }
+}
+
+pub macro load_window_info_repo($($filename:literal),+ $(,)?) {
+    let mut result = WindowInfoRepository::new();
+    $(
+        {
+            let s = include_str!($filename);
+            let f = serde_yaml::from_str(&s).unwrap();
+            f.inject_into_window_info_repo(&mut result);
+        }
+    )*
+    result
+}
+

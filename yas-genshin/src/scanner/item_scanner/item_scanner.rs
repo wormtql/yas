@@ -1,6 +1,6 @@
 use image::{RgbImage, GenericImageView};
 use log::{error, info, warn};
-use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info::WindowInfo}, inference::{model::OCRModel, pre_process::{pre_process, to_gray}}, game_info::GameInfo};
+use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info_repository::WindowInfoRepository}, inference::{model::OCRModel, pre_process::{pre_process, to_gray}}, game_info::GameInfo};
 use std::{ops::{Generator, GeneratorState}, pin::Pin, rc::Rc, cell::RefCell, sync::mpsc::{Receiver, Sender, self}, thread::JoinHandle, collections::HashSet, time::SystemTime};
 
 use crate::scanner_controller::repository_layout::scan_logic::{GenshinRepositoryScanController, ReturnResult};
@@ -135,8 +135,8 @@ struct ItemScannerWindowInfo {
     pub col: i32,
 }
 
-impl From<&WindowInfo> for ItemScannerWindowInfo {
-    fn from(value: &WindowInfo) -> Self {
+impl From<&WindowInfoRepository> for ItemScannerWindowInfo {
+    fn from(value: &WindowInfoRepository) -> Self {
         ItemScannerWindowInfo {
             origin: value.get("window_origin").unwrap(),
             title_pos: value.get("genshin_artifact_title_pos").unwrap(),
@@ -152,7 +152,7 @@ pub struct GenshinItemScanner {
     scanner_config: ItemScannerConfig,
 
     window_info: ItemScannerWindowInfo,
-    window_info_clone: WindowInfo,
+    window_info_clone: WindowInfoRepository,
 
     game_info: GameInfo,
 }
@@ -185,7 +185,7 @@ struct SendItem {
 
 // constructor
 impl GenshinItemScanner {
-    pub fn new(config: ItemScannerConfig, window_info: &WindowInfo, game_info: GameInfo) -> Self {
+    pub fn new(config: ItemScannerConfig, window_info: &WindowInfoRepository, game_info: GameInfo) -> Self {
         GenshinItemScanner {
             scanner_config: config,
             window_info: ItemScannerWindowInfo::from(window_info),

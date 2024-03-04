@@ -5,8 +5,6 @@ use image::RgbImage;
 use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::capture::capture;
-use yas::window_info::require_window_info::RequireWindowInfo;
-use yas::window_info::window_info_repository::WindowInfoRepository;
 use crate::scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig;
 use anyhow::{Result, anyhow};
 use yas::common::positioning::{Pos, Rect, Size};
@@ -16,39 +14,6 @@ use std::time::SystemTime;
 use yas::capture::capture::RelativeCapturable;
 use yas::system_control::SystemControl;
 
-#[derive(Debug)]
-pub enum ScrollResult {
-    TimeLimitExceeded,
-    Interrupt,
-    Success,
-    Failed,
-    Skip,
-}
-
-// todo use macros
-struct GenshinRepositoryScanControllerWindowInfo {
-    pub window_origin_pos: Pos,
-    pub panel_rect: Rect,
-    pub flag_pos: Pos,
-    pub item_gap_size: Size,
-    pub item_size: Size,
-    pub scan_margin_pos: Pos,
-    pub pool_rect: Rect,
-}
-
-impl From<&WindowInfoRepository> for GenshinRepositoryScanControllerWindowInfo {
-    fn from(value: &WindowInfoRepository) -> Self {
-        GenshinRepositoryScanControllerWindowInfo {
-            window_origin_pos: value.get::<Pos>("window_origin_pos").unwrap(),
-            panel_rect: value.get("genshin_repository_panel_rect").unwrap(),
-            flag_pos: value.get("genshin_repository_flag_pos").unwrap(),
-            item_gap_size: value.get("genshin_repository_item_gap_size").unwrap(),
-            item_size: value.get("genshin_repository_item_size").unwrap(),
-            scan_margin_pos: value.get("genshin_repository_scan_margin_pos").unwrap(),
-            pool_rect: value.get("genshin_repository_pool_rect").unwrap(),
-        }
-    }
-}
 
 pub struct GenshinRepositoryScanController {
     // to detect whether an item changes

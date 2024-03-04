@@ -1,1 +1,1 @@
-pub mod repository_layout;
+mod repository_layout;

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::common::positioning::Size;
-use crate::window_info::window_info_type::WindowInfoType;
-use crate::window_info::window_info_repository::WindowInfoRepository;
+use crate::window_info::WindowInfoType;
+use crate::window_info::WindowInfoRepository;
 
 /// Which is a format, where the whole file are recorded under a certain resolution
 #[derive(Serialize, Deserialize)]

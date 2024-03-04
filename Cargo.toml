@@ -3,7 +3,8 @@ resolver = "2"
 members = [
     "yas",
     "yas-genshin",
-    "yas-starrail"
+    "yas-starrail",
+    "yas-derive"
 ]
 
 [profile.release]

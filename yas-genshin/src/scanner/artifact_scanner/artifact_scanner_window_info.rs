@@ -1,5 +1,5 @@
 use yas::common::positioning::{Pos, Rect};
-use yas::window_info::window_info_repository::WindowInfoRepository;
+use yas::window_info::WindowInfoRepository;
 
 #[derive(Clone)]
 pub struct ArtifactScannerWindowInfo {

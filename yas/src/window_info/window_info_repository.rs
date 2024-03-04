@@ -1,8 +1,10 @@
 use std::collections::HashMap;
-use crate::{common::positioning::{Rect, Pos, Size, Scalable}, game_info::Resolution};
-use anyhow::{Result, anyhow};
-use serde::{Serialize, Deserialize};
-use crate::window_info::window_info_type::WindowInfoType;
+
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
+
+use crate::common::positioning::{Pos, Scalable, Size};
+use crate::window_info::WindowInfoType;
 
 /// Maps a window-info-key to a list of entries
 /// where entries consist of a size where the value is recorded, and accordingly a value
@@ -82,5 +84,9 @@ impl WindowInfoRepository {
         }
 
         None
+    }
+
+    pub fn build_window_info<T>(&self, window_size: Size) -> Result<T> {
+
     }
 }

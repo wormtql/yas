@@ -1,6 +1,7 @@
 use std::{cell::RefCell, ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, sync::{mpsc::{self, Sender}}, time::SystemTime};
 
 use anyhow::Result;
+use clap::FromArgMatches;
 use image::RgbImage;
 use log::{error, info};
 
@@ -9,63 +10,76 @@ use yas::capture::capture::RelativeCapturable;
 use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
-use yas::window_info::require_window_info::RequireWindowInfo;
-use yas::window_info::window_info_repository::WindowInfoRepository;
+use yas::window_info::FromWindowInfoRepository;
+use yas::window_info::WindowInfoRepository;
 
-use crate::scanner::artifact_scanner::artifact_scanner_window_info::ArtifactScannerWindowInfo;
 use crate::scanner::artifact_scanner::artifact_scanner_worker::ArtifactScannerWorker;
 use crate::scanner::artifact_scanner::message_items::SendItem;
 use crate::scanner::artifact_scanner::scan_result::GenshinArtifactScanResult;
-use crate::scanner_controller::repository_layout::scan_logic::{GenshinRepositoryScanController, ReturnResult};
+use crate::scanner_controller::{GenshinRepositoryControllerReturnResult, GenshinRepositoryScanController, GenshinRepositoryScannerLogicConfig};
 
 use super::artifact_scanner_config::GenshinArtifactScannerConfig;
+use super::ArtifactScannerWindowInfo;
 
 pub struct GenshinArtifactScanner {
     scanner_config: GenshinArtifactScannerConfig,
-
     window_info: ArtifactScannerWindowInfo,
-    window_info_clone: WindowInfoRepository,
-
     game_info: GameInfo,
+    image_to_text: Rc<dyn ImageToText<RgbImage>>,
+    controller: Rc<RefCell<GenshinRepositoryScanController>>,
 }
-
-impl RequireWindowInfo for GenshinArtifactScanner {
-    fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
-        <GenshinRepositoryScanController as RequireWindowInfo>::require_window_info(window_info_builder);
-
-        // window_info_builder.add_required_key("window_origin_pos");
-        window_info_builder.add_required_key("genshin_artifact_title_rect");
-        window_info_builder.add_required_key("genshin_artifact_main_stat_name_rect");
-        window_info_builder.add_required_key("genshin_artifact_main_stat_value_rect");
-        window_info_builder.add_required_key("genshin_artifact_level_rect");
-        window_info_builder.add_required_key("genshin_artifact_item_equip_rect");
-        window_info_builder.add_required_key("genshin_artifact_item_count_rect");
-        window_info_builder.add_required_key("genshin_artifact_star_pos");
-        window_info_builder.add_required_key("genshin_repository_item_col");
-        window_info_builder.add_required_key("genshin_repository_panel_rect");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat0_rect");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat1_rect");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat2_rect");
-        window_info_builder.add_required_key("genshin_artifact_sub_stat3_rect");
-    }
-}
-
 
 // constructor
 impl GenshinArtifactScanner {
-    pub fn new(config: GenshinArtifactScannerConfig, window_info: &WindowInfoRepository, game_info: GameInfo) -> Self {
-        GenshinArtifactScanner {
+    fn get_image_to_text() -> Rc<dyn ImageToText<RgbImage>> {
+        let model: Rc<dyn ImageToText<RgbImage>> = Rc::new(
+            yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
+        );
+        model
+    }
+
+    pub fn new(
+        window_info_repo: &WindowInfoRepository,
+        config: GenshinArtifactScannerConfig,
+        controller_config: GenshinRepositoryScannerLogicConfig,
+        game_info: GameInfo,
+    ) -> Result<Self> {
+        Ok(Self {
             scanner_config: config,
-            window_info: ArtifactScannerWindowInfo::from(window_info),
-            window_info_clone: window_info.clone(),
+            window_info: ArtifactScannerWindowInfo::from_window_info_repository(game_info.window, window_info_repo)?,
             game_info,
-        }
+            image_to_text: Self::get_image_to_text(),
+            // item count will be set later, once the scan starts
+            controller: Rc::new(RefCell::new(
+                GenshinRepositoryScanController::new(window_info_repo, controller_config, 0, game_info.clone())?
+            )),
+        })
+    }
+
+    pub fn from_arg_matches(
+        window_info_repo: &WindowInfoRepository,
+        arg_matches: &clap::ArgMatches,
+        game_info: GameInfo,
+    ) -> Result<Self> {
+        Ok(GenshinArtifactScanner {
+            scanner_config: GenshinArtifactScannerConfig::from_arg_matches(arg_matches)?,
+            window_info: ArtifactScannerWindowInfo::from_window_info_repository(game_info.window, window_info_repo)?,
+            game_info,
+            image_to_text: Self::get_image_to_text(),
+            controller: Rc::new(RefCell::new(
+                GenshinRepositoryScanController::from_arg_matches(window_info_repo, arg_matches, 0, game_info.clone())?
+            ))
+        })
     }
 }
 
 impl GenshinArtifactScanner {
+    pub fn capture_panel(&self) -> Result<RgbImage> {
+        self.window_info.panel_rect.capture_relative(self.window_info.window_origin_pos)
+    }
+
     pub fn get_star(&self) -> Result<usize> {
-        let pos = self.window_info.origin_pos + self.window_info.star_pos;
+        let pos = self.game_info.window + self.window_info.star_pos;
         let color = capture::capture::get_color(pos)?;
 
         let match_colors = [
@@ -89,7 +103,7 @@ impl GenshinArtifactScanner {
         anyhow::Ok(ret)
     }
 
-    pub fn get_item_count(&self, ocr_model: Rc<dyn ImageToText<RgbImage>>) -> Result<i32> {
+    pub fn get_item_count(&self) -> Result<i32> {
         let count = self.scanner_config.number;
         let item_name = "圣遗物";
 
@@ -99,7 +113,7 @@ impl GenshinArtifactScanner {
         }
 
         let im = match self.window_info.item_count_rect
-            .capture_relative(self.window_info.origin_pos)
+            .capture_relative(self.game_info.origin_pos)
         {
             Ok(im) => im,
             Err(e) => {
@@ -108,7 +122,7 @@ impl GenshinArtifactScanner {
             }
         };
 
-        let s = ocr_model.image_to_text(&im, false)?;
+        let s = self.image_to_text.image_to_text(&im, false)?;
 
         info!("物品信息: {}", s);
 
@@ -128,24 +142,16 @@ impl GenshinArtifactScanner {
         info!("开始扫描，使用鼠标右键中断扫描");
 
         let now = SystemTime::now();
-
         let (tx, rx) = mpsc::channel::<Option<SendItem>>();
         // let token = self.cancellation_token.clone();
-
-        let model: Rc<dyn ImageToText<RgbImage>> = Rc::new(
-            yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
-        );
-        let count = self.get_item_count(model.clone())?;
-
+        let count = self.get_item_count()?;
         let worker = ArtifactScannerWorker::new(
-            model.clone(),
+            self.image_to_text.clone(),
             self.window_info.clone(),
             self.scanner_config.clone(),
         );
 
         let join_handle = worker.run(rx);
-
-        // let worker = self.worker(rx, count, token);
 
         self.send(&tx, count);
 
@@ -164,21 +170,14 @@ impl GenshinArtifactScanner {
     }
 
     fn send(&mut self, tx: &Sender<Option<SendItem>>, count: i32) {
-        let controller = Rc::new(RefCell::new(GenshinRepositoryScanController::new(
-            self.scanner_config.genshin_repo_scan_logic_config.clone(),
-            &self.window_info_clone,
-            // todo normalize types
-            count as usize,
-            self.game_info.clone(),
-        )));
-        let mut generator = GenshinRepositoryScanController::into_generator(controller.clone());
+        self.controller.borrow_mut().set_item_count(count as usize);
+        let mut generator = GenshinRepositoryScanController::get_generator(self.controller.clone());
 
         loop {
             let pinned_generator = Pin::new(&mut generator);
             match pinned_generator.resume(()) {
                 CoroutineState::Yielded(_) => {
-                    // let image = self.capture_panel().unwrap();
-                    let image = controller.borrow().capture_panel().unwrap();
+                    let image = self.capture_panel().unwrap();
                     let star = self.get_star().unwrap();
 
                     // todo normalize types
@@ -201,8 +200,8 @@ impl GenshinArtifactScanner {
                         Err(e) => error!("扫描发生错误：{}", e),
                         Ok(value) => {
                             match value {
-                                ReturnResult::Interrupted => info!("用户中断"),
-                                ReturnResult::Finished => ()
+                                GenshinRepositoryControllerReturnResult::Interrupted => info!("用户中断"),
+                                GenshinRepositoryControllerReturnResult::Finished => ()
                             }
                         }
                     }

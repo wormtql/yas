@@ -1,2 +1,2 @@
-pub mod artifact_scanner;
+mod artifact_scanner;
 pub mod item_scanner;

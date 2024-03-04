@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::common::positioning::Size;
+use crate::positioning::Size;
 use crate::window_info::WindowInfoType;
 use crate::window_info::WindowInfoRepository;
 
 /// Which is a format, where the whole file are recorded under a certain resolution
 #[derive(Serialize, Deserialize)]
 struct WindowInfoTemplatePerSize {
-    pub current_resolution: Size,
+    pub current_resolution: Size<usize>,
     pub data: HashMap<String, WindowInfoType>
 }
 

@@ -1,11 +1,12 @@
-use crate::common::positioning::{Pos, Rect};
+use crate::positioning::{Pos, Rect};
 
 
 pub trait DrawCaptureRegion {
     fn draw_capture_region(&self, image: &mut image::RgbImage);
 }
 
-impl DrawCaptureRegion for Pos {
+// todo other types
+impl DrawCaptureRegion for Pos<f64> {
     fn draw_capture_region(&self, image: &mut image::RgbImage) {
         let blue = image::Rgb([0, 0, 255]);
 
@@ -30,7 +31,7 @@ impl DrawCaptureRegion for Pos {
     }
 }
 
-impl DrawCaptureRegion for Rect {
+impl DrawCaptureRegion for Rect<f64> {
     fn draw_capture_region(&self, image: &mut image::RgbImage) {
         let red = image::Rgb([255, 0, 0]);
 

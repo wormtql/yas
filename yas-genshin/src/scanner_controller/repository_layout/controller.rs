@@ -5,15 +5,16 @@ use image::RgbImage;
 use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::capture::capture;
-use crate::scanner_controller::repository_layout::config::GenshinRepositoryScannerLogicConfig;
 use anyhow::{Result, anyhow};
-use yas::common::positioning::{Pos, Rect, Size};
+use yas::positioning::{Pos, Rect, Size};
 use yas::utils;
 use log::{info, error};
 use std::time::SystemTime;
 use yas::capture::capture::RelativeCapturable;
 use yas::system_control::SystemControl;
-
+use yas::window_info::{FromWindowInfoRepository, WindowInfoRepository};
+use crate::scanner_controller::repository_layout::{GenshinRepositoryScanControllerWindowInfo, GenshinRepositoryScannerLogicConfig, ScrollResult};
+use clap::{ArgMatches, FromArgMatches};
 
 pub struct GenshinRepositoryScanController {
     // to detect whether an item changes
@@ -30,6 +31,7 @@ pub struct GenshinRepositoryScanController {
 
     game_info: GameInfo,
 
+    // row and column in one page
     row: usize,
     col: usize,
     item_count: usize,
@@ -39,22 +41,7 @@ pub struct GenshinRepositoryScanController {
     system_control: SystemControl,
 }
 
-impl RequireWindowInfo for GenshinRepositoryScanController {
-    fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
-        window_info_builder
-            // .add_required_key("window_origin_pos")
-            .add_required_key("genshin_repository_panel_rect")
-            .add_required_key("genshin_repository_flag_pos")
-            .add_required_key("genshin_repository_item_gap_size")
-            .add_required_key("genshin_repository_item_size")
-            .add_required_key("genshin_repository_scan_margin_pos")
-            .add_required_key("genshin_repository_pool_rect")
-            .add_required_key("genshin_repository_item_row")
-            .add_required_key("genshin_repository_item_col");
-    }
-}
-
-pub fn calc_pool(row: &Vec<u8>) -> f32 {
+fn calc_pool(row: &Vec<u8>) -> f32 {
     let len = row.len() / 3;
     let mut pool: f32 = 0.0;
 
@@ -66,17 +53,25 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
 
 // constructor
 impl GenshinRepositoryScanController {
-    pub fn new(config: GenshinRepositoryScannerLogicConfig, window_info: &WindowInfoRepository, item_count: usize, game_info: GameInfo) -> Self {
-        let item_row = window_info.get::<i32>("genshin_repository_item_row").unwrap();
-        let item_col = window_info.get::<i32>("genshin_repository_item_col").unwrap();
+    pub fn new(
+        window_info_repo: &WindowInfoRepository,
+        config: GenshinRepositoryScannerLogicConfig,
+        item_count: usize,
+        game_info: GameInfo
+    ) -> Result<Self> {
+        let window_info = GenshinRepositoryScanControllerWindowInfo::from_window_info_repository(
+            game_info.window, window_info_repo
+        )?;
+        let row = window_info.genshin_repository_item_row;
+        let col = window_info.genshin_repository_item_col;
 
-        GenshinRepositoryScanController {
+        Ok(GenshinRepositoryScanController {
             system_control: SystemControl::new(),
 
-            row: item_row as usize,
-            col: item_col as usize,
+            row: row as usize,
+            col: col as usize,
 
-            window_info: GenshinRepositoryScanControllerWindowInfo::from(window_info),
+            window_info,
             config,
 
             pool: 0.0,
@@ -92,7 +87,25 @@ impl GenshinRepositoryScanController {
             game_info,
             item_count,
             scanned_count: 0,
-        }
+        })
+    }
+
+    pub fn set_item_count(&mut self, count: usize) {
+        self.item_count = count;
+    }
+
+    pub fn from_arg_matches(
+        window_info_repo: &WindowInfoRepository,
+        arg_matches: &ArgMatches,
+        item_count: usize,
+        game_info: GameInfo
+    ) -> Result<Self> {
+        Self::new(
+            window_info_repo,
+            GenshinRepositoryScannerLogicConfig::from_arg_matches(arg_matches)?,
+            item_count,
+            game_info
+        )
     }
 }
 
@@ -102,7 +115,7 @@ pub enum ReturnResult {
 }
 
 impl GenshinRepositoryScanController {
-    pub fn into_generator(object: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
+    pub fn get_generator(object: Rc<RefCell<GenshinRepositoryScanController>>) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
         let generator = move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;
@@ -200,10 +213,6 @@ impl GenshinRepositoryScanController {
         };
 
         generator
-    }
-
-    pub fn capture_panel(&self) -> Result<RgbImage> {
-        self.window_info.panel_rect.capture_relative(self.window_info.window_origin_pos)
     }
 
     #[inline(always)]

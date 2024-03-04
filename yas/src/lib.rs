@@ -14,5 +14,4 @@ pub mod game_info;
 pub mod window_info;
 pub mod system_control;
 pub mod ocr;
-pub mod config;
 pub mod positioning;

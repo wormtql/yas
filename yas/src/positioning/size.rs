@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::hash::{Hash, Hasher};
 use std::ops::Mul;
 use serde::{Deserialize, Serialize};
 use crate::positioning::Scalable;
@@ -46,3 +47,16 @@ impl Scalable for Size<f64> {
 impl_int_size!(i32);
 impl_int_size!(usize);
 impl_int_size!(u32);
+
+macro impl_int_hash($t:ty) {
+    impl Hash for Size<$t> {
+        fn hash<H: Hasher>(&self, state: &mut H) {
+            self.width.hash(state);
+            self.height.hash(state);
+        }
+    }
+}
+
+impl_int_hash!(i32);
+impl_int_hash!(usize);
+impl_int_hash!(u32);

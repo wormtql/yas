@@ -3,7 +3,7 @@ use log::{error, info, warn};
 use yas::{capture::capture::{self, RelativeCapturable}, common::{color::Color, positioning::{Rect, Pos}}, window_info::{require_window_info::RequireWindowInfo, window_info_repository::WindowInfoRepository}, inference::{model::OCRModel, pre_process::{pre_process, to_gray}}, game_info::GameInfo};
 use std::{ops::{Generator, GeneratorState}, pin::Pin, rc::Rc, cell::RefCell, sync::mpsc::{Receiver, Sender, self}, thread::JoinHandle, collections::HashSet, time::SystemTime};
 
-use crate::scanner_controller::repository_layout::scan_logic::{GenshinRepositoryScanController, ReturnResult};
+use crate::scanner_controller::repository_layout::controller::{GenshinRepositoryScanController, ReturnResult};
 
 use anyhow::Result;
 
@@ -319,7 +319,7 @@ impl GenshinItemScanner {
             count as usize,
             self.game_info.clone(),
         )));
-        let mut generator = GenshinRepositoryScanController::into_generator(controller.clone());
+        let mut generator = GenshinRepositoryScanController::get_generator(controller.clone());
         
         loop {
             let pinned_generator = Pin::new(&mut generator);

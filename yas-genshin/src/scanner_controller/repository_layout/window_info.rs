@@ -1,11 +1,17 @@
-use yas::common::positioning::{Pos, Rect, Size};
+use yas::positioning::{Pos, Rect, Size};
+use yas_derive::YasWindowInfo;
 
-struct GenshinRepositoryScanControllerWindowInfo {
-    pub window_origin_pos: Pos,
-    pub panel_rect: Rect,
-    pub flag_pos: Pos,
-    pub item_gap_size: Size,
-    pub item_size: Size,
-    pub scan_margin_pos: Pos,
-    pub pool_rect: Rect,
+// todo macro key renaming
+#[derive(YasWindowInfo)]
+pub struct GenshinRepositoryScanControllerWindowInfo {
+    #[window_info(rename = "genshin")]
+    pub panel_rect: Rect<f64>,
+    pub flag_pos: Pos<f64>,
+    pub item_gap_size: Size<f64>,
+    pub item_size: Size<f64>,
+    pub scan_margin_pos: Pos<f64>,
+    pub pool_rect: Rect<f64>,
+
+    pub genshin_repository_item_row: i32,
+    pub genshin_repository_item_col: i32,
 }

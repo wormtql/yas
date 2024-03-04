@@ -3,7 +3,7 @@ use std::rc::Rc;
 use std::sync::mpsc::Receiver;
 use std::thread::JoinHandle;
 use image::{GenericImageView, ImageBuffer, Luma, RgbImage};
-use yas::common::positioning::{Pos, Rect};
+use yas::positioning::{Pos, Rect};
 use yas::ocr::ImageToText;
 use crate::scanner::artifact_scanner::artifact_scanner_window_info::ArtifactScannerWindowInfo;
 use crate::scanner::artifact_scanner::GenshinArtifactScannerConfig;
@@ -45,7 +45,7 @@ impl ArtifactScannerWorker {
     }
 
     /// the captured_img is a panel of the artifact, the rect is a region of the panel
-    fn model_inference(&self, rect: Rect, captured_img: &RgbImage) -> Result<String> {
+    fn model_inference(&self, rect: Rect<f64>, captured_img: &RgbImage) -> Result<String> {
         // todo move dump mode into a scanner
         // if dump_mode {
         //     captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;

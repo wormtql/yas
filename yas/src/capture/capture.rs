@@ -2,7 +2,7 @@ use crate::common::color::Color;
 use image::{buffer::ConvertBuffer, imageops::resize, imageops::FilterType::Triangle, RgbImage};
 
 use anyhow::Result;
-use crate::common::positioning::{Pos, Rect};
+use crate::positioning::{Pos, Rect};
 
 pub trait Capturable<ResultType> {
     fn capture(&self) -> Result<ResultType>;

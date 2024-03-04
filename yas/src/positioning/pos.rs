@@ -68,4 +68,3 @@ macro impl_int_pos($t:ty) {
 impl_int_pos!(i32);
 impl_int_pos!(usize);
 impl_int_pos!(u32);
-

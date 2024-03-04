@@ -1,13 +1,12 @@
 use serde::{Deserialize, Serialize};
-use crate::common::positioning::{Pos, Rect, Scalable, Size};
-
-type StdResult<T, E> = std::result::Result<T, E>;
+use crate::positioning::{Pos, Rect, Scalable, Size};
+use anyhow::anyhow;
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum WindowInfoType {
-    Rect(Rect),
-    Pos(Pos),
-    Size(Size),
+    Rect(Rect<f64>),
+    Pos(Pos<f64>),
+    Size(Size<f64>),
     Float(f64),
     /// when window size scales, these amount will not scale
     InvariantInt(i32),
@@ -16,57 +15,57 @@ pub enum WindowInfoType {
 
 // due to orphan rule, we implement TryInto instead of TryFrom
 impl TryInto<i32> for WindowInfoType {
-    type Error = String;
+    type Error = anyhow::Error;
 
-    fn try_into(self) -> std::result::Result<i32, Self::Error> {
+    fn try_into(self) -> Result<i32, Self::Error> {
         match self {
-            WindowInfoType::InvariantInt(v) => StdResult::Ok(v),
-            _ => StdResult::Err(String::from("not an i32 type"))
+            WindowInfoType::InvariantInt(v) => Ok(v),
+            _ => Err(anyhow!(String::from("not an i32 type")))
         }
     }
 }
 
-impl TryInto<Rect> for WindowInfoType {
-    type Error = String;
+impl TryInto<Rect<f64>> for WindowInfoType {
+    type Error = anyhow::Error;
 
-    fn try_into(self) -> std::result::Result<Rect, Self::Error> {
+    fn try_into(self) -> Result<Rect<f64>, Self::Error> {
         match self {
-            WindowInfoType::Rect(rect) => StdResult::Ok(rect),
-            _ => StdResult::Err(String::from("not a rect type")),
+            WindowInfoType::Rect(rect) => Ok(rect),
+            _ => Err(anyhow!(String::from("not a rect type"))),
         }
     }
 }
 
-impl TryInto<Pos> for WindowInfoType {
-    type Error = String;
+impl TryInto<Pos<f64>> for WindowInfoType {
+    type Error = anyhow::Error;
 
-    fn try_into(self) -> std::result::Result<Pos, Self::Error> {
+    fn try_into(self) -> Result<Pos<f64>, Self::Error> {
         match self {
-            WindowInfoType::Pos(pos) => StdResult::Ok(pos),
-            _ => StdResult::Err(String::from("not a pos type")),
+            WindowInfoType::Pos(pos) => Ok(pos),
+            _ => Err(anyhow!(String::from("not a pos type"))),
         }
     }
 }
 
 impl TryInto<f64> for WindowInfoType {
-    type Error = String;
+    type Error = anyhow::Error;
 
     fn try_into(self) -> std::result::Result<f64, Self::Error> {
         match self {
-            WindowInfoType::Float(f) => StdResult::Ok(f),
-            WindowInfoType::InvariantFloat(f) => StdResult::Ok(f),
-            _ => StdResult::Err(String::from("not a float type")),
+            WindowInfoType::Float(f) => Ok(f),
+            WindowInfoType::InvariantFloat(f) => Ok(f),
+            _ => Err(anyhow!(String::from("not a float type"))),
         }
     }
 }
 
-impl TryInto<Size> for WindowInfoType {
-    type Error = String;
+impl TryInto<Size<f64>> for WindowInfoType {
+    type Error = anyhow::Error;
 
-    fn try_into(self) -> std::result::Result<Size, Self::Error> {
+    fn try_into(self) -> Result<Size<f64>, Self::Error> {
         match self {
-            WindowInfoType::Size(size) => StdResult::Ok(size),
-            _ => StdResult::Err(String::from("not a size type")),
+            WindowInfoType::Size(size) => Ok(size),
+            _ => Err(anyhow!(String::from("not a size type"))),
         }
     }
 }

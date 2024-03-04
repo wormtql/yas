@@ -46,7 +46,7 @@ impl Resolution {
 
 #[derive(Clone, Debug)]
 pub struct GameInfo {
-    pub window: Rect,
+    pub window: Rect<usize>,
     pub resolution: Resolution,
     pub is_cloud: bool,
     pub ui: UI,

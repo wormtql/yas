@@ -6,7 +6,7 @@ use crate::window_info::WindowInfoRepository;
 
 /// Which is a format, where the whole file are recorded under a certain resolution
 #[derive(Serialize, Deserialize)]
-struct WindowInfoTemplatePerSize {
+pub struct WindowInfoTemplatePerSize {
     pub current_resolution: Size<usize>,
     pub data: HashMap<String, WindowInfoType>
 }
@@ -20,14 +20,16 @@ impl WindowInfoTemplatePerSize {
 }
 
 pub macro load_window_info_repo($($filename:literal),+ $(,)?) {
-    let mut result = WindowInfoRepository::new();
-    $(
-        {
-            let s = include_str!($filename);
-            let f = serde_yaml::from_str(&s).unwrap();
-            f.inject_into_window_info_repo(&mut result);
-        }
-    )*
-    result
+    {
+        let mut result = WindowInfoRepository::new();
+        $(
+            {
+                let s = include_str!($filename);
+                let f: WindowInfoTemplatePerSize = serde_yaml::from_str(&s).unwrap();
+                f.inject_into_window_info_repo(&mut result);
+            }
+        )*
+        result
+    }
 }
 

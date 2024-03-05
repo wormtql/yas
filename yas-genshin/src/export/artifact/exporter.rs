@@ -2,10 +2,10 @@ use std::path::PathBuf;
 
 use clap::{Arg, FromArgMatches};
 use yas::export::{YasExporter, ExportAssets};
+use anyhow::Result;
 
 use crate::artifact::GenshinArtifact;
-
-use crate::export::export_format::GenshinArtifactExportFormat;
+use crate::export::artifact::{ExportArtifactConfig, GenshinArtifactExportFormat};
 
 use super::good::GOODFormat;
 use super::mingyu_lab::MingyuLabFormat;
@@ -15,6 +15,17 @@ pub struct GenshinArtifactExporter<'a> {
     pub format: GenshinArtifactExportFormat,
     pub results: Option<&'a [GenshinArtifact]>,
     pub output_dir: PathBuf,
+}
+
+impl <'a> GenshinArtifactExporter<'a> {
+    pub fn new(arg_matches: &clap::ArgMatches, results: &'a [GenshinArtifact]) -> Result<Self> {
+        let config = ExportArtifactConfig::from_arg_matches(arg_matches)?;
+        Ok(Self {
+            format: config.format,
+            results: Some(results),
+            output_dir: PathBuf::from(&config.output_dir)
+        })
+    }
 }
 
 impl<'a> YasExporter for GenshinArtifactExporter<'a> {
@@ -48,48 +59,5 @@ impl<'a> YasExporter for GenshinArtifactExporter<'a> {
                 export_assets.add_asset(path, contents.into_bytes());
             },
         };
-    }
-}
-
-impl<'a> ArgumentsModifier for GenshinArtifactExporter<'a> {
-    fn modify_arguments(builder: &mut ArgumentsBuilder) {
-        builder.arg(
-            Arg::new("output-format")
-                .long("output-format")
-                .short('f')
-                .help("输出格式")
-                .value_parser(clap::builder::EnumValueParser::<GenshinArtifactExportFormat>::new())
-                .default_value("mona")
-                // .default_value("Mona")
-        )
-        .arg(
-            Arg::new("output-dir")
-                .long("output-dir")
-                .short('o')
-                .help("输出目录")
-                .default_value(".")
-        );
-    }
-}
-
-impl<'a> FromArgMatches for GenshinArtifactExporter<'a> {
-    fn from_arg_matches(matches: &clap::ArgMatches) -> Result<Self, clap::Error> {
-        let output_dir = matches.get_one::<String>("output-dir").unwrap();
-
-        // todo error propogation
-        let path = PathBuf::try_from(output_dir).unwrap();
-
-        let value = GenshinArtifactExporter {
-            format: *matches.get_one("output-format").unwrap(),
-            results: None,
-            output_dir: path
-        };
-
-        Ok(value)
-    }
-
-    fn update_from_arg_matches(&mut self, _matches: &clap::ArgMatches) -> Result<(), clap::Error> {
-        // todo
-        unimplemented!()
     }
 }

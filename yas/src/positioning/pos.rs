@@ -1,7 +1,8 @@
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
 use std::ops::{Add, Sub};
+
 use serde::{Deserialize, Serialize};
+
 use crate::positioning::Scalable;
 
 #[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]

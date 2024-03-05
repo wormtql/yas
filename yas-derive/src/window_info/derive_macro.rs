@@ -1,6 +1,5 @@
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
-use syn::parse::ParseStream;
 use crate::window_info::WindowInfoNestedAttributes;
 
 pub fn yas_window_info(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -34,7 +33,7 @@ pub fn yas_window_info(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 
         let trait_impl = quote! {
             impl yas::window_info::FromWindowInfoRepository for #struct_name {
-                fn from_window_info_repository(window_size: yas::common::positioning::Size<usize>, repo: &yas::window_info::WindowInfoRepository) -> anyhow::Result<Self> {
+                fn from_window_info_repository(window_size: yas::positioning::Size<usize>, repo: &yas::window_info::WindowInfoRepository) -> anyhow::Result<Self> {
                     Ok(Self {
                         #(#fields),*
                     })

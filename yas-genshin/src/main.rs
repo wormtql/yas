@@ -3,10 +3,8 @@ extern crate log;
 
 use anyhow::Result;
 use clap::{Command, FromArgMatches};
-use yas::{arguments_builder::arguments_builder::{ArgumentsModifier, ArgumentsBuilder}, window_info::{require_window_info::RequireWindowInfo, window_info_builder::WindowInfoBuilder, window_info_prototypes::WindowInfoPrototypes}, load_window_info, game_info:: GameInfoBuilder, export::ExportAssets};
-use yas_scanner_genshin::{scanner::artifact_scanner::{GenshinArtifactScanner, GenshinArtifactScannerConfig}, export::artifact::GenshinArtifactExporter, artifact::GenshinArtifact};
 use yas::export::YasExporter;
-use yas::window_info::window_info_repository::WindowInfoRepository;
+use yas::window_info::WindowInfoRepository;
 use yas::utils;
 
 fn main() -> Result<()> {

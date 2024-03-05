@@ -11,6 +11,7 @@ use anyhow::{anyhow, Result};
 use log::{error, info, warn};
 use crate::scanner::artifact_scanner::message_items::SendItem;
 use crate::scanner::artifact_scanner::scan_result::GenshinArtifactScanResult;
+use yas::ocr::yas_ocr_model;
 
 fn parse_level(s: &str) -> Result<i32> {
     let pos = s.find('+');
@@ -24,24 +25,30 @@ fn parse_level(s: &str) -> Result<i32> {
     return anyhow::Ok(level);
 }
 
+fn get_image_to_text() -> Result<Box<dyn ImageToText<RgbImage> + Send>> {
+    let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(
+        yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
+    );
+    Ok(model)
+}
+
 /// run in a separate thread, accept captured image and get an artifact
 pub struct ArtifactScannerWorker {
-    model: Rc<dyn ImageToText<RgbImage>>,
+    model: Box<dyn ImageToText<RgbImage> + Send>,
     window_info: ArtifactScannerWindowInfo,
     config: GenshinArtifactScannerConfig,
 }
 
 impl ArtifactScannerWorker {
     pub fn new(
-        model: Rc<dyn ImageToText<ImageBuffer<Luma<f32>, Vec<f32>>>>,
         window_info: ArtifactScannerWindowInfo,
         config: GenshinArtifactScannerConfig,
-    ) -> Self {
-        ArtifactScannerWorker {
-            model,
+    ) -> Result<Self> {
+        Ok(ArtifactScannerWorker {
+            model: get_image_to_text()?,
             window_info,
             config,
-        }
+        })
     }
 
     /// the captured_img is a panel of the artifact, the rect is a region of the panel
@@ -109,10 +116,10 @@ impl ArtifactScannerWorker {
         let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_rect, &image)?;
         let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_rect, &image)?;
 
-        let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_rect[0], &image)?;
-        let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_rect[1], &image)?;
-        let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_rect[2], &image)?;
-        let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_rect[3], &image)?;
+        let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_1, &image)?;
+        let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_2, &image)?;
+        let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_3, &image)?;
+        let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_4, &image)?;
 
         let str_level = self.model_inference(self.window_info.level_rect, &image)?;
         let str_equip = self.model_inference(self.window_info.item_equip_rect, &image)?;

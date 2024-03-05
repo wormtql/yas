@@ -2,7 +2,7 @@ use log::error;
 use regex::Regex;
 use std::hash::{Hash, Hasher};
 use strum_macros::Display;
-use crate::scanner::artifact_scanner::GenshinArtifactScanResult;
+use crate::scanner::GenshinArtifactScanResult;
 
 use crate::character::CHARACTER_NAMES;
 

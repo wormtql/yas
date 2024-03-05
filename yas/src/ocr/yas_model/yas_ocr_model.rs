@@ -149,7 +149,7 @@ pub macro yas_ocr_model($model_name:literal, $index_to_word:literal) {
         let index_to_word = include_str!($index_to_word);
 
         YasOCRModel::new(
-            model_bytes, index_to_world,
+            model_bytes, index_to_word,
         )
     }
 }

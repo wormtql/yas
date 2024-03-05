@@ -50,15 +50,15 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
     pool
 }
 
-fn get_capturer() -> Rc<dyn Capturer<RgbImage>> {
-    Rc::new(GenericCapturer::new())
+fn get_capturer() -> Result<Rc<dyn Capturer<RgbImage>>> {
+    Ok(Rc::new(GenericCapturer::new()?))
 }
 
 fn color_distance(c1: &image::Rgb<u8>, c2: &image::Rgb<u8>) -> usize {
-    let x = (c1.0 - c2.0) as usize;
-    let y = (c1.1 - c2.1) as usize;
-    let z = (c1.2 - c2.2) as usize;
-    return x * x + y * y + z * z;
+    let x = c1.0[0] as i32 - c2.0[0] as i32;
+    let y = c1.0[1] as i32 - c2.0[1] as i32;
+    let z = c1.0[2] as i32 - c2.0[2] as i32;
+    return (x * x + y * y + z * z) as usize;
 }
 
 // constructor
@@ -70,7 +70,7 @@ impl GenshinRepositoryScanController {
         game_info: GameInfo
     ) -> Result<Self> {
         let window_info = GenshinRepositoryScanControllerWindowInfo::from_window_info_repository(
-            game_info.window, window_info_repo
+            game_info.window.to_rect_usize().size(), window_info_repo
         )?;
         let row = window_info.genshin_repository_item_row;
         let col = window_info.genshin_repository_item_col;
@@ -98,7 +98,7 @@ impl GenshinRepositoryScanController {
             item_count,
             scanned_count: 0,
 
-            capturer: get_capturer(),
+            capturer: get_capturer()?,
         })
     }
 
@@ -260,7 +260,7 @@ impl GenshinRepositoryScanController {
 
     pub fn move_to(&mut self, row: usize, col: usize) {
         let (row, col) = (row as u32, col as u32);
-        let origin = self.window_info.window_origin_pos;
+        let origin = self.game_info.window.to_rect_f64().origin();
 
         let gap = self.window_info.item_gap_size;
         let margin = self.window_info.scan_margin_pos;
@@ -351,8 +351,10 @@ impl GenshinRepositoryScanController {
         let mut consecutive_time = 0;
         let mut diff_flag = false;
         while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_item as u128 {
-            let im: RgbImage = self.window_info.pool_rect
-                .capture_relative(self.window_info.window_origin_pos)?;
+            let im = self.capturer.capture_relative_to(
+                self.window_info.pool_rect.to_rect_i32(),
+                self.game_info.window.origin()
+            )?;
 
             let pool = calc_pool(im.as_raw()) as f64;
 

@@ -1,7 +1,8 @@
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
-use std::ops::Mul;
+
 use serde::{Deserialize, Serialize};
+
 use crate::positioning::Scalable;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Copy, Serialize, Deserialize)]

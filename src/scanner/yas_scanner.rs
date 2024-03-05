@@ -2,11 +2,12 @@ use std::collections::HashSet;
 use std::convert::From;
 use std::fs;
 
+use std::str::FromStr;
 use std::sync::mpsc;
 use std::thread;
 use std::time::SystemTime;
 
-use clap::ArgMatches;
+use clap::Parser;
 use enigo::*;
 use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
@@ -16,6 +17,7 @@ use crate::artifact::internal_artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, InternalArtifact,
 };
 use crate::capture::{self};
+use crate::common::arguments::Arguments;
 use crate::common::character_name::CHARACTER_NAMES;
 use crate::common::color::Color;
 #[cfg(target_os = "macos")]
@@ -29,74 +31,85 @@ use crate::info::info::ScanInfo;
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 use crate::common::utils::mac_scroll;
 
-pub struct YasScannerConfig {
-    max_row: u32,
-    capture_only: bool,
-    min_star: u32,
-    min_level: u32,
-    max_wait_switch_artifact: u32,
-    scroll_stop: u32,
-    number: u32,
-    verbose: bool,
-    dump_mode: bool,
-    cloud_wait_switch_artifact: u32,
-    // offset_x: i32,
-    // offset_y: i32,
+#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+pub enum OutputFormat {
+    // 莫娜占卜铺 https://www.mona-uranai.com/
+    Mona,
+    // 原魔计算器 https://genshin.mingyulab.com/
+    #[value(name = "mingyulab")]
+    MingyuLab,
+    // 原魔计算器 https://genshin.mingyulab.com/
+    Genmo,
+    // Genshin Optimizer https://frzyc.github.io/genshin-optimizer/
+    Good,
 }
 
-impl YasScannerConfig {
-    pub fn from_match(matches: &ArgMatches) -> YasScannerConfig {
-        YasScannerConfig {
-            max_row: matches
-                .value_of("max-row")
-                .unwrap_or("1000")
-                .parse::<u32>()
-                .unwrap(),
-            capture_only: matches.is_present("capture-only"),
-            dump_mode: matches.is_present("dump"),
-            min_star: matches
-                .value_of("min-star")
-                .unwrap_or("4")
-                .parse::<u32>()
-                .unwrap(),
-            min_level: matches
-                .value_of("min-level")
-                .unwrap_or("0")
-                .parse::<u32>()
-                .unwrap(),
-            max_wait_switch_artifact: matches
-                .value_of("max-wait-switch-artifact")
-                .unwrap_or("800")
-                .parse::<u32>()
-                .unwrap(),
-            scroll_stop: matches
-                .value_of("scroll-stop")
-                .unwrap_or("80")
-                .parse::<u32>()
-                .unwrap(),
-            number: matches
-                .value_of("number")
-                .unwrap_or("0")
-                .parse::<u32>()
-                .unwrap(),
-            verbose: matches.is_present("verbose"),
-            cloud_wait_switch_artifact: matches
-                .value_of("cloud-wait-switch-artifact")
-                .unwrap_or("300")
-                .parse::<u32>()
-                .unwrap(),
-            // offset_x: matches.value_of("offset-x").unwrap_or("0").parse::<i32>().unwrap(),
-            // offset_y: matches.value_of("offset-y").unwrap_or("0").parse::<i32>().unwrap(),
-        }
+impl std::fmt::Display for OutputFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
-pub struct YasScanner {
+impl OutputFormat {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            OutputFormat::Mona => "mona",
+            OutputFormat::MingyuLab => "mingyulab",
+            OutputFormat::Genmo => "genmo",
+            OutputFormat::Good => "good",
+        }
+    }
+
+    // 以防某些网站不接受 JSON 格式的数据.
+    pub fn filename(&self) -> std::path::PathBuf {
+        let mut path = std::ffi::OsString::from(self.as_str());
+        path.push(".json");
+        std::path::PathBuf::from(path)
+    }
+}
+
+#[derive(Debug, Parser)]
+#[command(version = utils::VERSION)]
+#[command(name = "YAS - 原神圣遗物导出器")]
+#[command(author = "wormtql <584130248@qq.com>")]
+#[command(about = "Genshin Impact Artifact Exporter")]
+pub struct YasScannerConfig {
+    #[command(flatten)]
+    common: Arguments,
+
+    /// 切换圣遗物最大等待时间(ms)
+    #[arg(long)]
+    #[arg(default_value_t = 800)]
+    pub max_wait_switch_artifact: u32,
+    #[arg(long)]
+    #[arg(short = 'f')]
+    #[arg(default_value_t = OutputFormat::Mona)]
+    pub output_format: OutputFormat,
+    /// 指定云·原神切换圣遗物等待时间(ms)
+    #[arg(long, default_value_t = 300)]
+    pub cloud_wait_switch_artifact: u32,
+}
+
+impl std::ops::Deref for YasScannerConfig {
+    type Target = Arguments;
+
+    fn deref(&self) -> &Self::Target {
+        &self.common
+    }
+}
+
+impl std::ops::DerefMut for YasScannerConfig {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.common
+    }
+}
+
+pub struct YasScanner<'a> {
     model: CRNNModel,
     enigo: Enigo,
 
-    info: ScanInfo,
-    config: YasScannerConfig,
+    info: &'a ScanInfo,
+    config: &'a YasScannerConfig,
 
     row: u32,
     col: u32,
@@ -203,8 +216,8 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
     pool
 }
 
-impl YasScanner {
-    pub fn new(info: ScanInfo, config: YasScannerConfig, is_cloud: bool) -> YasScanner {
+impl<'a> YasScanner<'a> {
+    pub fn new(info: &'a ScanInfo, config: &'a YasScannerConfig, is_cloud: bool) -> Self {
         let row = info.art_row;
         let col = info.art_col;
 
@@ -233,7 +246,7 @@ impl YasScanner {
     }
 }
 
-impl YasScanner {
+impl YasScanner<'_> {
     fn align_row(&mut self) -> bool {
         #[cfg(target_os = "macos")]
         let (_, ui) = get_pid_and_ui();
@@ -902,7 +915,7 @@ impl YasScanner {
     }
 }
 
-impl YasScanner {
+impl YasScanner<'_> {
     // pub fn start_from_scratch(config: YasScannerConfig) -> Result<Vec<InternalArtifact>, String> {
     //     set_dpi_awareness();
     //     let mut is_cloud = false;

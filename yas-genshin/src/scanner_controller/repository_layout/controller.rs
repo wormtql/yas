@@ -2,25 +2,23 @@ use std::cell::RefCell;
 use std::ops::Coroutine;
 use std::rc::Rc;
 use image::RgbImage;
-use yas::common::color::Color;
 use yas::game_info::GameInfo;
-use yas::capture::capture;
 use anyhow::{Result, anyhow};
 use yas::positioning::{Pos, Rect, Size};
 use yas::utils;
 use log::{info, error};
 use std::time::SystemTime;
-use yas::capture::capture::RelativeCapturable;
 use yas::system_control::SystemControl;
 use yas::window_info::{FromWindowInfoRepository, WindowInfoRepository};
 use crate::scanner_controller::repository_layout::{GenshinRepositoryScanControllerWindowInfo, GenshinRepositoryScannerLogicConfig, ScrollResult};
 use clap::{ArgMatches, FromArgMatches};
+use yas::capture::{Capturer, GenericCapturer};
 
 pub struct GenshinRepositoryScanController {
     // to detect whether an item changes
     pool: f64,
 
-    initial_color: Color,
+    initial_color: image::Rgb<u8>,
 
     // for scrolls
     scrolled_rows: u32,
@@ -39,6 +37,7 @@ pub struct GenshinRepositoryScanController {
     config: GenshinRepositoryScannerLogicConfig,
     window_info: GenshinRepositoryScanControllerWindowInfo,
     system_control: SystemControl,
+    capturer: Rc<dyn Capturer<RgbImage>>,
 }
 
 fn calc_pool(row: &Vec<u8>) -> f32 {
@@ -49,6 +48,17 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
         pool += row[i * 3] as f32;
     }
     pool
+}
+
+fn get_capturer() -> Rc<dyn Capturer<RgbImage>> {
+    Rc::new(GenericCapturer::new())
+}
+
+fn color_distance(c1: &image::Rgb<u8>, c2: &image::Rgb<u8>) -> usize {
+    let x = (c1.0 - c2.0) as usize;
+    let y = (c1.1 - c2.1) as usize;
+    let z = (c1.2 - c2.2) as usize;
+    return x * x + y * y + z * z;
 }
 
 // constructor
@@ -76,7 +86,7 @@ impl GenshinRepositoryScanController {
 
             pool: 0.0,
 
-            initial_color: Color::new(0, 0, 0),
+            initial_color: image::Rgb([0, 0, 0]),
 
             scrolled_rows: 0,
             avg_scroll_one_row: 0.0,
@@ -87,6 +97,8 @@ impl GenshinRepositoryScanController {
             game_info,
             item_count,
             scanned_count: 0,
+
+            capturer: get_capturer(),
         })
     }
 
@@ -216,8 +228,12 @@ impl GenshinRepositoryScanController {
     }
 
     #[inline(always)]
-    pub fn get_flag_color(&self) -> Result<Color> {
-        capture::get_color(self.window_info.flag_pos + self.window_info.window_origin_pos)
+    pub fn get_flag_color(&self) -> Result<image::Rgb<u8>> {
+        let pos = Pos {
+            x: self.window_info.flag_pos.x as i32 + self.game_info.window.left,
+            y: self.window_info.flag_pos.y as i32 + self.game_info.window.top
+        };
+        self.capturer.capture_color(pos)
     }
 
     #[inline(always)]
@@ -233,7 +249,7 @@ impl GenshinRepositoryScanController {
                 Err(_) => return,
             };
 
-            if self.initial_color.distance(&color) > 10 {
+            if color_distance(&self.initial_color, &color) > 10 {
                 self.mouse_scroll(1, false);
                 utils::sleep(self.config.scroll_delay.try_into().unwrap());
             } else {
@@ -282,9 +298,9 @@ impl GenshinRepositoryScanController {
                 Err(_) => return ScrollResult::Failed,
             };
 
-            if state == 0 && self.initial_color.distance(&color) > 10 {
+            if state == 0 && color_distance(&self.initial_color, &color) > 10 {
                 state = 1;
-            } else if state == 1 && self.initial_color.distance(&color) <= 10 {
+            } else if state == 1 && color_distance(&self.initial_color, &color) <= 10 {
                 self.update_avg_row(count);
                 return ScrollResult::Success;
             }

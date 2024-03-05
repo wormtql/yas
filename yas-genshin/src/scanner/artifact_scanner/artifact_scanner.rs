@@ -6,10 +6,11 @@ use image::RgbImage;
 use log::{error, info};
 
 use yas::capture;
-use yas::capture::capture::RelativeCapturable;
+use yas::capture::{Capturer, GenericCapturer};
 use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
+use yas::positioning::{Pos, Rect};
 use yas::window_info::FromWindowInfoRepository;
 use yas::window_info::WindowInfoRepository;
 
@@ -27,6 +28,7 @@ pub struct GenshinArtifactScanner {
     game_info: GameInfo,
     image_to_text: Rc<dyn ImageToText<RgbImage>>,
     controller: Rc<RefCell<GenshinRepositoryScanController>>,
+    capturer: Rc<dyn Capturer<RgbImage>>,
 }
 
 // constructor
@@ -36,6 +38,10 @@ impl GenshinArtifactScanner {
             yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
         );
         model
+    }
+
+    fn get_capturer() -> Rc<dyn Capturer<RgbImage>> {
+        Rc::new(GenericCapturer::new())
     }
 
     pub fn new(
@@ -53,6 +59,7 @@ impl GenshinArtifactScanner {
             controller: Rc::new(RefCell::new(
                 GenshinRepositoryScanController::new(window_info_repo, controller_config, 0, game_info.clone())?
             )),
+            capturer: Self::get_capturer(),
         })
     }
 
@@ -68,34 +75,44 @@ impl GenshinArtifactScanner {
             image_to_text: Self::get_image_to_text(),
             controller: Rc::new(RefCell::new(
                 GenshinRepositoryScanController::from_arg_matches(window_info_repo, arg_matches, 0, game_info.clone())?
-            ))
+            )),
+            capturer: Self::get_capturer()
         })
     }
 }
 
 impl GenshinArtifactScanner {
     pub fn capture_panel(&self) -> Result<RgbImage> {
-        self.window_info.panel_rect.capture_relative(self.window_info.window_origin_pos)
+        self.capturer.capture_relative_to(
+            self.window_info.panel_rect.to_rect_i32(),
+            self.game_info.window.origin()
+        )
     }
 
     pub fn get_star(&self) -> Result<usize> {
-        let pos = self.game_info.window + self.window_info.star_pos;
-        let color = capture::capture::get_color(pos)?;
+        let pos: Pos<i32> = Pos {
+            x: self.game_info.window.x + self.window_info.star_pos.x as i32,
+            y: self.game_info.window.y + self.window_info.star_pos.y as i32,
+        };
+        let color = self.capturer.capture_color(pos)?;
 
         let match_colors = [
-            Color::new(113, 119, 139),
-            Color::new(42, 143, 114),
-            Color::new(81, 127, 203),
-            Color::new(161, 86, 224),
-            Color::new(188, 105, 50),
+            image::Rgb([113, 119, 139]),
+            image::Rgb([42, 143, 114]),
+            image::Rgb([81, 127, 203]),
+            image::Rgb([161, 86, 224]),
+            image::Rgb([188, 105, 50]),
         ];
 
         let mut min_dis: u32 = 0xdeadbeef;
         let mut ret: usize = 1;
         for (i, match_color) in match_colors.iter().enumerate() {
-            let dis = match_color.distance(&color);
-            if dis < min_dis {
-                min_dis = dis;
+            let x = match_color.0 - color.0;
+            let y = match_color.1 - color.1;
+            let z = match_color.2 - color.2;
+            let dis2 = x * x + y * y + z * z;
+            if dis2 < min_dis {
+                min_dis = dis2;
                 ret = i + 1;
             }
         }
@@ -112,16 +129,10 @@ impl GenshinArtifactScanner {
             return Ok(max_count.min(count));
         }
 
-        let im = match self.window_info.item_count_rect
-            .capture_relative(self.game_info.origin_pos)
-        {
-            Ok(im) => im,
-            Err(e) => {
-                error!("Error when capturing item count: {}", e);
-                return Ok(max_count);
-            }
-        };
-
+        let im = self.capturer.capture_relative_to(
+            self.window_info.item_count_rect.to_rect_i32(),
+            self.game_info.window.origin()
+        )?;
         let s = self.image_to_text.image_to_text(&im, false)?;
 
         info!("物品信息: {}", s);

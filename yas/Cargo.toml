@@ -35,6 +35,8 @@ once_cell = "1.18"
 indicatif-log-bridge = "0.2"
 indicatif = "0.17"
 console = "0.15"
+xcap = "0.0.4"
+paste = "1.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3", features = [
@@ -43,6 +45,7 @@ winapi = { version = "0.3", features = [
     "winnt",
     "securitybaseapi",
     "libloaderapi",
+    "shellscalingapi"
 ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]

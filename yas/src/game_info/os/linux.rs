@@ -35,7 +35,7 @@ pub fn get_game_info() -> GameInfo {
 
     GameInfo {
         window: rect,
-        resolution: Resolution::new(rect.size),
+        resolution_family: Resolution::new(rect.size),
         is_cloud: false,
         ui: UI::Desktop,
     }

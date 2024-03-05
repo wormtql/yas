@@ -19,10 +19,10 @@ pub struct YasOCRModel {
 
 impl YasOCRModel {
     fn inc_statistics(&self, time: f64) {
-        let count_handle = self.invoke_count.borrow_mut();
+        let mut count_handle = self.invoke_count.borrow_mut();
         *count_handle += 1;
 
-        let time_handle = self.avg_inference_time.borrow_mut();
+        let mut time_handle = self.inference_time.borrow_mut();
         *time_handle += time;
     }
 
@@ -78,7 +78,7 @@ impl YasOCRModel {
         for i in 0..shape[0] {
             let mut max_index = 0;
             let mut max_value = -1.0;
-            for j in 0..self.index_2_word.len() {
+            for j in 0..self.index_to_word.len() {
                 let value = arr[[i, 0, j]];
                 if value > max_value {
                     max_value = value;
@@ -144,12 +144,12 @@ impl ImageToText<GrayImage> for YasOCRModel {
 }
 
 pub macro yas_ocr_model($model_name:literal, $index_to_word:literal) {
-    (
+    {
         let model_bytes = include_bytes!($model_name);
         let index_to_word = include_str!($index_to_word);
 
         YasOCRModel::new(
             model_bytes, index_to_world,
         )
-    )
+    }
 }

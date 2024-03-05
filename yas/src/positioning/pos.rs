@@ -1,4 +1,5 @@
-use std::fmt::Display;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 use serde::{Deserialize, Serialize};
 use crate::positioning::Scalable;
@@ -9,7 +10,7 @@ pub struct Pos<T> {
     pub y: T,
 }
 
-impl<T> Add<Pos<T>> for Pos<T> where T: Add<T> {
+impl<T> Add<Pos<T>> for Pos<T> where T: Add<T, Output = T> {
     type Output = Self;
 
     fn add(self, rhs: Pos<T>) -> Self::Output {
@@ -20,7 +21,7 @@ impl<T> Add<Pos<T>> for Pos<T> where T: Add<T> {
     }
 }
 
-impl<T> Sub<Pos<T>> for Pos<T> where T: Sub<T> {
+impl<T> Sub<Pos<T>> for Pos<T> where T: Sub<T, Output = T> {
     type Output = Self;
 
     fn sub(self, rhs: Pos<T>) -> Self::Output {

@@ -4,7 +4,7 @@ use std::ops::Mul;
 use serde::{Deserialize, Serialize};
 use crate::positioning::Scalable;
 
-#[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Copy, Serialize, Deserialize)]
 pub struct Size<T> {
     pub height: T,
     pub width: T,

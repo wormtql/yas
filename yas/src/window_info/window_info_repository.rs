@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use crate::positioning::{Pos, Size};
+use crate::positioning::{Pos, Scalable, Size};
 
 use crate::window_info::WindowInfoType;
 
@@ -38,7 +37,7 @@ impl WindowInfoRepository {
         for (key, data) in other.data.iter() {
             if self.data.contains_key(key) {
                 for (resolution, value) in data.iter() {
-                    self.data[key].insert(resolution.clone(), value.clone());
+                    self.data.get_mut(key).unwrap().insert(resolution.clone(), value.clone());
                 }
             } else {
                 self.data.insert(key.clone(), data.clone());
@@ -77,7 +76,7 @@ impl WindowInfoRepository {
                     if size.width * window_size.height == size.height * window_size.width {
                         // can be scaled
                         let factor: f64 = size.width as f64 / window_size.width as f64;
-                        return Some(value.scale(factor));
+                        return value.scale(factor).try_into().ok();
                     }
                 }
             }

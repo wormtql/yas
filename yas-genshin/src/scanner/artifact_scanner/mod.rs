@@ -10,3 +10,4 @@ pub use scan_result::GenshinArtifactScanResult;
 pub use message_items::SendItem;
 pub use artifact_scanner_worker::ArtifactScannerWorker;
 pub use artifact_scanner_window_info::ArtifactScannerWindowInfo;
+pub use artifact_scanner::GenshinArtifactScanner;

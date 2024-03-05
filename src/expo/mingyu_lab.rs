@@ -132,7 +132,7 @@ impl ArtifactSetName {
             ArtifactSetName::DesertPavilionChronicle => "desert_pavilion_chronicle",
             ArtifactSetName::NymphsDream => "nymphs_dream",
             ArtifactSetName::VourukashasGlow => "vourukashas_glow",
-            ArtifactSetName::MarechausseeHunter => "marechaussee_hunter",
+            ArtifactSetName::MarechausseeHunter => "hunter",
             ArtifactSetName::GoldenTroupe => "golden_troupe",
             ArtifactSetName::SongOfDaysPast => "song_of_days_past",
             ArtifactSetName::NighttimeWhispersInTheEchoingWoods => "nighttime_whispers_in_the_echoing_woods",

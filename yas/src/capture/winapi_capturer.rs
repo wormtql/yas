@@ -110,7 +110,7 @@ pub struct WinapiCapturer;
 impl WinapiCapturer {
     pub fn new() -> Self {
         // todo maybe we can explicitly account for windows scale, and remove the call
-        crate::utils::set_dpi_awareness();
+        // crate::utils::set_dpi_awareness();
         Self
     }
 }

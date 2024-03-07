@@ -97,7 +97,7 @@
                 "width": 243.5
             }
         },
-        "genshin_artifact_sub_stat0_rect": {
+        "genshin_artifact_sub_stat1_rect": {
             "Rect": {
                 "top": 398.1,
                 "left": 1130.2,
@@ -105,7 +105,7 @@
                 "width": 212.8
             }
         },
-        "genshin_artifact_sub_stat1_rect": {
+        "genshin_artifact_sub_stat2_rect": {
             "Rect": {
                 "top": 427.3,
                 "left": 1130.2,
@@ -113,7 +113,7 @@
                 "width": 212.8
             }
         },
-        "genshin_artifact_sub_stat2_rect": {
+        "genshin_artifact_sub_stat3_rect": {
             "Rect": {
                 "top": 458.2,
                 "left": 1130.2,
@@ -121,7 +121,7 @@
                 "width": 212.8
             }
         },
-        "genshin_artifact_sub_stat3_rect": {
+        "genshin_artifact_sub_stat4_rect": {
             "Rect": {
                 "top": 490.9,
                 "left": 1130.2,

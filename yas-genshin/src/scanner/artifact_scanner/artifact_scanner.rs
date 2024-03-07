@@ -5,12 +5,10 @@ use clap::FromArgMatches;
 use image::RgbImage;
 use log::{error, info};
 
-use yas::capture;
 use yas::capture::{Capturer, GenericCapturer};
-use yas::common::color::Color;
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
-use yas::positioning::{Pos, Rect};
+use yas::positioning::Pos;
 use yas::window_info::FromWindowInfoRepository;
 use yas::window_info::WindowInfoRepository;
 
@@ -18,9 +16,9 @@ use crate::scanner::artifact_scanner::artifact_scanner_worker::ArtifactScannerWo
 use crate::scanner::artifact_scanner::message_items::SendItem;
 use crate::scanner::artifact_scanner::scan_result::GenshinArtifactScanResult;
 use crate::scanner_controller::repository_layout::{
-    ReturnResult as GenshinRepositoryControllerReturnResult,
     GenshinRepositoryScanController,
-    GenshinRepositoryScannerLogicConfig
+    GenshinRepositoryScannerLogicConfig,
+    ReturnResult as GenshinRepositoryControllerReturnResult
 };
 
 use super::artifact_scanner_config::GenshinArtifactScannerConfig;
@@ -37,15 +35,15 @@ pub struct GenshinArtifactScanner {
     scanner_config: GenshinArtifactScannerConfig,
     window_info: ArtifactScannerWindowInfo,
     game_info: GameInfo,
-    image_to_text: Rc<dyn ImageToText<RgbImage> + Send>,
+    image_to_text: Rc<dyn ImageToText<RgbImage>>,
     controller: Rc<RefCell<GenshinRepositoryScanController>>,
     capturer: Rc<dyn Capturer<RgbImage>>,
 }
 
 // constructor
 impl GenshinArtifactScanner {
-    fn get_image_to_text() -> Result<Rc<dyn ImageToText<RgbImage> + Send>> {
-        let model: Rc<dyn ImageToText<RgbImage> + Send> = Rc::new(
+    fn get_image_to_text() -> Result<Rc<dyn ImageToText<RgbImage>>> {
+        let model: Rc<dyn ImageToText<RgbImage>> = Rc::new(
             yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
         );
         Ok(model)
@@ -65,7 +63,7 @@ impl GenshinArtifactScanner {
             scanner_config: config,
             window_info: ArtifactScannerWindowInfo::from_window_info_repository(game_info.window.to_rect_usize().size(), window_info_repo)?,
             controller: Rc::new(RefCell::new(
-                GenshinRepositoryScanController::new(window_info_repo, controller_config, 0, game_info.clone())?
+                GenshinRepositoryScanController::new(window_info_repo, controller_config, game_info.clone())?
             )),
             game_info,
             image_to_text: Self::get_image_to_text()?,
@@ -79,11 +77,12 @@ impl GenshinArtifactScanner {
         arg_matches: &clap::ArgMatches,
         game_info: GameInfo,
     ) -> Result<Self> {
+        let window_info = ArtifactScannerWindowInfo::from_window_info_repository(game_info.window.to_rect_usize().size(), window_info_repo)?;
         Ok(GenshinArtifactScanner {
             scanner_config: GenshinArtifactScannerConfig::from_arg_matches(arg_matches)?,
-            window_info: ArtifactScannerWindowInfo::from_window_info_repository(game_info.window.to_rect_usize().size(), window_info_repo)?,
+            window_info,
             controller: Rc::new(RefCell::new(
-                GenshinRepositoryScanController::from_arg_matches(window_info_repo, arg_matches, 0, game_info.clone())?
+                GenshinRepositoryScanController::from_arg_matches(window_info_repo, arg_matches, game_info.clone())?
             )),
             game_info,
             image_to_text: Self::get_image_to_text()?,
@@ -141,6 +140,7 @@ impl GenshinArtifactScanner {
             self.window_info.item_count_rect.to_rect_i32(),
             self.game_info.window.origin()
         )?;
+        im.save("item_count.png")?;
         let s = self.image_to_text.image_to_text(&im, false)?;
 
         info!("物品信息: {}", s);
@@ -170,6 +170,7 @@ impl GenshinArtifactScanner {
         )?;
 
         let join_handle = worker.run(rx);
+        info!("Worker created");
 
         self.send(&tx, count);
 
@@ -188,8 +189,7 @@ impl GenshinArtifactScanner {
     }
 
     fn send(&mut self, tx: &Sender<Option<SendItem>>, count: i32) {
-        self.controller.borrow_mut().set_item_count(count as usize);
-        let mut generator = GenshinRepositoryScanController::get_generator(self.controller.clone());
+        let mut generator = GenshinRepositoryScanController::get_generator(self.controller.clone(), count as usize);
 
         loop {
             let pinned_generator = Pin::new(&mut generator);

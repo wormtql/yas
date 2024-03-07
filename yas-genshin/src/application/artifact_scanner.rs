@@ -1,14 +1,15 @@
-use crate::scanner::{GenshinArtifactScanner, GenshinArtifactScannerConfig};
-use clap::command;
-use clap::Args;
+use anyhow::{anyhow, Result};
+use clap::{Args, command};
+use log::info;
+
+use yas::export::{AssetEmitter, ExportAssets};
 use yas::game_info::{GameInfo, GameInfoBuilder};
 use yas::window_info::{load_window_info_repo, WindowInfoRepository};
-use crate::export::artifact::{ExportArtifactConfig, GenshinArtifactExporter};
-use crate::scanner_controller::repository_layout::GenshinRepositoryScannerLogicConfig;
-use anyhow::Result;
-use log::info;
-use yas::export::{ExportAssets, YasExporter};
+
 use crate::artifact::GenshinArtifact;
+use crate::export::artifact::{ExportArtifactConfig, GenshinArtifactExporter};
+use crate::scanner::{GenshinArtifactScanner, GenshinArtifactScannerConfig};
+use crate::scanner_controller::repository_layout::GenshinRepositoryScannerLogicConfig;
 
 pub struct ArtifactScannerApplication;
 
@@ -26,7 +27,7 @@ impl ArtifactScannerApplication {
     }
 
     fn get_window_info_repository() -> WindowInfoRepository {
-        load_window_info_repo!("../../window_info/windows16x9.yaml")
+        load_window_info_repo!("../../window_info/windows16x9.json")
     }
 
     fn init() {
@@ -52,6 +53,19 @@ impl ArtifactScannerApplication {
         let window_info_repository = Self::get_window_info_repository();
         let game_info = Self::get_game_info()?;
 
+        info!("window: {:?}", game_info.window);
+        info!("ui: {:?}", game_info.ui);
+        info!("cloud: {}", game_info.is_cloud);
+        info!("resolution family: {:?}", game_info.resolution_family);
+
+        #[cfg(target_os = "windows")]
+        {
+            // assure admin
+            if !yas::utils::is_admin() {
+                return Err(anyhow!("请使用管理员运行"));
+            }
+        }
+
         let mut scanner = GenshinArtifactScanner::from_arg_matches(
             &window_info_repository,
             &arg_matches,
@@ -67,12 +81,16 @@ impl ArtifactScannerApplication {
             .collect::<Vec<_>>();
 
         let exporter = GenshinArtifactExporter::new(&arg_matches, &artifacts)?;
-
         let mut export_assets = ExportAssets::new();
-        exporter.export(&mut export_assets);
+        exporter.emit(&mut export_assets);
 
         let stats = export_assets.save();
-        info!("{}", stats);
+        info!("保存结果：");
+        let table = format!("{}", stats);
+        // print multiline
+        for line in table.lines() {
+            info!("{}", line);
+        }
         info!("Yas 识别结束，共识别到 {} 件圣遗物。", result.len());
 
         Ok(())

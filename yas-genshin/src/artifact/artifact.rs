@@ -1,10 +1,11 @@
+use std::hash::{Hash, Hasher};
+
 use log::error;
 use regex::Regex;
-use std::hash::{Hash, Hasher};
 use strum_macros::Display;
-use crate::scanner::GenshinArtifactScanResult;
 
 use crate::character::CHARACTER_NAMES;
+use crate::scanner::GenshinArtifactScanResult;
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
 pub enum ArtifactStatName {

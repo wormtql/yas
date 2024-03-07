@@ -37,6 +37,8 @@ indicatif = "0.17"
 console = "0.15"
 xcap = "0.0.4"
 paste = "1.0"
+prettytable-rs = "^0.10"
+bytesize = {version = "1.2.0", features = ["serde"]}
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3", features = [

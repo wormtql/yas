@@ -2,36 +2,11 @@ use std::fmt::Display;
 use std::io::Write;
 use std::path::PathBuf;
 use std::fs::File;
-use log::info;
-
-pub struct ExportItem {
-    // bytes
-    pub contents: Vec<u8>,
-    pub filename: PathBuf
-}
+use log::error;
+use crate::export::{ExportItem, ExportStatistics, StatisticItem};
 
 pub struct ExportAssets {
     pub assets: Vec<ExportItem>
-}
-
-pub struct ExportStatistics {
-    pub total: usize,
-    pub saved: usize,
-}
-
-impl Display for ExportStatistics {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "export results: {}/{}", self.saved, self.total)
-    }
-}
-
-impl ExportStatistics {
-    pub fn new() -> Self {
-        ExportStatistics {
-            total: 0,
-            saved: 0,
-        }
-    }
 }
 
 impl ExportAssets {
@@ -39,21 +14,24 @@ impl ExportAssets {
         ExportAssets { assets: Vec::new() }
     }
 
-    pub fn add_asset(&mut self, filename: PathBuf, contents: Vec<u8>) {
+    pub fn add_asset(&mut self, name: Option<String>, filename: PathBuf, contents: Vec<u8>, description: Option<String>) {
         self.assets.push(ExportItem {
             contents,
-            filename: filename
+            filename,
+            name,
+            description,
         })
     }
 
     pub fn save(&self) -> ExportStatistics {
         let mut stat = ExportStatistics::new();
-        stat.total = self.assets.len();
+
         for item in self.assets.iter() {
             let mut file = match File::create(&item.filename) {
-                // todo
                 Err(why) => {
-                    crate::error_and_quit!("无法创建文件 {:?}: {}", &item.filename, why)
+                    stat.failed_items.push(StatisticItem::from_export_item(item));
+                    error!("无法创建文件 {:?}: {}", &item.filename, why);
+                    continue;
                 },
                 Ok(file) => {
                     file
@@ -62,18 +40,16 @@ impl ExportAssets {
 
             match file.write_all(&item.contents) {
                 Err(why) => {
-                    crate::error_and_quit!("无法写入文件 {:?}: {}", &item.filename, why)
+                    stat.failed_items.push(StatisticItem::from_export_item(item));
+                    error!("无法写入文件 {:?}: {}", &item.filename, why);
+                    continue;
                 },
-                Ok(_) => info!("结果已保存至 {:?}", &item.filename),
+                Ok(_) => (),
             }
 
-            stat.saved += 1;
+            stat.exported_assets.push(StatisticItem::from_export_item(item));
         }
 
         stat
     }
-}
-
-pub trait YasExporter {
-    fn export(&self, export_assets: &mut ExportAssets);
 }

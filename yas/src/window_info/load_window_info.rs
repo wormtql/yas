@@ -25,7 +25,7 @@ pub macro load_window_info_repo($($filename:literal),+ $(,)?) {
         $(
             {
                 let s = include_str!($filename);
-                let f: WindowInfoTemplatePerSize = serde_yaml::from_str(&s).unwrap();
+                let f: WindowInfoTemplatePerSize = serde_json::from_str(&s).unwrap();
                 f.inject_into_window_info_repo(&mut result);
             }
         )*

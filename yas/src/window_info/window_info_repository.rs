@@ -7,7 +7,7 @@ use crate::window_info::WindowInfoType;
 
 /// Maps a window-info-key to a list of entries
 /// where entries consist of a size where the value is recorded, and accordingly a value
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct WindowInfoRepository {
     pub data: HashMap<String, HashMap<Size<usize>, WindowInfoType>>,
 }
@@ -75,7 +75,7 @@ impl WindowInfoRepository {
                 for (size, value) in self.data[name].iter() {
                     if size.width * window_size.height == size.height * window_size.width {
                         // can be scaled
-                        let factor: f64 = size.width as f64 / window_size.width as f64;
+                        let factor: f64 = window_size.width as f64 / size.width as f64;
                         return value.scale(factor).try_into().ok();
                     }
                 }

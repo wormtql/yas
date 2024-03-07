@@ -1,8 +1,9 @@
+use serde::ser::{SerializeMap, Serializer};
+use serde::Serialize;
+
 use crate::artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
-use serde::ser::{SerializeMap, Serializer};
-use serde::Serialize;
 
 struct GOODArtifact<'a> {
     artifact: &'a GenshinArtifact,

@@ -143,12 +143,10 @@ pub fn set_dpi_awareness() {
         LoadLibraryA(encode_lpcstr("Shcore.dll").as_ptr())
     };
     if h_lib.is_null() {
-        info!("`Shcore.dll` not found");
         unsafe {
             SetProcessDPIAware();
         }
     } else {
-        info!("`Shcore.dll` found");
         unsafe {
             let addr = GetProcAddress(h_lib, encode_lpcstr("SetProcessDpiAwareness").as_ptr());
             if addr.is_null() {

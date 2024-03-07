@@ -1,6 +1,6 @@
 use yas::positioning::{Pos, Rect};
 
-#[derive(Clone, yas_derive::YasWindowInfo)]
+#[derive(Clone, yas_derive::YasWindowInfo, Debug)]
 pub struct ArtifactScannerWindowInfo {
     /// the position of artifact title relative to window
     #[window_info(rename = "genshin_artifact_title_rect")]

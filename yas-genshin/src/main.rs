@@ -3,8 +3,8 @@ extern crate log;
 
 use anyhow::Result;
 use clap::{Command, FromArgMatches};
+
 use yas::export::YasExporter;
-use yas::window_info::WindowInfoRepository;
 use yas::utils;
 
 fn main() -> Result<()> {

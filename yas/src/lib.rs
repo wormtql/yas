@@ -9,7 +9,6 @@ pub mod export;
 pub mod draw_capture_region;
 pub mod capture;
 pub mod utils;
-pub mod scanner;
 pub mod game_info;
 pub mod window_info;
 pub mod system_control;

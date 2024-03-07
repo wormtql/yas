@@ -1,17 +1,19 @@
 use std::collections::HashSet;
-use std::rc::Rc;
 use std::sync::mpsc::Receiver;
 use std::thread::JoinHandle;
-use image::{GenericImageView, ImageBuffer, Luma, RgbImage};
-use yas::positioning::{Pos, Rect};
+
+use anyhow::Result;
+use image::{GenericImageView, RgbImage};
+use log::{error, info, warn};
+
 use yas::ocr::ImageToText;
+use yas::ocr::yas_ocr_model;
+use yas::positioning::{Pos, Rect};
+
 use crate::scanner::artifact_scanner::artifact_scanner_window_info::ArtifactScannerWindowInfo;
 use crate::scanner::artifact_scanner::GenshinArtifactScannerConfig;
-use anyhow::{anyhow, Result};
-use log::{error, info, warn};
 use crate::scanner::artifact_scanner::message_items::SendItem;
 use crate::scanner::artifact_scanner::scan_result::GenshinArtifactScanResult;
-use yas::ocr::yas_ocr_model;
 
 fn parse_level(s: &str) -> Result<i32> {
     let pos = s.find('+');

@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
-use clap::{Arg, FromArgMatches};
-use yas::export::{YasExporter, ExportAssets};
 use anyhow::Result;
+use clap::FromArgMatches;
+
+use yas::export::{AssetEmitter, ExportAssets};
 
 use crate::artifact::GenshinArtifact;
 use crate::export::artifact::{ExportArtifactConfig, GenshinArtifactExportFormat};
@@ -28,8 +29,8 @@ impl <'a> GenshinArtifactExporter<'a> {
     }
 }
 
-impl<'a> YasExporter for GenshinArtifactExporter<'a> {
-    fn export(&self, export_assets: &mut ExportAssets) {
+impl<'a> AssetEmitter for GenshinArtifactExporter<'a> {
+    fn emit(&self, export_assets: &mut ExportAssets) {
         if self.results.is_none() {
             return;
         }
@@ -41,22 +42,34 @@ impl<'a> YasExporter for GenshinArtifactExporter<'a> {
                 let path = self.output_dir.join("mona.json");
                 let value = MonaFormat::new(results);
                 let contents = serde_json::to_string(&value).unwrap();
-                
-                export_assets.add_asset(path, contents.into_bytes());
+
+                export_assets.add_asset(
+                    Some(String::from("artifacts")),
+                    path,
+                    contents.into_bytes(),
+                    Some(String::from("莫娜圣遗物格式")));
             },
             GenshinArtifactExportFormat::MingyuLab => {
                 let path = self.output_dir.join("mingyulab.json");
                 let value = MingyuLabFormat::new(results);
                 let contents = serde_json::to_string(&value).unwrap();
 
-                export_assets.add_asset(path, contents.into_bytes());
+                export_assets.add_asset(
+                    Some(String::from("artifacts")),
+                    path,
+                    contents.into_bytes(),
+                    Some(String::from("原魔计算器圣遗物格式")));
             },
             GenshinArtifactExportFormat::Good => {
                 let path = self.output_dir.join("good.json");
                 let value = GOODFormat::new(results);
                 let contents = serde_json::to_string(&value).unwrap();
-                
-                export_assets.add_asset(path, contents.into_bytes());
+
+                export_assets.add_asset(
+                    Some(String::from("artifacts")),
+                    path,
+                    contents.into_bytes(),
+                    Some(String::from("GOOD圣遗物格式")));
             },
         };
     }

@@ -1,5 +1,3 @@
-use clap::FromArgMatches;
-
 #[derive(Clone, clap::Args)]
 pub struct GenshinArtifactScannerConfig {
     /// Items with stars less than this will be ignored

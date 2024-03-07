@@ -1,4 +1,4 @@
-use clap::{arg};
+use clap::arg;
 
 #[derive(Clone, clap::Args)]
 pub struct GenshinRepositoryScannerLogicConfig {

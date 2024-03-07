@@ -1,7 +1,8 @@
+use serde::ser::{Serialize, SerializeMap, Serializer};
+
 use crate::artifact::{
     ArtifactSetName, ArtifactSlot, ArtifactStat, ArtifactStatName, GenshinArtifact,
 };
-use serde::ser::{Serialize, SerializeMap, Serializer};
 
 struct MingyuLabArtifact<'a> {
     artifact: &'a GenshinArtifact,

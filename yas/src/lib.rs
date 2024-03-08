@@ -1,5 +1,6 @@
 #![feature(decl_macro)]
 #![feature(concat_idents)]
+#![allow(unused_imports)]
 
 extern crate log;
 extern crate lazy_static;

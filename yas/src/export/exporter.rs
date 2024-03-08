@@ -1,8 +1,9 @@
-use std::fmt::Display;
+use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-use std::fs::File;
+
 use log::error;
+
 use crate::export::{ExportItem, ExportStatistics, StatisticItem};
 
 pub struct ExportAssets {

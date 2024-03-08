@@ -4,6 +4,8 @@ mod xcap_capturer;
 #[cfg(target_os = "windows")]
 mod winapi_capturer;
 mod generic_capturer;
+// #[cfg(target_os = "windows")]
+// mod window_capture_capturer;
 
 pub use capturer::Capturer;
 pub use screenshots_capturer::ScreenshotsCapturer;

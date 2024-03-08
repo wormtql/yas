@@ -35,15 +35,15 @@ pub struct GenshinArtifactScanner {
     scanner_config: GenshinArtifactScannerConfig,
     window_info: ArtifactScannerWindowInfo,
     game_info: GameInfo,
-    image_to_text: Rc<dyn ImageToText<RgbImage>>,
+    image_to_text: Box<dyn ImageToText<RgbImage> + Send>,
     controller: Rc<RefCell<GenshinRepositoryScanController>>,
     capturer: Rc<dyn Capturer<RgbImage>>,
 }
 
 // constructor
 impl GenshinArtifactScanner {
-    fn get_image_to_text() -> Result<Rc<dyn ImageToText<RgbImage>>> {
-        let model: Rc<dyn ImageToText<RgbImage>> = Rc::new(
+    fn get_image_to_text() -> Result<Box<dyn ImageToText<RgbImage> + Send>> {
+        let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(
             yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
         );
         Ok(model)

@@ -1,4 +1,5 @@
 #![feature(coroutines, coroutine_trait)]
+#![feature(fn_traits)]
 
 pub mod scanner_controller;
 pub mod export;

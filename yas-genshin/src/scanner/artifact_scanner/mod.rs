@@ -9,4 +9,3 @@ mod scan_result;
 mod artifact_scanner_worker;
 mod artifact_scanner_window_info;
 mod message_items;
-

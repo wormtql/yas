@@ -1,7 +1,9 @@
 use std::fmt;
-use prettytable::{row, Row, Table};
-use crate::export::{StatisticItem};
+
 use bytesize::ByteSize;
+use prettytable::{row, Row, Table};
+
+use crate::export::StatisticItem;
 
 pub struct ExportStatistics {
     pub exported_assets: Vec<StatisticItem>,

@@ -55,11 +55,6 @@ impl ArtifactScannerWorker {
 
     /// the captured_img is a panel of the artifact, the rect is a region of the panel
     fn model_inference(&self, rect: Rect<f64>, captured_img: &RgbImage) -> Result<String> {
-        // todo move dump mode into a scanner
-        // if dump_mode {
-        //     captured_img.save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
-        // }
-
         let relative_rect = rect.translate(Pos {
             x: -self.window_info.panel_rect.left,
             y: -self.window_info.panel_rect.top,
@@ -68,42 +63,6 @@ impl ArtifactScannerWorker {
         let raw_img = captured_img.view(
             relative_rect.left as u32, relative_rect.top as u32, relative_rect.width as u32, relative_rect.height as u32,
         ).to_image();
-        // let raw_img_grayed = to_gray(&raw_img);
-
-        // let raw_img = to_gray(captured_img)
-        //     .view(
-        //         relative_rect.left,
-        //         relative_rect.top,
-        //         rect.size.width,
-        //         rect.size.height,
-        //     )
-        //     .to_image();
-
-        // if dump_mode {
-        //     raw_img
-        //         .to_common_grayscale()
-        //         .save(Path::new("dumps").join(format!("{}_{}.rgb.png", name, cnt)))?;
-        // }
-
-        // let (processed_img, process_flag) = pre_process(raw_img_grayed);
-        // if !process_flag {
-        //     return Ok(String::new());
-        // }
-
-        // if dump_mode {
-        //     processed_img
-        //         .to_common_grayscale()
-        //         .save(Path::new("dumps").join(format!("{}_{}.pp.png", name, cnt)))?;
-        // }
-
-        // let inference_result = self.model.inference_string(&processed_img)?;
-
-        // if dump_mode {
-        //     dump_text(
-        //         &inference_result,
-        //         Path::new("dumps").join(format!("{}_{}.txt", name, cnt)),
-        //     );
-        // }
 
         let inference_result = self.model.image_to_text(&raw_img, false);
 

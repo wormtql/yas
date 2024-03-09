@@ -3,6 +3,8 @@
     "width": 1280,
     "height": 960
   },
+  "platform": "Windows",
+  "ui": "Desktop",
   "data": {
     "genshin_repository_panel_rect": {
       "Rect": {

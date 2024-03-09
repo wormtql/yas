@@ -61,7 +61,12 @@ impl GenshinArtifactScanner {
     ) -> Result<Self> {
         Ok(Self {
             scanner_config: config,
-            window_info: ArtifactScannerWindowInfo::from_window_info_repository(game_info.window.to_rect_usize().size(), window_info_repo)?,
+            window_info: ArtifactScannerWindowInfo::from_window_info_repository(
+                game_info.window.to_rect_usize().size(),
+                game_info.ui,
+                game_info.platform,
+                window_info_repo
+            )?,
             controller: Rc::new(RefCell::new(
                 GenshinRepositoryScanController::new(window_info_repo, controller_config, game_info.clone())?
             )),
@@ -77,7 +82,12 @@ impl GenshinArtifactScanner {
         arg_matches: &clap::ArgMatches,
         game_info: GameInfo,
     ) -> Result<Self> {
-        let window_info = ArtifactScannerWindowInfo::from_window_info_repository(game_info.window.to_rect_usize().size(), window_info_repo)?;
+        let window_info = ArtifactScannerWindowInfo::from_window_info_repository(
+            game_info.window.to_rect_usize().size(),
+            game_info.ui,
+            game_info.platform,
+            window_info_repo
+        )?;
         Ok(GenshinArtifactScanner {
             scanner_config: GenshinArtifactScannerConfig::from_arg_matches(arg_matches)?,
             window_info,

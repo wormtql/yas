@@ -27,7 +27,13 @@ impl ArtifactScannerApplication {
     }
 
     fn get_window_info_repository() -> WindowInfoRepository {
-        load_window_info_repo!("../../window_info/windows16x9.json")
+        load_window_info_repo!(
+            "../../window_info/windows1600x900.json",
+            "../../window_info/windows1280x960.json",
+            "../../window_info/windows1440x900.json",
+            "../../window_info/windows2100x900.json",
+            "../../window_info/windows3440x1440.json",
+        )
     }
 
     fn init() {

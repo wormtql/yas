@@ -71,7 +71,10 @@ impl GenshinRepositoryScanController {
         game_info: GameInfo
     ) -> Result<Self> {
         let window_info = GenshinRepositoryScanControllerWindowInfo::from_window_info_repository(
-            game_info.window.to_rect_usize().size(), window_info_repo
+            game_info.window.to_rect_usize().size(),
+            game_info.ui,
+            game_info.platform,
+            window_info_repo
         )?;
         let row = window_info.genshin_repository_item_row;
         let col = window_info.genshin_repository_item_col;

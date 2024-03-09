@@ -22,7 +22,7 @@ pub fn yas_window_info(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
             }
 
             fields.push(quote! {
-                #name: match repo.get_auto_scale(#window_info_key, window_size) {
+                #name: match repo.get_auto_scale(#window_info_key, window_size, ui, platform) {
                     None => {
                         return Err(anyhow::anyhow!("cannot find window info key \"{}\"", #window_info_key));
                     },
@@ -33,7 +33,12 @@ pub fn yas_window_info(input: proc_macro::TokenStream) -> proc_macro::TokenStrea
 
         let trait_impl = quote! {
             impl yas::window_info::FromWindowInfoRepository for #struct_name {
-                fn from_window_info_repository(window_size: yas::positioning::Size<usize>, repo: &yas::window_info::WindowInfoRepository) -> anyhow::Result<Self> {
+                fn from_window_info_repository(
+                    window_size: yas::positioning::Size<usize>,
+                    ui: yas::game_info::UI,
+                    platform: yas::game_info::Platform,
+                    repo: &yas::window_info::WindowInfoRepository
+                ) -> anyhow::Result<Self> {
                     Ok(Self {
                         #(#fields),*
                     })

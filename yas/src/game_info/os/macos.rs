@@ -1,5 +1,5 @@
 use crate::{common::utils::*, core::ui::Resolution};
-use crate::game_info::game_info::GameInfo;
+use crate::game_info::{GameInfo, Platform};
 
 pub fn get_game_info() -> GameInfo {
     let (pid, ui) = get_pid_and_ui();
@@ -13,5 +13,6 @@ pub fn get_game_info() -> GameInfo {
         resolution_family: Resolution::new(rect.size),
         is_cloud: false,
         ui,
+        platform: Platform::MacOS
     }
 }

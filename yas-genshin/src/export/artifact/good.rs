@@ -156,6 +156,10 @@ impl ArtifactSetName {
             ArtifactSetName::VourukashasGlow => "VourukashasGlow",
             ArtifactSetName::MarechausseeHunter => "MarechausseeHunter",
             ArtifactSetName::GoldenTroupe => "GoldenTroupe",
+            ArtifactSetName::SongOfDaysPast => "SongOfDaysPast",
+            ArtifactSetName::NighttimeWhispersInTheEchoingWoods => "NighttimeWhispersInTheEchoingWoods",
+            ArtifactSetName::FragmentOfHarmonicWhimsy => "FragmentOfHarmonicWhimsy",
+            ArtifactSetName::UnfinishedReverie => "UnfinishedReverie",
         }
     }
 }

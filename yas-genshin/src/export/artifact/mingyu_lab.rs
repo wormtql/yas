@@ -133,6 +133,10 @@ impl ArtifactSetName {
             ArtifactSetName::VourukashasGlow => "vourukashas_glow",
             ArtifactSetName::MarechausseeHunter => "marechaussee_hunter",
             ArtifactSetName::GoldenTroupe => "golden_troupe",
+            ArtifactSetName::SongOfDaysPast => "song_of_days_past",
+            ArtifactSetName::NighttimeWhispersInTheEchoingWoods => "nighttime_whispers_in_the_echoing_woods",
+            ArtifactSetName::FragmentOfHarmonicWhimsy => "fragment_of_harmonic_whimsy",
+            ArtifactSetName::UnfinishedReverie => "unfinished_reverie",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

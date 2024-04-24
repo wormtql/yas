@@ -88,6 +88,10 @@ pub enum ArtifactSetName {
     VourukashasGlow,
     MarechausseeHunter,
     GoldenTroupe,
+    SongOfDaysPast,
+    NighttimeWhispersInTheEchoingWoods,
+    FragmentOfHarmonicWhimsy,
+    UnfinishedReverie,
 }
 
 #[derive(Debug, Clone)]
@@ -423,6 +427,10 @@ impl ArtifactSetName {
             "灵光明烁之心" | "琦色灵彩之羽" | "灵光源起之蕊" | "久远花落之时" | "无边酣乐之筵" => Some(ArtifactSetName::VourukashasGlow),
             "猎人的胸花" | "杰作的序曲" | "裁判的时刻" | "遗忘的容器" | "老兵的容颜" => Some(ArtifactSetName::MarechausseeHunter),
             "黄金乐曲的变奏" | "黄金飞鸟的落羽" | "黄金时代的先声" | "黄金之夜的喧嚣" | "黄金剧团的奖赏" => Some(ArtifactSetName::GoldenTroupe),
+            "昔时传奏之诗" | "昔时浮想之思" | "昔时遗落之誓" | "昔时回映之音" | "昔时应许之梦" => Some(ArtifactSetName::SongOfDaysPast),
+            "慈爱的淑女帽" | "诚恳的蘸水笔" | "无私的妆饰花" | "忠实的砂时计" | "慷慨的墨水瓶" => Some(ArtifactSetName::NighttimeWhispersInTheEchoingWoods),
+            "异想零落的圆舞" | "古海玄幽的夜想" | "谐律交响的前奏" | "命途轮转的谐谑" | "灵露倾洒的狂诗" => Some(ArtifactSetName::FragmentOfHarmonicWhimsy),
+            "失冕的宝冠" | "褪光的翠尾" | "暗结的明花" | "举业的识刻" | "筹谋的共樽" => Some(ArtifactSetName::UnfinishedReverie),
             _ => None,
         }
     }
@@ -652,6 +660,26 @@ impl ArtifactSlot {
             "黄金时代的先声" => Some(ArtifactSlot::Sand),
             "黄金之夜的喧嚣" => Some(ArtifactSlot::Goblet),
             "黄金剧团的奖赏" => Some(ArtifactSlot::Head),
+            "昔时遗落之誓" => Some(ArtifactSlot::Flower),
+            "昔时浮想之思" => Some(ArtifactSlot::Feather),
+            "昔时回映之音" => Some(ArtifactSlot::Sand),
+            "昔时应许之梦" => Some(ArtifactSlot::Goblet),
+            "昔时传奏之诗" => Some(ArtifactSlot::Head),
+            "无私的妆饰花" => Some(ArtifactSlot::Flower),
+            "诚恳的蘸水笔" => Some(ArtifactSlot::Feather),
+            "忠实的砂时计" => Some(ArtifactSlot::Sand),
+            "慷慨的墨水瓶" => Some(ArtifactSlot::Goblet),
+            "慈爱的淑女帽" => Some(ArtifactSlot::Head),
+            "异想零落的圆舞" => Some(ArtifactSlot::Head),
+            "古海玄幽的夜想" => Some(ArtifactSlot::Feather),
+            "谐律交响的前奏" => Some(ArtifactSlot::Flower),
+            "命途轮转的谐谑" => Some(ArtifactSlot::Sand),
+            "灵露倾洒的狂诗" => Some(ArtifactSlot::Goblet),
+            "失冕的宝冠" => Some(ArtifactSlot::Head),
+            "褪光的翠尾" => Some(ArtifactSlot::Feather),
+            "暗结的明花" => Some(ArtifactSlot::Flower),
+            "举业的识刻" => Some(ArtifactSlot::Sand),
+            "筹谋的共樽" => Some(ArtifactSlot::Goblet),
             _ => None,
         }
     }

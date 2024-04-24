@@ -1,6 +1,6 @@
 [package]
 name = "yas_scanner_genshin"
-version = "0.1.14"
+version = "0.1.16"
 edition = "2021"
 build = "build.rs"
 description = "Genshin Impact item scanner"

@@ -18,6 +18,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
+name = "ahash"
+version = "0.8.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e89da841a80418a9b391ebaea17f5c112ffaaa96f621d2c285b5174da76b9011"
+dependencies = [
+ "cfg-if",
+ "once_cell",
+ "version_check",
+ "zerocopy",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -553,18 +565,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbbaaaf38131deb9ca518a274a45bfdb8771f139517b073b16c2d3d32ae5037b"
 
 [[package]]
-name = "educe"
-version = "0.4.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "079044df30bb07de7d846d41a184c4b00e66ebdac93ee459253474f3a47e50ae"
-dependencies = [
- "enum-ordinalize",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -602,19 +602,6 @@ dependencies = [
  "objc",
  "pkg-config",
  "windows 0.51.1",
-]
-
-[[package]]
-name = "enum-ordinalize"
-version = "3.1.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4f76552f53cefc9a7f64987c3701b99d982f7690606fd67de1d09712fbf52f1"
-dependencies = [
- "num-bigint",
- "num-traits",
- "proc-macro2",
- "quote",
- "syn 2.0.52",
 ]
 
 [[package]]
@@ -917,6 +904,9 @@ name = "hashbrown"
 version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "290f1a1d9242c78d09ce40a5e87e7554ee637af1351968159f4952f028f75604"
+dependencies = [
+ "ahash",
+]
 
 [[package]]
 name = "heck"
@@ -1126,6 +1116,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1222,7 +1221,7 @@ checksum = "896d0e594158b7f5188034836a6c4886492078352c39760786e54f1b796caaea"
 dependencies = [
  "image",
  "log",
- "memmap2",
+ "memmap2 0.7.1",
  "nix",
  "thiserror",
  "wayland-client",
@@ -1256,7 +1255,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "79e0724dfcaad5cfb7965ea0f178ca0870b8d7315178f4a7179f5696f7f04d5f"
 dependencies = [
  "anymap2",
- "itertools",
+ "itertools 0.10.5",
  "kstring",
  "liquid-derive",
  "num-traits",
@@ -1284,7 +1283,7 @@ version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2a17e273a6fb1fb6268f7a5867ddfd0bd4683c7e19b51084f3d567fad4348c0"
 dependencies = [
- "itertools",
+ "itertools 0.10.5",
  "liquid-core",
  "once_cell",
  "percent-encoding",
@@ -1325,16 +1324,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
-name = "mapr"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46a28a55dbc005b2f6f123c4058933d57add373d362f6fd3a76aab4fe6973500"
-dependencies = [
- "libc",
- "winapi",
-]
-
-[[package]]
 name = "matrixmultiply"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1355,6 +1344,15 @@ name = "memmap2"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f49388d20533534cd19360ad3d6a7dadc885944aa802ba3995040c5ec11288c6"
+dependencies = [
+ "libc",
+]
+
+[[package]]
+name = "memmap2"
+version = "0.9.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe751422e4a8caa417e13c3ea66452215d7d63e19e604f4980461212f3ae1322"
 dependencies = [
  "libc",
 ]
@@ -1480,17 +1478,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8a3895c6391c39d7fe7ebc444a87eb2991b2a0bc718fdabd071eec617fc68e4"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "num-bigint"
-version = "0.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "608e7659b5c3d7cba262d894801b9ec9d00de989e8a82bd4bef91d08da45cdc0"
-dependencies = [
- "autocfg",
- "num-integer",
- "num-traits",
 ]
 
 [[package]]
@@ -1786,6 +1773,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "primal-check"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9df7f93fd637f083201473dab4fee2db4c429d32e55e3299980ab3957ab916a0"
+dependencies = [
+ "num-integer",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1811,7 +1807,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5d2d8d10f3c6ded6da8b05b5fb3b8a5082514344d56c9f871412d29b4e075b4"
 dependencies = [
  "anyhow",
- "itertools",
+ "itertools 0.10.5",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -1881,6 +1877,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "rand_distr"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32cb0b9bc82b0a0876c2dd994a7e7a2683d3e7390ca40e6886785ef0c7e3ee31"
+dependencies = [
+ "num-traits",
+ "rand",
 ]
 
 [[package]]
@@ -2009,6 +2015,21 @@ name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d626bb9dae77e28219937af045c257c28bfd3f69333c512553507f5f9798cb76"
+
+[[package]]
+name = "rustfft"
+version = "6.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43806561bc506d0c5d160643ad742e3161049ac01027b5e6d7524091fd401d86"
+dependencies = [
+ "num-complex",
+ "num-integer",
+ "num-traits",
+ "primal-check",
+ "strength_reduce",
+ "transpose",
+ "version_check",
+]
 
 [[package]]
 name = "rustix"
@@ -2244,6 +2265,23 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "strength_reduce"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe895eb47f22e2ddd4dabc02bce419d2e643c8e3b585c78158b349195bc24d82"
+
+[[package]]
+name = "string-interner"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07f9fdfdd31a0ff38b59deb401be81b73913d76c9cc5b1aed4e1330a223420b9"
+dependencies = [
+ "cfg-if",
+ "hashbrown 0.14.3",
+ "serde",
+]
 
 [[package]]
 name = "strsim"
@@ -2502,22 +2540,24 @@ dependencies = [
 
 [[package]]
 name = "tract-core"
-version = "0.17.9"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "952ec1bab744dab58a1a1e05813ef62d61f238e18622ed4e9e1eb787ce3f3958"
+checksum = "b61f2cff6b36a1385cffa0419daf8578cc9c7d3d3ec5d4f62082d5b2beb18699"
 dependencies = [
  "anyhow",
  "bit-set",
  "derive-new",
  "downcast-rs",
  "dyn-clone",
- "educe",
  "lazy_static",
  "log",
  "maplit",
  "ndarray",
+ "num-complex",
  "num-integer",
  "num-traits",
+ "paste",
+ "rustfft",
  "smallvec",
  "tract-data",
  "tract-linalg",
@@ -2525,41 +2565,40 @@ dependencies = [
 
 [[package]]
 name = "tract-data"
-version = "0.17.9"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddc4c08be3635ebe54fac659d67505a2d94a3d3fb915d386ae6338f9c458d69d"
+checksum = "60d273009dc7ec8101fb8fdfc4a905eabfd48c5ea49d4cf30c20de7ada6aae2c"
 dependencies = [
  "anyhow",
- "educe",
  "half",
- "itertools",
+ "itertools 0.12.1",
  "lazy_static",
  "maplit",
  "ndarray",
- "num-complex",
+ "nom",
  "num-integer",
  "num-traits",
  "scan_fmt",
  "smallvec",
+ "string-interner",
 ]
 
 [[package]]
 name = "tract-hir"
-version = "0.17.9"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c4a4d5bdb45c9219d1995cdc4f5d09a289c3b64b34c7752d291a8eff1675ee6"
+checksum = "b54e67b476006d4422101f413459b842f2470d7ae594bd24d669d7433d9613c5"
 dependencies = [
  "derive-new",
- "educe",
  "log",
  "tract-core",
 ]
 
 [[package]]
 name = "tract-linalg"
-version = "0.17.9"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3b1ea52af343ecf897be8cc710f05f87e0beab5bcabfbd261f84a951368cb6e"
+checksum = "4eebd82a81656eebc479eea84cee391be259b7bbd9719f96c4b4c6678748f2d6"
 dependencies = [
  "cc",
  "derive-new",
@@ -2567,7 +2606,6 @@ dependencies = [
  "dyn-clone",
  "half",
  "lazy_static",
- "libc",
  "liquid",
  "liquid-core",
  "log",
@@ -2575,6 +2613,7 @@ dependencies = [
  "paste",
  "scan_fmt",
  "smallvec",
+ "time",
  "tract-data",
  "unicode-normalization",
  "walkdir",
@@ -2582,9 +2621,9 @@ dependencies = [
 
 [[package]]
 name = "tract-nnef"
-version = "0.17.9"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc5f95192ff8848db72caeac27d81ab85b9db87aca9dd23d9160bfc4976112f8"
+checksum = "8e08aa7b7b1f0e5317aa4832f220a847eb3177cfeefb94a089aae2bde867c2d2"
 dependencies = [
  "byteorder",
  "flate2",
@@ -2597,15 +2636,14 @@ dependencies = [
 
 [[package]]
 name = "tract-onnx"
-version = "0.17.9"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3c54f4a330e727137b87780a43fa6201a70aa9f9dbfab2a235ecd8951e5bf70"
+checksum = "a123632dae75ed9b1281a11e8454c4cb6cfbdf01dc774c53a5fcebcd689ca509"
 dependencies = [
  "bytes",
  "derive-new",
- "educe",
  "log",
- "mapr",
+ "memmap2 0.9.4",
  "num-integer",
  "prost",
  "smallvec",
@@ -2616,14 +2654,26 @@ dependencies = [
 
 [[package]]
 name = "tract-onnx-opl"
-version = "0.17.9"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18b584c79839543996ac030663d7b3ba997a63d833d30b6a07d71954cba43ecb"
+checksum = "241339a78880a8e5dfcc107df5943459eaa38bc3118cef64261e133746cc6621"
 dependencies = [
- "educe",
  "getrandom",
+ "log",
  "rand",
+ "rand_distr",
+ "rustfft",
  "tract-nnef",
+]
+
+[[package]]
+name = "transpose"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ad61aed86bc3faea4300c7aee358b4c6d0c8d6ccc36524c96e4c92ccf26e77e"
+dependencies = [
+ "num-integer",
+ "strength_reduce",
 ]
 
 [[package]]
@@ -3352,6 +3402,26 @@ dependencies = [
  "strum_macros",
  "winres",
  "yas_scanner",
+]
+
+[[package]]
+name = "zerocopy"
+version = "0.7.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74d4d3961e53fa4c9a25a8637fc2bfaf2595b3d3ae34875568a5cf64787716be"
+dependencies = [
+ "zerocopy-derive",
+]
+
+[[package]]
+name = "zerocopy-derive"
+version = "0.7.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ce1b18ccd8e73a9321186f97e46f9f04b778851177567b1975109d26a08d2a6"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.52",
 ]
 
 [[package]]

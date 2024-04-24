@@ -68,7 +68,7 @@ impl YasOCRModel {
                 img.get_pixel(x as u32, y as u32)[0]
             }).into();
 
-        let result = self.model.run(tvec!(tensor))?;
+        let result = self.model.run(tvec!(tensor.into()))?;
         let arr = result[0].to_array_view::<f32>()?;
 
         let shape = arr.shape();

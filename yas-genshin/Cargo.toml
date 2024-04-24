@@ -36,3 +36,7 @@ winres = "0.1"
 [[bin]]
 name = "yas_artifact"
 path = "src/bin/artifact_scanner.rs"
+
+[[bin]]
+name = "playground"
+path = "src/bin/playground.rs"

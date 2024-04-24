@@ -1,0 +1,16 @@
+[package]
+name = "yas_derive"
+version = "0.1.0"
+edition = "2021"
+description = "Yas proc macro"
+repository = "https://github.com/wormtql/yas"
+authors = ["wormtql <584130248@qq.com>"]
+license = "GPL-2.0-or-later"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+syn = { version = "2.0", features = ["parsing"] }
+quote = "1.0"

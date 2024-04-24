@@ -1,0 +1,143 @@
+{
+  "current_resolution": {
+    "width": 3440,
+    "height": 1440
+  },
+  "platform": "Windows",
+  "ui": "Desktop",
+  "data": {
+    "genshin_repository_panel_rect": {
+      "Rect": {
+        "top": 160,
+        "left": 2528,
+        "height": 1120,
+        "width": 657
+      }
+    },
+    "genshin_repository_flag_pos": {
+      "Pos": {
+        "x": 580,
+        "y": 145
+      }
+    },
+    "genshin_repository_item_gap_size": {
+      "Size": {
+        "width": 32,
+        "height": 31
+      }
+    },
+    "genshin_repository_item_size": {
+      "Size": {
+        "width": 164,
+        "height": 204
+      }
+    },
+    "genshin_repository_scan_margin_pos": {
+      "Pos": {
+        "x": 305,
+        "y": 161
+      }
+    },
+    "genshin_repository_pool_rect": {
+      "Rect": {
+        "top": 170,
+        "left": 2610,
+        "height": 730,
+        "width": 30
+      }
+    },
+    "genshin_repository_item_row": {
+      "InvariantInt": 5
+    },
+    "genshin_repository_item_col": {
+      "InvariantInt": 11
+    },
+
+    "genshin_artifact_item_count_rect": {
+      "Rect": {
+        "top": 50,
+        "left": 2750,
+        "height": 35,
+        "width": 435
+      }
+    },
+    "genshin_artifact_star_pos": {
+      "Pos": {
+        "x": 3130,
+        "y": 200
+      }
+    },
+    "genshin_artifact_main_stat_name_rect": {
+      "Rect": {
+        "top": 360,
+        "left": 2560,
+        "height": 40,
+        "width": 290
+      }
+    },
+    "genshin_artifact_main_stat_value_rect": {
+      "Rect": {
+        "top": 400,
+        "left": 2560,
+        "height": 60,
+        "width": 290
+      }
+    },
+    "genshin_artifact_level_rect": {
+      "Rect": {
+        "top": 575,
+        "left": 2568,
+        "height": 30,
+        "width": 72
+      }
+    },
+    "genshin_artifact_item_equip_rect": {
+      "Rect": {
+        "top": 1220,
+        "left": 3140,
+        "height": 40,
+        "width": 2490
+      }
+    },
+    "genshin_artifact_sub_stat1_rect": {
+      "Rect": {
+        "top": 640,
+        "left": 2590,
+        "height": 40,
+        "width": 490
+      }
+    },
+    "genshin_artifact_sub_stat2_rect": {
+      "Rect": {
+        "top": 690,
+        "left": 2590,
+        "height": 40,
+        "width": 490
+      }
+    },
+    "genshin_artifact_sub_stat3_rect": {
+      "Rect": {
+        "top": 742,
+        "left": 2590,
+        "height": 40,
+        "width": 490
+      }
+    },
+    "genshin_artifact_sub_stat4_rect": {
+      "Rect": {
+        "top": 795,
+        "left": 2590,
+        "height": 40,
+        "width": 490
+      }
+    },
+    "genshin_artifact_title_rect": {
+      "Rect": {
+        "top": 170,
+        "left": 2560,
+        "height": 50,
+        "width": 580
+      }
+    }
+  }
+}

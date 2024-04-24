@@ -1,0 +1,29 @@
+[package]
+name = "yas_scanner_starrail"
+version = "0.1.14"
+edition = "2021"
+build = "build.rs"
+description = "Honkai: Star Rail item scanner"
+repository = "https://github.com/wormtql/yas"
+keywords = ["HonkaiStarRail", "relic", "scanner", "ocr"]
+license = "GPL-2.0-or-later"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+yas = { path = "../yas",  package="yas_scanner" }
+anyhow = "1.0"
+log = "0.4"
+clap = { version = "4.4", features = ["derive"] }
+image = "0.24"
+serde_json = "1.0"
+edit-distance = "2.1"
+regex = "1.5"
+strum = "0.25"
+strum_macros = "0.25"
+lazy_static = "1.4"
+serde = { version = "1.0", features = ["derive"] }
+env_logger = "0.10.0"
+
+[build-dependencies]
+winres = "0.1"

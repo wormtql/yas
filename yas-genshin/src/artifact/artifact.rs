@@ -7,7 +7,7 @@ use strum_macros::Display;
 use crate::character::CHARACTER_NAMES;
 use crate::scanner::GenshinArtifactScanResult;
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Display)]
 pub enum ArtifactStatName {
     HealingBonus,
     CriticalDamage,
@@ -30,7 +30,7 @@ pub enum ArtifactStatName {
     DendroBonus,
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Display)]
 pub enum ArtifactSlot {
     Flower,
     Feather,

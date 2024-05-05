@@ -5,6 +5,7 @@ pub enum GenshinArtifactExportFormat {
     Mona,
     MingyuLab,
     Good,
+    CSV,
 }
 
 impl Default for GenshinArtifactExportFormat {

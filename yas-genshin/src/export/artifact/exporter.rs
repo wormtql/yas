@@ -7,6 +7,7 @@ use yas::export::{AssetEmitter, ExportAssets};
 
 use crate::artifact::GenshinArtifact;
 use crate::export::artifact::{ExportArtifactConfig, GenshinArtifactExportFormat};
+use crate::export::artifact::csv::GenshinArtifactCSVFormat;
 
 use super::good::GOODFormat;
 use super::mingyu_lab::MingyuLabFormat;
@@ -71,6 +72,17 @@ impl<'a> AssetEmitter for GenshinArtifactExporter<'a> {
                     contents.into_bytes(),
                     Some(String::from("GOOD圣遗物格式")));
             },
+            GenshinArtifactExportFormat::CSV => {
+                let path = self.output_dir.join("artifacts.csv");
+                let value = GenshinArtifactCSVFormat::new(results);
+                let contents = value.to_csv_string();
+                export_assets.add_asset(
+                    Some(String::from("artifacts csv format")),
+                    path,
+                    contents.into_bytes(),
+                    Some(String::from("CSV格式圣遗物"))
+                );
+            }
         };
     }
 }

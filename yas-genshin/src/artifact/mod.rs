@@ -5,4 +5,4 @@ pub use artifact::ArtifactStatName;
 pub use artifact::GenshinArtifact;
 
 mod artifact;
-
+mod zh_cn;

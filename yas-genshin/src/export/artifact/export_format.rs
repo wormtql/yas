@@ -6,6 +6,8 @@ pub enum GenshinArtifactExportFormat {
     MingyuLab,
     Good,
     CSV,
+    /// Export all formats
+    All,
 }
 
 impl Default for GenshinArtifactExportFormat {

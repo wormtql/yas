@@ -82,6 +82,56 @@ impl<'a> AssetEmitter for GenshinArtifactExporter<'a> {
                     contents.into_bytes(),
                     Some(String::from("CSV格式圣遗物"))
                 );
+            },
+            GenshinArtifactExportFormat::All => {
+                // mona
+                {
+                    let path = self.output_dir.join("mona.json");
+                    let value = MonaFormat::new(results);
+                    let contents = serde_json::to_string(&value).unwrap();
+
+                    export_assets.add_asset(
+                        Some(String::from("mona")),
+                        path,
+                        contents.into_bytes(),
+                        Some(String::from("莫娜圣遗物格式")));
+                }
+                // mingyulab
+                {
+                    let path = self.output_dir.join("mingyulab.json");
+                    let value = MingyuLabFormat::new(results);
+                    let contents = serde_json::to_string(&value).unwrap();
+
+                    export_assets.add_asset(
+                        Some(String::from("mingyulab")),
+                        path,
+                        contents.into_bytes(),
+                        Some(String::from("原魔计算器圣遗物格式")));
+                }
+                // good
+                {
+                    let path = self.output_dir.join("good.json");
+                    let value = GOODFormat::new(results);
+                    let contents = serde_json::to_string(&value).unwrap();
+
+                    export_assets.add_asset(
+                        Some(String::from("GOOD")),
+                        path,
+                        contents.into_bytes(),
+                        Some(String::from("GOOD圣遗物格式")));
+                }
+                // csv
+                {
+                    let path = self.output_dir.join("artifacts.csv");
+                    let value = GenshinArtifactCSVFormat::new(results);
+                    let contents = value.to_csv_string();
+                    export_assets.add_asset(
+                        Some(String::from("csv")),
+                        path,
+                        contents.into_bytes(),
+                        Some(String::from("CSV格式圣遗物"))
+                    );
+                }
             }
         };
     }

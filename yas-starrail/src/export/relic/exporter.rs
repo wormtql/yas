@@ -37,7 +37,7 @@ impl<'a> AssetEmitter for StarRailRelicExporter<'a> {
 
         match self.format {
             StarRailRelicExportFormat::March7th => {
-                let path = self.output_dir.join("mona.json");
+                let path = self.output_dir.join("march7th.json");
                 let format = March7thFormat::new(results);
                 let contents = serde_json::to_string(&format).unwrap();
 

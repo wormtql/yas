@@ -1,6 +1,6 @@
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 
-use clap::{Arg, FromArgMatches};
+use clap::{FromArgMatches};
 
 use crate::relic::StarRailRelic;
 

@@ -1,4 +1,4 @@
-use clap::{Arg, arg, FromArgMatches};
+use clap::{arg};
 
 // todo add all the cmd arguments
 #[derive(Clone, clap::Args)]

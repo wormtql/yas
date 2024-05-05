@@ -181,7 +181,6 @@ impl StarRailRelicScanner {
             self.window_info.item_count_rect.to_rect_i32(),
             self.game_info.window.origin()
         )?;
-        im.save("item_count.png");
         let s = self.image_to_text.image_to_text(&im, false)?;
 
         info!("物品信息: {}", s);

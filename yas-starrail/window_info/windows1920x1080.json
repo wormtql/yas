@@ -28,10 +28,10 @@
     },
     "starrail_relic_item_count_rect": {
       "Rect": {
-        "top": 973,
-        "left": 895,
-        "width": 258,
-        "height": 34
+        "top": 45,
+        "left": 1503,
+        "width": 260,
+        "height": 40
       }
     },
     "starrail_relic_level_rect": {

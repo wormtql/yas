@@ -12,6 +12,7 @@ use yas::system_control::SystemControl;
 use crate::scanner_controller::repository_layout::window_info::StarRailRepositoryScanControllerWindowInfo;
 use anyhow::{anyhow, Result};
 use clap::{ArgMatches, FromArgMatches};
+use yas::utils::color_distance;
 use yas::window_info::{FromWindowInfoRepository, WindowInfoRepository};
 use crate::scanner_controller::repository_layout::scroll_result::ScrollResult;
 
@@ -53,13 +54,6 @@ fn calc_pool(row: &Vec<u8>) -> f32 {
 
 fn get_capturer() -> Result<Rc<dyn Capturer<RgbImage>>> {
     Ok(Rc::new(GenericCapturer::new()?))
-}
-
-fn color_distance(c1: &image::Rgb<u8>, c2: &image::Rgb<u8>) -> usize {
-    let x = c1.0[0] as i32 - c2.0[0] as i32;
-    let y = c1.0[1] as i32 - c2.0[1] as i32;
-    let z = c1.0[2] as i32 - c2.0[2] as i32;
-    return (x * x + y * y + z * z) as usize;
 }
 
 // constructor
@@ -231,8 +225,9 @@ impl StarRailRepositoryScanController {
     #[inline(always)]
     pub fn capture_flag(&self) -> Result<[Rgb<u8>; 50]> {
         let mut flag = [Rgb([0, 0, 0]); 50];
-        let window_origin = self.game_info.window;
-        let im = self.capturer.capture_rect(window_origin)?;
+        let window_origin = self.game_info.window.to_rect_f64().origin();
+        let rect = self.window_info.flag_rect.translate(window_origin);
+        let im = self.capturer.capture_rect(rect.to_rect_i32())?;
 
         // Gap size between repository top and first item row varies with resolution.
         // At 1920x1080, it's 20 pixels.
@@ -247,12 +242,21 @@ impl StarRailRepositoryScanController {
     #[inline(always)]
     pub fn check_flag(&self) -> Result<()> {
         let flag = self.capture_flag()?;
+        // println!("{:?}", &flag[..20]);
+        // let mut same_count = 0;
         for y in 0..self.window_info.flag_rect.height as usize {
             if color_distance(&self.initial_flag[y], &flag[y]) < 10 {
-                return Ok(());
+                // same_count += 1;
+                return Ok(())
             }
         }
-        Err(anyhow!("Flag changed"))
+        // let ratio = same_count as f64 / self.window_info.flag_rect.height;
+        // println!("{:?}", ratio);
+        // if ratio > 0.5 {
+        //     Ok(())
+        // } else {
+            Err(anyhow!("Flag changed"))
+        // }
     }
 
     pub fn align_row(&mut self) {

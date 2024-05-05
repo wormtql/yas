@@ -1,16 +1,17 @@
-use image::{RgbImage, GenericImageView};
-use log::{error, info, warn};
-use std::{ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, cell::RefCell, sync::{mpsc::{Receiver, Sender, self}, Arc}, thread::JoinHandle, os::windows::thread, collections::HashSet, time::SystemTime};
+use std::{cell::RefCell, ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, sync::{mpsc::{self, Sender}}, time::SystemTime};
 
-use super::relic_scanner_config::StarRailRelicScannerConfig;
 use anyhow::Result;
 use clap::FromArgMatches;
+use image::RgbImage;
+use log::{error, info};
+
 use yas::capture::{Capturer, GenericCapturer};
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
 use yas::positioning::Pos;
 use yas::utils::color_distance;
 use yas::window_info::{FromWindowInfoRepository, WindowInfoRepository};
+
 use crate::scanner::relic_scanner::match_colors::{MATCH_COLORS, MatchColors};
 use crate::scanner::relic_scanner::message_items::SendItem;
 use crate::scanner::relic_scanner::relic_scanner_window_info::RelicScannerWindowInfo;
@@ -18,6 +19,7 @@ use crate::scanner::relic_scanner::relic_scanner_worker::RelicScannerWorker;
 use crate::scanner::relic_scanner::scan_result::StarRailRelicScanResult;
 use crate::scanner_controller::repository_layout::{ReturnResult, StarRailRepositoryScanController, StarRailRepositoryScannerLogicConfig};
 
+use super::relic_scanner_config::StarRailRelicScannerConfig;
 
 pub struct StarRailRelicScanner {
     scanner_config: StarRailRelicScannerConfig,
@@ -168,9 +170,9 @@ impl StarRailRelicScanner {
 
     pub fn get_item_count(&self) -> Result<i32> {
         let count = self.scanner_config.number;
-        let item_name = "遗器";
+        let item_name = "遗器数量";
 
-        let max_count = 1500;
+        let max_count = 2000;
         if count > 0 {
             return Ok(max_count.min(count));
         }
@@ -179,6 +181,7 @@ impl StarRailRelicScanner {
             self.window_info.item_count_rect.to_rect_i32(),
             self.game_info.window.origin()
         )?;
+        im.save("item_count.png");
         let s = self.image_to_text.image_to_text(&im, false)?;
 
         info!("物品信息: {}", s);

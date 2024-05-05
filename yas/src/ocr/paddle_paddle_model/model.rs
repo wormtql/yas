@@ -31,7 +31,7 @@ impl PPOCRModel {
 }
 
 impl ImageToText<RgbImage> for PPOCRModel {
-    fn image_to_text(&self, image: &RgbImage, is_preprocessed: bool) -> Result<String> {
+    fn image_to_text(&self, image: &RgbImage, _is_preprocessed: bool) -> Result<String> {
         let tensor: Tensor = tract_ndarray::Array4::from_shape_fn((1, 3, image.height() as usize, image.width() as usize), |(_, c, y, x)| {
             let pix = image.get_pixel(x as u32, y as u32)[c];
             let v = pix as f32 / 255.0_f32;

@@ -150,7 +150,7 @@ impl GenshinArtifactScanner {
             self.window_info.item_count_rect.to_rect_i32(),
             self.game_info.window.origin()
         )?;
-        im.save("item_count.png")?;
+        // im.save("item_count.png")?;
         let s = self.image_to_text.image_to_text(&im, false)?;
 
         info!("物品信息: {}", s);
@@ -217,7 +217,7 @@ impl GenshinArtifactScanner {
                         break;
                     }
 
-                    if tx.send(Some(SendItem { panel_image: image, star: star })).is_err() {
+                    if tx.send(Some(SendItem { panel_image: image, star })).is_err() {
                         break;
                     }
 

@@ -1,60 +1,26 @@
 use std::cell::RefCell;
 use std::ops::Coroutine;
 use std::rc::Rc;
-use image::RgbImage;
-use yas::common::color::Color;
+use image::{Rgb, RgbImage};
 use yas::game_info::GameInfo;
-use yas::window_info::require_window_info::RequireWindowInfo;
-use yas::window_info::window_info_repository::WindowInfoRepository;
 use crate::scanner_controller::repository_layout::config::StarRailRepositoryScannerLogicConfig;
-use anyhow::{Result, anyhow};
-use yas::common::positioning::{Pos, Rect, Size};
 use yas::utils;
 use log::{info, error};
 use std::time::SystemTime;
-use yas::capture::capture::RelativeCapturable;
+use yas::capture::{Capturer, GenericCapturer};
 use yas::system_control::SystemControl;
-
-#[derive(Debug)]
-pub enum ScrollResult {
-    TimeLimitExceeded,
-    Interrupt,
-    Success,
-    Failed,
-    Skip,
-}
-
-// todo use macros
-struct StarRailRepositoryScanControllerWindowInfo {
-    pub window_origin_pos: Pos,
-    pub panel_rect: Rect,
-    pub flag_rect: Rect,
-    pub item_gap_size: Size,
-    pub item_size: Size,
-    pub scan_margin_pos: Pos,
-    pub pool_rect: Rect,
-}
-
-impl From<&WindowInfoRepository> for StarRailRepositoryScanControllerWindowInfo {
-    fn from(value: &WindowInfoRepository) -> Self {
-        StarRailRepositoryScanControllerWindowInfo {
-            window_origin_pos: value.get::<Pos>("window_origin_pos").unwrap(),
-            panel_rect: value.get("starrail_repository_panel_rect").unwrap(),
-            flag_rect: value.get("starrail_repository_flag_rect").unwrap(),
-            item_gap_size: value.get("starrail_repository_item_gap_size").unwrap(),
-            item_size: value.get("starrail_repository_item_size").unwrap(),
-            scan_margin_pos: value.get("starrail_repository_scan_margin_pos").unwrap(),
-            pool_rect: value.get("starrail_repository_pool_rect").unwrap(),
-        }
-    }
-}
+use crate::scanner_controller::repository_layout::window_info::StarRailRepositoryScanControllerWindowInfo;
+use anyhow::{anyhow, Result};
+use clap::{ArgMatches, FromArgMatches};
+use yas::window_info::{FromWindowInfoRepository, WindowInfoRepository};
+use crate::scanner_controller::repository_layout::scroll_result::ScrollResult;
 
 pub struct StarRailRepositoryScanController {
     // to detect whether an item changes
     pool: f64,
 
     // Stores initial gap colors for line gap detection
-    initial_flag: [Color; 50],
+    initial_flag: [Rgb<u8>; 50],
 
     // for scrolls
     scrolled_rows: u32,
@@ -67,29 +33,15 @@ pub struct StarRailRepositoryScanController {
 
     row: usize,
     col: usize,
-    item_count: usize,
+    // item_count: usize,
 
     config: StarRailRepositoryScannerLogicConfig,
     window_info: StarRailRepositoryScanControllerWindowInfo,
     system_control: SystemControl,
+    capturer: Rc<dyn Capturer<RgbImage>>,
 }
 
-impl RequireWindowInfo for StarRailRepositoryScanController {
-    fn require_window_info(window_info_builder: &mut yas::window_info::window_info_builder::WindowInfoBuilder) {
-        window_info_builder
-            // .add_required_key("window_origin_pos")
-            .add_required_key("starrail_repository_panel_rect")
-            .add_required_key("starrail_repository_flag_rect")
-            .add_required_key("starrail_repository_item_gap_size")
-            .add_required_key("starrail_repository_item_size")
-            .add_required_key("starrail_repository_scan_margin_pos")
-            .add_required_key("starrail_repository_pool_rect")
-            .add_required_key("starrail_repository_item_row")
-            .add_required_key("starrail_repository_item_col");
-    }
-}
-
-pub fn calc_pool(row: &Vec<u8>) -> f32 {
+fn calc_pool(row: &Vec<u8>) -> f32 {
     let len = row.len() / 3;
     let mut pool: f32 = 0.0;
 
@@ -99,35 +51,69 @@ pub fn calc_pool(row: &Vec<u8>) -> f32 {
     pool
 }
 
+fn get_capturer() -> Result<Rc<dyn Capturer<RgbImage>>> {
+    Ok(Rc::new(GenericCapturer::new()?))
+}
+
+fn color_distance(c1: &image::Rgb<u8>, c2: &image::Rgb<u8>) -> usize {
+    let x = c1.0[0] as i32 - c2.0[0] as i32;
+    let y = c1.0[1] as i32 - c2.0[1] as i32;
+    let z = c1.0[2] as i32 - c2.0[2] as i32;
+    return (x * x + y * y + z * z) as usize;
+}
+
 // constructor
 impl StarRailRepositoryScanController {
-    pub fn new(config: StarRailRepositoryScannerLogicConfig, window_info: &WindowInfoRepository, item_count: usize, game_info: GameInfo) -> Self {
-        let item_row = window_info.get::<i32>("starrail_repository_item_row").unwrap();
-        let item_col = window_info.get::<i32>("starrail_repository_item_col").unwrap();
+    pub fn new(
+        window_info_repo: &WindowInfoRepository,
+        config: StarRailRepositoryScannerLogicConfig,
+        game_info: GameInfo
+    ) -> Result<Self> {
+        let window_info = StarRailRepositoryScanControllerWindowInfo::from_window_info_repository(
+            game_info.window.to_rect_usize().size(),
+            game_info.ui,
+            game_info.platform,
+            window_info_repo
+        )?;
 
-        StarRailRepositoryScanController {
+        let row_count = window_info.starrail_repository_item_row;
+        let col_count = window_info.starrail_repository_item_col;
+
+        Ok(StarRailRepositoryScanController {
             system_control: SystemControl::new(),
 
-            row: item_row as usize,
-            col: item_col as usize,
+            row: row_count as usize,
+            col: col_count as usize,
 
-            window_info: StarRailRepositoryScanControllerWindowInfo::from(window_info),
+            window_info,
             config,
 
             pool: 0.0,
 
-            initial_flag: [Color::new(0, 0, 0); 50],
+            initial_flag: [Rgb([0, 0, 0]); 50],
 
             scrolled_rows: 0,
             avg_scroll_one_row: 0.0,
 
             avg_switch_time: 0.0,
-            // scanned_count: 0,
 
             game_info,
-            item_count,
             scanned_count: 0,
-        }
+
+            capturer: get_capturer()?,
+        })
+    }
+
+    pub fn from_arg_matches(
+        window_info_repo: &WindowInfoRepository,
+        arg_matches: &ArgMatches,
+        game_info: GameInfo
+    ) -> Result<Self> {
+        Self::new(
+            window_info_repo,
+            StarRailRepositoryScannerLogicConfig::from_arg_matches(arg_matches)?,
+            game_info
+        )
     }
 }
 
@@ -137,24 +123,25 @@ pub enum ReturnResult {
 }
 
 impl StarRailRepositoryScanController {
-    pub fn into_generator(object: Rc<RefCell<StarRailRepositoryScanController>>) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
+    pub fn get_generator(
+        object: Rc<RefCell<StarRailRepositoryScanController>>,
+        item_count: usize,
+    ) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
         let generator = move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;
             let mut start_row = 0;
 
-            let count = object.borrow().item_count;
-
-            let total_row = (object.borrow().item_count + object.borrow().col - 1) / object.borrow().col;
-            let last_row_col = if object.borrow().item_count % object.borrow().col == 0 {
+            let total_row = (item_count + object.borrow().col - 1) / object.borrow().col;
+            let last_row_col = if item_count % object.borrow().col == 0 {
                 object.borrow().col
             } else {
-                count % object.borrow().col
+                item_count % object.borrow().col
             };
 
             info!(
                 "扫描任务共 {} 个物品，共计 {} 行，尾行 {} 个",
-                count, total_row, last_row_col
+                item_count, total_row, last_row_col
             );
 
             object.borrow_mut().move_to(0, 0);
@@ -162,17 +149,15 @@ impl StarRailRepositoryScanController {
             #[cfg(target_os = "macos")]
             utils::sleep(20);
 
-            if let Err(e) = object.borrow_mut().system_control.mouse_click() {
-                error!("Mouse click failed: {:?}", e);
-                return Err(anyhow!("Mouse click failed"));
-            }
+            // todo remove unwrap
+            object.borrow_mut().system_control.mouse_click().unwrap();
             utils::sleep(1000);
 
             object.borrow_mut().sample_initial_color().unwrap();
 
-            let row = object.borrow().row;
+            let row = object.borrow().row.min(total_row);
 
-            'outer: while scanned_count < count {
+            'outer: while scanned_count < item_count {
                 '_row: for row in start_row..row {
                     let row_item_count = if scanned_row == total_row - 1 {
                         last_row_col
@@ -185,7 +170,7 @@ impl StarRailRepositoryScanController {
                         if utils::is_rmb_down() {
                             return Ok(ReturnResult::Interrupted);
                         }
-                        if scanned_count > count {
+                        if scanned_count > item_count {
                             return Ok(ReturnResult::Finished);
                         }
 
@@ -195,8 +180,7 @@ impl StarRailRepositoryScanController {
                         #[cfg(target_os = "macos")]
                         utils::sleep(20);
 
-                        // do not unwrap
-                        object.borrow_mut().wait_until_switched();
+                        let _ = object.borrow_mut().wait_until_switched();
 
                         // have to make sure at this point no mut ref exists
                         yield;
@@ -214,7 +198,7 @@ impl StarRailRepositoryScanController {
                     }
                 } // end '_row
 
-                let remain = count - scanned_count;
+                let remain = item_count - scanned_count;
                 let remain_row = (remain + object.borrow().col - 1) / object.borrow().col;
                 let scroll_row = remain_row.min(object.borrow().row);
                 start_row = object.borrow().row - scroll_row;
@@ -238,10 +222,6 @@ impl StarRailRepositoryScanController {
         generator
     }
 
-    pub fn capture_panel(&self) -> Result<RgbImage> {
-        self.window_info.panel_rect.capture_relative(self.window_info.window_origin_pos)
-    }
-
     #[inline(always)]
     pub fn sample_initial_color(&mut self) -> Result<()> {
         self.initial_flag = self.capture_flag()?;
@@ -249,15 +229,16 @@ impl StarRailRepositoryScanController {
     }
 
     #[inline(always)]
-    pub fn capture_flag(&self) -> Result<[Color; 50]> {
-        let mut flag = [Color::new(0, 0, 0); 50];
-        let im: RgbImage = self.window_info.flag_rect.capture_relative(self.window_info.window_origin_pos)?;
+    pub fn capture_flag(&self) -> Result<[Rgb<u8>; 50]> {
+        let mut flag = [Rgb([0, 0, 0]); 50];
+        let window_origin = self.game_info.window;
+        let im = self.capturer.capture_rect(window_origin)?;
 
-        // Gap size between warehouse top and first item row varies with resolution.
+        // Gap size between repository top and first item row varies with resolution.
         // At 1920x1080, it's 20 pixels.
         for y in 0..self.window_info.flag_rect.height as usize {
             let color = im.get_pixel(0, y as u32);
-            flag[y] = Color::new(color.0[0], color.0[1], color.0[2]);
+            flag[y] = color.clone();
         }
 
         Ok(flag)
@@ -267,7 +248,7 @@ impl StarRailRepositoryScanController {
     pub fn check_flag(&self) -> Result<()> {
         let flag = self.capture_flag()?;
         for y in 0..self.window_info.flag_rect.height as usize {
-            if self.initial_flag[y].distance(&flag[y]) < 10 {
+            if color_distance(&self.initial_flag[y], &flag[y]) < 10 {
                 return Ok(());
             }
         }
@@ -287,7 +268,7 @@ impl StarRailRepositoryScanController {
 
     pub fn move_to(&mut self, row: usize, col: usize) {
         let (row, col) = (row as u32, col as u32);
-        let origin = self.window_info.window_origin_pos;
+        let origin = self.game_info.window.to_rect_f64().origin();
 
         let gap = self.window_info.item_gap_size;
         let margin = self.window_info.scan_margin_pos;
@@ -313,7 +294,7 @@ impl StarRailRepositoryScanController {
             }
 
             #[cfg(windows)]
-            self.system_control.mouse_scroll(1, false);
+            let _ = self.system_control.mouse_scroll(1, false);
 
             utils::sleep(self.config.scroll_delay.try_into().unwrap());
             count += 1;
@@ -373,8 +354,10 @@ impl StarRailRepositoryScanController {
         let mut consecutive_time = 0;
         let mut diff_flag = false;
         while now.elapsed()?.as_millis() < self.config.max_wait_switch_item as u128 {
-            let im: RgbImage = self.window_info.pool_rect
-                .capture_relative(self.window_info.window_origin_pos)?;
+            let im = self.capturer.capture_relative_to(
+                self.window_info.pool_rect.to_rect_i32(),
+                self.game_info.window.origin()
+            )?;
 
             let pool = calc_pool(im.as_raw()) as f64;
 

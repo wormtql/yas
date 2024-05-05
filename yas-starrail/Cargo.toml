@@ -12,6 +12,7 @@ license = "GPL-2.0-or-later"
 
 [dependencies]
 yas = { path = "../yas",  package="yas_scanner" }
+yas_derive = { path = "../yas-derive", package = "yas_derive" }
 anyhow = "1.0"
 log = "0.4"
 clap = { version = "4.4", features = ["derive"] }
@@ -27,3 +28,7 @@ env_logger = "0.10.0"
 
 [build-dependencies]
 winres = "0.1"
+
+[[bin]]
+name = "yas_relic"
+path = "src/bin/relic_scanner.rs"

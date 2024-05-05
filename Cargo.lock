@@ -3401,6 +3401,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "winres",
+ "yas_derive",
  "yas_scanner",
 ]
 

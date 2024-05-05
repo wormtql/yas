@@ -1,0 +1,194 @@
+{
+  "current_resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "platform": "Windows",
+  "ui": "Desktop",
+  "data": {
+    "starrail_relic_discard_pos": {
+      "Pos": {
+        "x": 1808,
+        "y": 323
+      }
+    },
+    "starrail_relic_equip_rect": {
+      "Rect": {
+        "top": 884,
+        "left": 1610,
+        "width": 76,
+        "height": 23
+      }
+    },
+    "starrail_relic_equipper_pos": {
+      "Pos": {
+        "x": 1582,
+        "y": 888
+      }
+    },
+    "starrail_relic_item_count_rect": {
+      "Rect": {
+        "top": 973,
+        "left": 895,
+        "width": 258,
+        "height": 34
+      }
+    },
+    "starrail_relic_level_rect": {
+      "Rect": {
+        "top": 309,
+        "left": 1413,
+        "width": 86,
+        "height": 38
+      }
+    },
+    "starrail_relic_lock_pos": {
+      "Pos": {
+        "x": 1808,
+        "y": 274
+      }
+    },
+    "starrail_relic_main_stat_name_rect": {
+      "Rect": {
+        "top": 398,
+        "left": 1440,
+        "width": 251,
+        "height": 33
+      }
+    },
+    "starrail_relic_main_stat_value_rect": {
+      "Rect": {
+        "top": 398,
+        "left": 1729,
+        "width": 113,
+        "height": 33
+      }
+    },
+    "starrail_relic_star_pos": {
+      "Pos": {
+        "x": 1800,
+        "y": 250
+      }
+    },
+    "starrail_relic_sub_stat0_name_rect": {
+      "Rect": {
+        "top": 442,
+        "left": 1440,
+        "width": 197,
+        "height": 33
+      }
+    },
+    "starrail_relic_sub_stat0_value_rect": {
+      "Rect": {
+        "top": 442,
+        "left": 1680,
+        "width": 166,
+        "height": 33
+      }
+    },
+    "starrail_relic_sub_stat1_name_rect": {
+      "Rect": {
+        "top": 480,
+        "left": 1440,
+        "width": 197,
+        "height": 35
+      }
+    },
+    "starrail_relic_sub_stat1_value_rect": {
+      "Rect": {
+        "top": 480,
+        "left": 1680,
+        "width": 166,
+        "height": 33
+      }
+    },
+    "starrail_relic_sub_stat2_name_rect": {
+      "Rect": {
+        "top": 519,
+        "left": 1440,
+        "width": 197,
+        "height": 34
+      }
+    },
+    "starrail_relic_sub_stat2_value_rect": {
+      "Rect": {
+        "top": 519,
+        "left": 1680,
+        "width": 166,
+        "height": 33
+      }
+    },
+    "starrail_relic_sub_stat3_name_rect": {
+      "Rect": {
+        "top": 557,
+        "left": 1440,
+        "width": 197,
+        "height": 34
+      }
+    },
+    "starrail_relic_sub_stat3_value_rect": {
+      "Rect": {
+        "top": 557,
+        "left": 1680,
+        "width": 166,
+        "height": 34
+      }
+    },
+    "starrail_relic_title_rect": {
+      "Rect": {
+        "top": 129,
+        "left": 1398,
+        "width": 450,
+        "height": 33
+      }
+    },
+    "starrail_repository_flag_rect": {
+      "Rect": {
+        "top": 179,
+        "left": 1064,
+        "width": 1,
+        "height": 20
+      }
+    },
+    "starrail_repository_item_col": {
+      "InvariantInt": 9
+    },
+    "starrail_repository_item_gap_size": {
+      "Size": {
+        "width": 9,
+        "height": 14
+      }
+    },
+    "starrail_repository_item_row": {
+      "InvariantInt": 5
+    },
+    "starrail_repository_item_size": {
+      "Size": {
+        "width": 115,
+        "height": 135
+      }
+    },
+    "starrail_repository_panel_rect": {
+      "Rect": {
+        "top": 124,
+        "left": 1395,
+        "width": 456,
+        "height": 817
+      }
+    },
+    "starrail_repository_pool_rect": {
+      "Rect": {
+        "top": 132,
+        "left": 1446,
+        "width": 63,
+        "height": 456
+      }
+    },
+    "starrail_repository_scan_margin_pos": {
+      "Pos": {
+        "x": 136,
+        "y": 206
+      }
+    }
+  }
+}

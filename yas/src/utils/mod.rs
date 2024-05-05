@@ -5,6 +5,7 @@ use std::time::Duration;
 use serde::Deserialize;
 use std::io::stdin;
 use std::process;
+pub use misc::*;
 
 #[cfg(target_os = "macos")]
 mod macos;
@@ -15,6 +16,8 @@ pub use macos::*;
 mod windows;
 #[cfg(windows)]
 pub use windows::*;
+
+mod misc;
 
 pub fn sleep(ms: u32) {
     thread::sleep(Duration::from_millis(ms as u64));

@@ -1,2 +1,3 @@
-pub mod export_format;
-pub mod relic;
+pub use relic::*;
+
+mod relic;

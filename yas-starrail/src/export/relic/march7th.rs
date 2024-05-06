@@ -131,7 +131,7 @@ impl Serialize for March7thRelic {
         root.serialize_entry("star", &self.star)?;
         root.serialize_entry("equip", &self.equip)?;
         root.serialize_entry("lock", &self.lock)?;
-        root. serialize_entry("discard", &self.discard)?;
+        root.serialize_entry("discard", &self.discard)?;
 
         root.end()
     }

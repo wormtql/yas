@@ -7,6 +7,7 @@ use crate::relic::StarRailRelic;
 use crate::export::relic::{ExportRelicConfig, StarRailRelicExportFormat};
 use anyhow::Result;
 use yas::export::{AssetEmitter, ExportAssets};
+use crate::export::relic::hsr::StarRailHSRFormat;
 
 use super::march7th::March7thFormat;
 
@@ -46,6 +47,18 @@ impl<'a> AssetEmitter for StarRailRelicExporter<'a> {
                     path,
                     contents.into_bytes(),
                     Some(String::from("三月七遗器格式"))
+                );
+            },
+            StarRailRelicExportFormat::HSR => {
+                let path = self.output_dir.join("hsr.json");
+                let format = StarRailHSRFormat::new_version3(results);
+                let contents = serde_json::to_string(&format).unwrap();
+
+                asset_bundle.add_asset(
+                    Some(String::from("relics")),
+                    path,
+                    contents.into_bytes(),
+                    Some(String::from("HSR遗器格式"))
                 );
             }
         }

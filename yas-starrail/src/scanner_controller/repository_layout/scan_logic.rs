@@ -121,7 +121,7 @@ impl StarRailRepositoryScanController {
         object: Rc<RefCell<StarRailRepositoryScanController>>,
         item_count: usize,
     ) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
-        let generator = move || {
+        let generator = #[coroutine] move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;
             let mut start_row = 0;

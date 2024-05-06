@@ -1,4 +1,4 @@
-name: Rust
+name: Build executables
 
 on:
   push:
@@ -13,23 +13,59 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
+          fetch-depth: 0 # For $commitCount
           lfs: true
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build (Debug)
-        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-        run: cargo build
+      - name: Extract git-rev
+        run: |
+          $commitCount = git rev-list --count HEAD
+          $shortHash = git rev-parse --short HEAD
+          "GIT_REV=r$commitCount.$shortHash" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Setup Toolchain
+        run: rustup default nightly-msvc
+
+      - name: Set version in Cargo.toml
+        run: |
+          $files = @(
+              './Cargo.toml'
+              './yas/Cargo.toml'
+              './yas-genshin/Cargo.toml'
+              './yas-starrail/Cargo.toml'
+          )
+          [regex]$pattern = '(?<=version = ").*(?=")'
+          foreach ($file in $files) {
+              $pattern.Replace((Get-Content -Raw $file), "0.0.0-$env:GIT_REV", 1) | Out-File -FilePath $file
+          }
 
       - name: Build (Release)
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: cargo build --release
 
-      - name: Upload artifact
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: actions/upload-artifact@v3
+      - name: Rename Outputs
+        run: |
+          Move-Item ./target/release/yas_artifact.exe "yas_artifact_$env:GIT_REV.exe"
+          Move-Item ./target/release/yas_relic.exe "yas_relic_$env:GIT_REV.exe"
+
+      - name: Upload yas_artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: yas_scanner
-          path: target/release/yas_scanner.exe
+          name: yas_artifact_${{ env.GIT_REV }}
+          path: yas_artifact_${{ env.GIT_REV }}.exe
+
+      - name: Upload yas_relic
+        uses: actions/upload-artifact@v4
+        with:
+          name: yas_relic_${{ env.GIT_REV }}
+          path: yas_relic_${{ env.GIT_REV }}.exe

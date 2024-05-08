@@ -1,5 +1,6 @@
 use std::fmt::Arguments;
 use std::fs;
+use std::path::Path;
 use std::thread;
 use std::time::Duration;
 use serde::Deserialize;
@@ -23,7 +24,7 @@ pub fn sleep(ms: u32) {
     thread::sleep(Duration::from_millis(ms as u64));
 }
 
-pub fn read_file_to_string(path: String) -> String {
+pub fn read_file_to_string<P: AsRef<Path>>(path: P) -> String {
     fs::read_to_string(path).unwrap()
 }
 

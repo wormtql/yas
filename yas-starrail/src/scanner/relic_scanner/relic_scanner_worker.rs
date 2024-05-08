@@ -6,7 +6,7 @@ use anyhow::Result;
 use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 
-use yas::ocr::{ImageToText, yas_ocr_model};
+use yas::ocr::{yas_ocr_model, ImageToText, PPOCRChV4RecInfer};
 use yas::positioning::{Pos, Rect};
 
 use crate::scanner::relic_scanner::message_items::SendItem;
@@ -36,6 +36,7 @@ fn get_image_to_text() -> Result<Box<dyn ImageToText<RgbImage> + Send>> {
     let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(
         yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
     );
+    // let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(PPOCRChV4RecInfer::new()?);
     Ok(model)
 }
 

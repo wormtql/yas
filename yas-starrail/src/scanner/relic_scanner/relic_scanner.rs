@@ -1,11 +1,11 @@
-use std::{cell::RefCell, ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, sync::{mpsc::{self, Sender}}, time::SystemTime};
+use std::{cell::RefCell, ops::{Coroutine, CoroutineState}, pin::Pin, rc::Rc, sync::mpsc::{self, Sender}, time::SystemTime};
 
 use anyhow::Result;
 use clap::FromArgMatches;
 use image::RgbImage;
 use log::{error, info};
 
-use yas::capture::{Capturer, GenericCapturer};
+use yas::{capture::{Capturer, GenericCapturer}, ocr::PPOCRChV4RecInfer};
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
 use yas::positioning::Pos;
@@ -38,6 +38,7 @@ impl StarRailRelicScanner {
         let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(
             yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
         );
+        // let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(PPOCRChV4RecInfer::new()?);
         Ok(model)
     }
 

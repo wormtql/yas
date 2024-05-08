@@ -1,45 +1,87 @@
-use tract_onnx::prelude::*;
+use std::cell::RefCell;
+use std::path::Path;
+use std::time::{Duration, SystemTime};
+use ort::GraphOptimizationLevel;
 use anyhow::Result;
 use image::{EncodableLayout, RgbImage};
-use tract_onnx::tract_hir::infer::InferenceOp;
-use tract_onnx::tract_hir::shapefactoid;
 use crate::ocr::ImageToText;
-use crate::ocr::paddle_paddle_model::preprocess::{normalize_image_to_tensor, resize_img};
+use crate::ocr::paddle_paddle_model::preprocess::{normalize_image_to_ndarray, resize_img};
 use crate::positioning::Shape3D;
-
-// type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
-type ModelType = RunnableModel<InferenceFact, Box<dyn InferenceOp>, Graph<InferenceFact, Box<dyn InferenceOp>>>;
+use crate::utils::read_file_to_string;
 
 pub struct PPOCRModel {
     index_to_word: Vec<String>,
-    model: ModelType,
+    // model: ModelType,
+    model: ort::Session,
+
+    inference_count: RefCell<usize>,
+    inference_time: RefCell<Duration>,
+}
+
+fn parse_index_to_word(s: &str, use_whitespace: bool) -> Vec<String> {
+    let mut result = Vec::new();
+    for line in s.lines() {
+        result.push(String::from(line));
+    }
+    if use_whitespace {
+        result.push(String::from(" "));
+    }
+    result
 }
 
 impl PPOCRModel {
-    pub fn new(onnx: &[u8], index_to_word: Vec<String>) -> Result<Self> {
-        let fact = InferenceFact::new().with_datum_type(DatumType::F32)
-            .with_shape(shapefactoid!(_, 3, _, _));
-        println!("{}", index_to_word.len());
-        let model = tract_onnx::onnx()
-            .model_for_read(&mut onnx.as_bytes())?
-            .with_input_fact(0, fact)?
-            // .into_optimized()?
-            .into_runnable()?;
+    pub fn new_from_file<P1, P2>(onnx_file: P1, words_file: P2) -> Result<PPOCRModel> where P1: AsRef<Path>, P2: AsRef<Path> {
+        let words_str = std::fs::read_to_string(words_file)?;
+        let index_to_word = parse_index_to_word(&words_str, true);
+
+        let model = ort::Session::builder()?
+            .with_optimization_level(GraphOptimizationLevel::Level3)?
+            .with_intra_threads(4)?
+            .commit_from_file(onnx_file)?;
+
         Ok(Self {
             index_to_word,
-            model
+            model,
+            inference_count: RefCell::new(0),
+            inference_time: RefCell::new(Duration::new(0, 0)),
         })
+    }
+
+    pub fn new(onnx: &[u8], index_to_word: Vec<String>) -> Result<Self> {
+        let model = ort::Session::builder()?
+            .with_optimization_level(GraphOptimizationLevel::Level3)?
+            .with_intra_threads(4)?
+            .commit_from_memory(onnx)?;
+
+        Ok(Self {
+            index_to_word,
+            model,
+            inference_count: RefCell::new(0),
+            inference_time: RefCell::new(Duration::new(0, 0)),
+        })
+    }
+
+    pub fn get_average_inference_time(&self) -> Option<Duration> {
+        if *self.inference_count.borrow() == 0 {
+            None
+        } else {
+            let count = *self.inference_count.borrow();
+            let duration = self.inference_time.borrow().clone();
+            Some(duration.div_f64(count as f64))
+        }
     }
 }
 
 impl ImageToText<RgbImage> for PPOCRModel {
     fn image_to_text(&self, image: &RgbImage, _is_preprocessed: bool) -> Result<String> {
+        let start_time = SystemTime::now();
+
         let resized_image = resize_img(Shape3D::new(3, 48, 320), &image);
         // resized_image.save("resized.png");
-        let tensor = normalize_image_to_tensor(&resized_image);
+        let tensor = normalize_image_to_ndarray(&resized_image);
 
-        let result = self.model.run(tvec!(tensor.into()))?;
-        let arr = result[0].to_array_view::<f32>()?;
+        let result = self.model.run(ort::inputs![tensor]?)?;
+        let arr = result[0].try_extract_tensor()?;
         let shape = arr.shape();
         // println!("{:?}", shape);
 
@@ -77,6 +119,11 @@ impl ImageToText<RgbImage> for PPOCRModel {
         // println!("{:?}", text_index);
 
         // let s = format!("{:?}", shape);
+
+        let elapsed_time = start_time.elapsed()?;
+        *self.inference_time.borrow_mut() += elapsed_time;
+        *self.inference_count.borrow_mut() += 1;
+
         Ok(s)
     }
 }

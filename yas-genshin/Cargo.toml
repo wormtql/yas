@@ -39,5 +39,5 @@ name = "yas_artifact"
 path = "src/bin/artifact_scanner.rs"
 
 [[bin]]
-name = "playground"
+name = "yas_genshin_playground"
 path = "src/bin/playground.rs"

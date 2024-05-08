@@ -1,6 +1,6 @@
 use anyhow::Result;
 use image::RgbImage;
-use yas::ocr::{ImageToText, PPOCRChV4RecInfer, ppocr_model};
+use yas::ocr::{ImageToText, PPOCRChV4RecInfer};
 use image::io::Reader as ImageReader;
 
 fn main() -> Result<()> {

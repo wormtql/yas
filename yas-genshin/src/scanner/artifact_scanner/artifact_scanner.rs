@@ -192,6 +192,13 @@ impl GenshinArtifactScanner {
         match join_handle.join() {
             Ok(v) => {
                 info!("识别耗时: {:?}", now.elapsed()?);
+
+                // filter min level
+                let min_level = self.scanner_config.min_level;
+                let v = v.iter().filter(|a| {
+                    a.level >= min_level
+                }).cloned().collect();
+
                 Ok(v)
             }
             Err(_) => Err(anyhow::anyhow!("识别线程出现错误")),

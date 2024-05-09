@@ -424,6 +424,6 @@ impl StarRailRepositoryScanController {
 
     #[inline(always)]
     fn estimate_scroll_length(&self, count: i32) -> i32 {
-        ((self.avg_scroll_one_row * count as f64 - 2.0).round() as i32).max(0)
+        ((self.avg_scroll_one_row * count as f64 - 3.0).round() as i32).max(0)
     }
 }

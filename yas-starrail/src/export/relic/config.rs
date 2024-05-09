@@ -2,7 +2,7 @@ use crate::export::relic::export_format::StarRailRelicExportFormat;
 
 #[derive(clap::Args)]
 pub struct ExportRelicConfig {
-    #[arg(id = "format", long = "format", short = 'f', default_value_t = StarRailRelicExportFormat::March7th, help = "输出格式")]
+    #[arg(id = "format", long = "format", short = 'f', default_value_t = StarRailRelicExportFormat::HSR, help = "输出格式")]
     #[arg(value_enum)]
     pub format: StarRailRelicExportFormat,
 

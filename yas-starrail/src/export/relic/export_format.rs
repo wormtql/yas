@@ -8,6 +8,6 @@ pub enum StarRailRelicExportFormat {
 
 impl Default for StarRailRelicExportFormat {
     fn default() -> Self {
-        Self::March7th
+        Self::HSR
     }
 }

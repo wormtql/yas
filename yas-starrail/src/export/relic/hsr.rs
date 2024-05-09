@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::ops::Deref;
 use nanoid::nanoid;
 use serde::{Serialize, Serializer};
@@ -177,6 +178,10 @@ impl<'a> Serialize for StarRailHSRFormat<'a> {
         root.serialize_entry::<str, [usize; 0]>("light_cones", &[])?;
         root.serialize_entry("relics", &self.results)?;
         root.serialize_entry::<str, [usize; 0]>("characters", &[])?;
+
+        let mut metadata: HashMap<String, String> = HashMap::new();
+        metadata.insert(String::from("trailblazer"), String::from("Stelle"));
+        root.serialize_entry("metadata", &metadata);
 
         root.end()
     }

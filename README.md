@@ -26,48 +26,56 @@ SVTR 原文使用了多个 Local/Global Mixing，其中 Global Mixing 就是 Tra
 *Yas*同样采用 PaddleOCR 的做法，即 MobileNetV3_Small + Global Mixing，相当于将原 RNN 替换为 Transformer。
 
 ## 使用
+`yas.exe`把不同游戏的功能都集成到了一个exe中，因此需要使用命令行指定游戏，例如：
+```shell
+yas.exe genshin
+```
+运行`yas.exe --help`查看所有指令，运行`yas.exe help genshin`查看游戏特定的指令。
+
+也可以下载特定游戏的版本，例如`yas_artifact.exe`只能用于扫描原神的圣遗物。
 
 ### Windows
 
-- 打开原神，并切换到背包页面，将背包拉到最上面
-- 下载单 exe 可执行文件，右键管理员运行
+- 打开原神/星铁，并切换到背包页面，将背包拉到最上面
+- 如果是`yas.exe`，需要用命令行运行`yas.exe genshin`，如果是`yas_artifact.exe`，直接运行即可
 - 扫描过程中，鼠标右键终止
 
 ### Linux
-
+- 还没有经过详细测试
 - 首先请确保自己在 x11 下或者 GNOME/Wayland 下（其他 wayland de 下[会有很坏的性能](https://github.com/poly000/screenshots-rs/blob/d96dff76c5f5cbd849d80451f0df8f415f8e5f4b/src/linux/wayland_screenshot.rs#L109)）
 - 用 wine 窗口化运行原神（或者全屏+虚拟桌面），打开圣遗物界面，拉到最顶
 - 启动 yas
 - Alt+Tab 切换到原神窗口，并且在鼠标变为十字后点击一下（还没做窗口聚焦），注意保证原神窗口整体在屏幕内
-- 等待扫描结束。右键中止还没做
+- 等待扫描结束。
 
 ### 注意
 
 - 默认 4 星以下圣遗物不扫描
-- 不是所有窗口比例都支持，推荐 16:9 的分辨率（如 1600x900, 1920x1080, 3840x2160)
+- 不是所有窗口比例都支持，推荐 16:9 的分辨率（如 1600x900, 1920x1080, 3840x2160）
 - 扫描过程中不要对鼠标做任何操作
 - 当前仅支持中文环境，若默认系统为非中文，请前往游戏设置界面修改 Language 为“简体中文”，否则无法读取原神窗口
 - 当前仅支持键鼠作为控制设备，暂不支持手柄。
 
 ### 命令行使用
 
-假设你知道如何使用命令行工具
-查看选项
+假设你知道如何使用命令行工具。
 
+
+查看选项：
 ```shell
 yas --help
+yas help genshin
+yas help starrail
 ```
 
-只扫描五星圣遗物
-
+只扫描五星圣遗物：
 ```shell
-yas --min-star=5
+yas genshin --min-star=5
 ```
 
-只扫描一行
-
+只扫描一行：
 ```shell
-yas --max-row=1
+yas genshin --max-row=1
 ```
 
 ## 编译

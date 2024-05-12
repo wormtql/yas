@@ -1,4 +1,4 @@
-use clap::{Args, command};
+use clap::{command, ArgMatches, Args};
 use yas::game_info::{GameInfo, GameInfoBuilder};
 use yas::window_info::{load_window_info_repo, WindowInfoRepository};
 use crate::export::{ExportRelicConfig, StarRailRelicExporter};
@@ -9,14 +9,18 @@ use log::info;
 use yas::export::{AssetEmitter, ExportAssets};
 use crate::relic::StarRailRelic;
 
-pub struct RelicScannerApplication;
+pub struct RelicScannerApplication {
+    arg_matches: ArgMatches,
+}
 
 impl RelicScannerApplication {
-    pub fn new() -> Self {
-        RelicScannerApplication
+    pub fn new(args: ArgMatches) -> Self {
+        RelicScannerApplication {
+            arg_matches: args
+        }
     }
 
-    fn build_command() -> clap::Command {
+    pub fn build_command() -> clap::Command {
         let mut cmd = command!();
         cmd = <StarRailRelicScannerConfig as Args>::augment_args_for_update(cmd);
         cmd = <StarRailRepositoryScannerLogicConfig as Args>::augment_args_for_update(cmd);
@@ -30,11 +34,11 @@ impl RelicScannerApplication {
         )
     }
 
-    fn init() {
-        env_logger::Builder::new()
-            .filter_level(log::LevelFilter::Info)
-            .init();
-    }
+    // fn init() {
+    //     env_logger::Builder::new()
+    //         .filter_level(log::LevelFilter::Info)
+    //         .init();
+    // }
 
     fn get_game_info() -> Result<GameInfo> {
         let game_info = GameInfoBuilder::new()
@@ -48,8 +52,8 @@ impl RelicScannerApplication {
 
 impl RelicScannerApplication {
     pub fn run(&self) -> Result<()> {
-        Self::init();
-        let arg_matches = Self::build_command().get_matches();
+        // Self::init();
+        let arg_matches = &self.arg_matches;
         let window_info_repository = Self::get_window_info_repository();
         let game_info = Self::get_game_info()?;
 

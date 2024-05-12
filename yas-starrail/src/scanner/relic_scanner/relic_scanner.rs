@@ -5,7 +5,7 @@ use clap::FromArgMatches;
 use image::RgbImage;
 use log::{error, info};
 
-use yas::{capture::{Capturer, GenericCapturer}, ocr::PPOCRChV4RecInfer};
+use yas::capture::{Capturer, GenericCapturer};
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
 use yas::positioning::Pos;

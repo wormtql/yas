@@ -4,7 +4,8 @@ members = [
     "yas",
     "yas-genshin",
     "yas-starrail",
-    "yas-derive"
+    "yas-derive",
+    "yas-application"
 ]
 
 [profile.release]

@@ -6,11 +6,17 @@ use crate::ocr::traits::ImageToText;
 use super::preprocess;
 use anyhow::Result;
 use crate::common::image_ext::*;
+#[cfg(feature = "tract_onnx")]
+use tract_onnx::prelude::*;
 
-// type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
+#[cfg(feature = "tract_onnx")]
+type ModelType = RunnableModel<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
 
 pub struct YasOCRModel {
+    #[cfg(feature = "ort")]
     model: ort::Session,
+    #[cfg(feature = "tract_onnx")]
+    model: ModelType,
     index_to_word: Vec<String>,
 
     inference_time: RefCell<f64>,   // in seconds
@@ -33,10 +39,17 @@ impl YasOCRModel {
     }
 
     pub fn new(model: &[u8], content: &str) -> Result<YasOCRModel> {
+        #[cfg(feature = "ort")]
         let model = ort::Session::builder()?
             .with_optimization_level(ort::GraphOptimizationLevel::Level3)?
             .with_intra_threads(4)?
             .commit_from_memory(model)?;
+        #[cfg(feature = "tract_onnx")]
+        let model = tract_onnx::onnx()
+            .model_for_read(&mut model.as_bytes())?
+            .with_input_fact(0, f32::fact([1, 1, 32, 384]).into())?
+            .into_optimized()?
+            .into_runnable()?;
 
         let json = serde_json::from_str::<serde_json::Value>(content)?;
 
@@ -62,12 +75,25 @@ impl YasOCRModel {
     pub fn inference_string(&self, img: &ImageBuffer<Luma<f32>, Vec<f32>>) -> Result<String> {
         let now = SystemTime::now();
 
+        #[cfg(feature = "ort")]
         let tensor = ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
             img.get_pixel(x as u32, y as u32)[0]
         });
+        #[cfg(feature = "tract_onnx")]
+        let tensor: Tensor =
+            tract_ndarray::Array4::from_shape_fn((1, 1, 32, 384), |(_, _, y, x)| {
+                img.get_pixel(x as u32, y as u32)[0]
+            }).into();
 
+        #[cfg(feature = "ort")]
         let result = self.model.run(ort::inputs![tensor]?)?;
+        #[cfg(feature = "tract_onnx")]
+        let result = self.model.run(tvec!(tensor.into()))?;
+
+        #[cfg(feature = "ort")]
         let arr = result[0].try_extract_tensor()?;
+        #[cfg(feature = "tract_onnx")]
+        let arr = result[0].to_array_view::<f32>()?;
 
         let shape = arr.shape();
 

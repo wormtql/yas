@@ -1,5 +1,5 @@
 [package]
-name = "yas_scanner"
+name = "yas_core"
 version = "0.1.14"
 edition = "2021"
 description = "Mihoyo game item scanner library"
@@ -37,8 +37,9 @@ xcap = "0.0.4"
 paste = "1.0"
 prettytable-rs = "^0.10"
 bytesize = {version = "1.2.0", features = ["serde"]}
-ort = "2.0.0-rc.2"
-ndarray = "0.15"
+ort = { version = "2.0.0-rc.2", optional = true }
+ndarray = { version = "0.15", optional = true }
+tract-onnx = { version = "0.21.5", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3", features = [
@@ -55,3 +56,8 @@ windows-capture = "1.0.65"
 core-graphics = "0.23"
 core-foundation = "0.9"
 cocoa = "0.25"
+
+[features]
+# default = ["tract_onnx"]
+ort = ["dep:ort", "dep:ndarray"]
+tract_onnx = ["dep:tract-onnx"]

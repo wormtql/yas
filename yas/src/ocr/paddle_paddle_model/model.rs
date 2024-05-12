@@ -1,17 +1,34 @@
 use std::cell::RefCell;
 use std::path::Path;
 use std::time::{Duration, SystemTime};
-use ort::GraphOptimizationLevel;
 use anyhow::Result;
 use image::{EncodableLayout, RgbImage};
+#[cfg(feature = "tract_onnx")]
+use tract_onnx::tract_hir::shapefactoid;
 use crate::ocr::ImageToText;
-use crate::ocr::paddle_paddle_model::preprocess::{normalize_image_to_ndarray, resize_img};
+use crate::ocr::paddle_paddle_model::preprocess::resize_img;
 use crate::positioning::Shape3D;
 use crate::utils::read_file_to_string;
+#[cfg(feature = "ort")]
+use ort::GraphOptimizationLevel;
+#[cfg(feature = "tract_onnx")]
+use tract_onnx::prelude::*;
+#[cfg(feature = "tract_onnx")]
+use tract_onnx::tract_hir::infer::InferenceOp;
+
+#[cfg(feature = "tract_onnx")]
+use super::preprocess::normalize_image_to_tensor;
+#[cfg(feature = "ort")]
+use super::preprocess::normalize_image_to_ndarray;
+
+#[cfg(feature = "tract_onnx")]
+type ModelType = RunnableModel<InferenceFact, Box<dyn InferenceOp>, Graph<InferenceFact, Box<dyn InferenceOp>>>;
 
 pub struct PPOCRModel {
     index_to_word: Vec<String>,
-    // model: ModelType,
+    #[cfg(feature = "tract_onnx")]
+    model: ModelType,
+    #[cfg(feature = "ort")]
     model: ort::Session,
 
     inference_count: RefCell<usize>,
@@ -34,10 +51,23 @@ impl PPOCRModel {
         let words_str = std::fs::read_to_string(words_file)?;
         let index_to_word = parse_index_to_word(&words_str, true);
 
+        #[cfg(feature = "ort")]
         let model = ort::Session::builder()?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
             .with_intra_threads(4)?
             .commit_from_file(onnx_file)?;
+
+        #[cfg(feature = "tract_onnx")]
+        let model = {
+            let fact = InferenceFact::new().with_datum_type(DatumType::F32)
+                .with_shape(shapefactoid!(_, 3, _, _));
+
+            tract_onnx::onnx()
+                .model_for_path(onnx_file)?
+                .with_input_fact(0, fact)?
+                // .into_optimized()?
+                .into_runnable()?
+        };
 
         Ok(Self {
             index_to_word,
@@ -48,10 +78,23 @@ impl PPOCRModel {
     }
 
     pub fn new(onnx: &[u8], index_to_word: Vec<String>) -> Result<Self> {
+        #[cfg(feature = "ort")]
         let model = ort::Session::builder()?
             .with_optimization_level(GraphOptimizationLevel::Level3)?
             .with_intra_threads(4)?
             .commit_from_memory(onnx)?;
+
+        #[cfg(feature = "tract_onnx")]
+        let model = {
+            let fact = InferenceFact::new().with_datum_type(DatumType::F32)
+                .with_shape(shapefactoid!(_, 3, _, _));
+
+            tract_onnx::onnx()
+                .model_for_read(&mut onnx.as_bytes())?
+                .with_input_fact(0, fact)?
+                // .into_optimized()?
+                .into_runnable()?
+        };
 
         Ok(Self {
             index_to_word,
@@ -77,11 +120,22 @@ impl ImageToText<RgbImage> for PPOCRModel {
         let start_time = SystemTime::now();
 
         let resized_image = resize_img(Shape3D::new(3, 48, 320), &image);
-        // resized_image.save("resized.png");
-        let tensor = normalize_image_to_ndarray(&resized_image);
 
+        #[cfg(feature = "ort")]
+        let tensor = normalize_image_to_ndarray(&resized_image);
+        #[cfg(feature = "tract_onnx")]
+        let tensor = normalize_image_to_tensor(&resized_image);
+
+        #[cfg(feature = "ort")]
         let result = self.model.run(ort::inputs![tensor]?)?;
+        #[cfg(feature = "tract_onnx")]
+        let result = self.model.run(tvec!(tensor.into()))?;
+
+        #[cfg(feature = "ort")]
         let arr = result[0].try_extract_tensor()?;
+        #[cfg(feature = "tract_onnx")]
+        let arr = result[0].to_array_view::<f32>()?;
+
         let shape = arr.shape();
         // println!("{:?}", shape);
 

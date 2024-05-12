@@ -181,7 +181,7 @@ impl<'a> Serialize for StarRailHSRFormat<'a> {
 
         let mut metadata: HashMap<String, String> = HashMap::new();
         metadata.insert(String::from("trailblazer"), String::from("Stelle"));
-        root.serialize_entry("metadata", &metadata);
+        root.serialize_entry("metadata", &metadata)?;
 
         root.end()
     }

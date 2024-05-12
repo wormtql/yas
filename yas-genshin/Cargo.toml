@@ -2,7 +2,6 @@
 name = "yas_scanner_genshin"
 version = "0.1.16"
 edition = "2021"
-# build = "build.rs"
 description = "Genshin Impact item scanner"
 repository = "https://github.com/wormtql/yas"
 keywords = ["GenshinImpact", "artifacts", "scanner", "ocr"]
@@ -30,10 +29,6 @@ csv = "1.3.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-capture = "1.0.65"
-
-[[bin]]
-name = "yas_artifact"
-path = "src/bin/artifact_scanner.rs"
 
 [[bin]]
 name = "yas_genshin_playground"

@@ -2,11 +2,10 @@
 name = "yas-application"
 version = "0.1.0"
 edition = "2021"
-build = "build.rs"
 
 [dependencies]
 anyhow = "1.0"
-# yas = { path = "../yas" , package = "yas_core"}
+yas = { path = "../yas" , package = "yas_core" }
 yas_genshin = { path = "../yas-genshin", package = "yas_scanner_genshin" }
 yas_starrail = { path = "../yas-starrail", package = "yas_scanner_starrail" }
 clap = { version = "4.4", features = ["derive"] }
@@ -19,3 +18,13 @@ winres = "0.1"
 [[bin]]
 name = "yas"
 path = "src/bin/yas.rs"
+# build = "build.rs"
+
+[[bin]]
+name = "yas_artifact"
+path = "src/bin/yas_artifact.rs"
+# build = "build.rs"
+
+[[bin]]
+name = "yas_relic"
+path = "src/bin/yas_relic.rs"

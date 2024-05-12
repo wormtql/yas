@@ -3547,6 +3547,7 @@ dependencies = [
  "env_logger",
  "log",
  "winres",
+ "yas_core",
  "yas_scanner_genshin",
  "yas_scanner_starrail",
 ]
@@ -3640,7 +3641,6 @@ dependencies = [
  "serde_json",
  "strum 0.26.2",
  "strum_macros 0.26.2",
- "winres",
  "yas_core",
  "yas_derive",
 ]

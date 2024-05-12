@@ -44,6 +44,7 @@ jobs:
               './yas/Cargo.toml'
               './yas-genshin/Cargo.toml'
               './yas-starrail/Cargo.toml'
+              './yas-application/Cargo.toml'
           )
           [regex]$pattern = '(?<=version = ").*(?=")'
           foreach ($file in $files) {
@@ -57,6 +58,7 @@ jobs:
         run: |
           Move-Item ./target/release/yas_artifact.exe "yas_artifact_$env:GIT_REV.exe"
           Move-Item ./target/release/yas_relic.exe "yas_relic_$env:GIT_REV.exe"
+          Move-Item ./target/release/yas.exe "yas_$env:GIT_REV.exe"
 
       - name: Upload yas_artifact
         uses: actions/upload-artifact@v4
@@ -69,3 +71,9 @@ jobs:
         with:
           name: yas_relic_${{ env.GIT_REV }}
           path: yas_relic_${{ env.GIT_REV }}.exe
+      
+      - name: Upload yas
+        uses: actions/upload-artifact@v4
+        with:
+          name: yas_${{ env.GIT_REV }}
+          path: yas_${{ env.GIT_REV }}.exe

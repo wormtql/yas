@@ -2,7 +2,6 @@
 name = "yas_scanner_starrail"
 version = "0.1.14"
 edition = "2021"
-# build = "build.rs"
 description = "Honkai: Star Rail item scanner"
 repository = "https://github.com/wormtql/yas"
 keywords = ["HonkaiStarRail", "relic", "scanner", "ocr"]
@@ -26,10 +25,3 @@ lazy_static = "1.4"
 serde = { version = "1.0", features = ["derive"] }
 env_logger = "0.11"
 nanoid = "0.4"
-
-[build-dependencies]
-winres = "0.1"
-
-[[bin]]
-name = "yas_relic"
-path = "src/bin/relic_scanner.rs"

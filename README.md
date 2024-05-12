@@ -2,16 +2,14 @@
 
 # Yas
 
-Yet Another Genshin Impact Scanner
+Yet Another Scanner
 又一个原神圣遗物导出器
 
 </div>
 
 ## 介绍
 
-基于 SVTR（基本上是 MobileNetV3_Small + Transformer）字符识别模型，使用原神字体对原神中会出现的字符串进行训练，达到更高的速度和更精确的结果。相比 CRNN，SVTR 可以达到更小的体积及更好的识别率
-导出结果可以导入分析工具（例如 [莫娜占卜铺](https://mona-uranai.com/) ）进行配装或者其他计算
-由于使用了 [Rust](https://www.rust-lang.org/) 进行编写，运行效率和文件体积都得到了很大的提升
+基于 SVTR（基本上是 MobileNetV3_Small + Transformer）字符识别模型，使用原神字体对原神中会出现的字符串进行训练，达到更高的速度和更精确的结果。相比 CRNN（旧版Yas使用的模型），SVTR 可以达到更小的体积及更好的识别率。导出结果可以导入分析工具（例如 [莫娜占卜铺](https://mona-uranai.com/) ）进行配装或者其他计算。由于使用了 [Rust](https://www.rust-lang.org/) 进行编写，运行效率和文件体积都得到了很大的提升。
 
 ### 相关资料
 
@@ -22,8 +20,7 @@ Yet Another Genshin Impact Scanner
 
 ### 识别模型
 
-SVTR 原文使用了多个 Local/Global Mixing，其中 Global Mixing 就是 Transformer 层，而根据*PaddleOCR*的代码，其 SVTR 识别模型也并未完全遵照 SVTR 原模型，而是骨干网络 + Transformer 的结构
-*Yas*同样采用 PaddleOCR 的做法，即 MobileNetV3_Small + Global Mixing，相当于将原 RNN 替换为 Transformer。
+SVTR 原文使用了多个 Local/Global Mixing，其中 Global Mixing 就是 Transformer 层，而根据*PaddleOCR*的代码，其 SVTR 识别模型也并未完全遵照 SVTR 原模型，而是骨干网络 + Transformer 的结构。*Yas*同样采用 PaddleOCR 的做法，使用 MobileNetV3_Small + Global Mixing，相当于将 CRNN 的 RNN 替换为 Transformer。由于训练集更加定制化，模型输入张量更小，网络结构简单，Yas模型相比PaddleOCR的V4轻量级模型，推理速度提升了6倍（仅在作者个人电脑上测试）。
 
 ## 使用
 `yas.exe`把不同游戏的功能都集成到了一个exe中，因此需要使用命令行指定游戏，例如：

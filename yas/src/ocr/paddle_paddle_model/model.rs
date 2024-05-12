@@ -180,6 +180,10 @@ impl ImageToText<RgbImage> for PPOCRModel {
 
         Ok(s)
     }
+
+    fn get_average_inference_time(&self) -> Option<Duration> {
+        self.get_average_inference_time()
+    }
 }
 
 pub macro ppocr_model($onnx:literal, $index_to_word:literal) {
@@ -214,5 +218,9 @@ impl PPOCRChV4RecInfer {
 impl ImageToText<RgbImage> for PPOCRChV4RecInfer {
     fn image_to_text(&self, image: &RgbImage, is_preprocessed: bool) -> Result<String> {
         self.model.image_to_text(image, is_preprocessed)
+    }
+
+    fn get_average_inference_time(&self) -> Option<Duration> {
+        self.model.get_average_inference_time()
     }
 }

@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, time::Duration};
 use std::time::SystemTime;
 use image::{EncodableLayout, GrayImage, ImageBuffer, Luma, RgbImage};
 // use tract_onnx::prelude::*;
@@ -19,23 +19,20 @@ pub struct YasOCRModel {
     model: ModelType,
     index_to_word: Vec<String>,
 
-    inference_time: RefCell<f64>,   // in seconds
+    inference_time: RefCell<Duration>,   // in seconds
     invoke_count: RefCell<usize>,
 }
 
 impl YasOCRModel {
-    fn inc_statistics(&self, time: f64) {
-        let mut count_handle = self.invoke_count.borrow_mut();
-        *count_handle += 1;
-
-        let mut time_handle = self.inference_time.borrow_mut();
-        *time_handle += time;
-    }
-
-    pub fn get_average_inference_time(&self) -> f64 {
+    pub fn get_average_inference_time(&self) -> Option<Duration> {
         let count = *self.invoke_count.borrow();
         let total_time = *self.inference_time.borrow();
-        total_time / count as f64
+        
+        if count == 0 {
+            None
+        } else {
+            Some(total_time.div_f64(count as f64))
+        }
     }
 
     pub fn new(model: &[u8], content: &str) -> Result<YasOCRModel> {
@@ -67,7 +64,7 @@ impl YasOCRModel {
         Ok(YasOCRModel {
             model,
             index_to_word,
-            inference_time: RefCell::new(0.0),
+            inference_time: RefCell::new(Duration::new(0, 0)),
             invoke_count: RefCell::new(0),
         })
     }
@@ -117,8 +114,10 @@ impl YasOCRModel {
             last_word = word.clone();
         }
 
-        let time = now.elapsed()?.as_secs_f64();
-        self.inc_statistics(time);
+        let time = now.elapsed()?;
+        
+        *self.invoke_count.borrow_mut() += 1;
+        *self.inference_time.borrow_mut() += time;
 
         Ok(ans)
     }
@@ -139,6 +138,10 @@ impl ImageToText<RgbImage> for YasOCRModel {
 
         Ok(string_result)
     }
+
+    fn get_average_inference_time(&self) -> Option<Duration> {
+        self.get_average_inference_time()
+    }
 }
 
 impl ImageToText<ImageBuffer<Luma<f32>, Vec<f32>>> for YasOCRModel {
@@ -158,12 +161,20 @@ impl ImageToText<ImageBuffer<Luma<f32>, Vec<f32>>> for YasOCRModel {
             Ok(string_result)
         }
     }
+
+    fn get_average_inference_time(&self) -> Option<Duration> {
+        self.get_average_inference_time()
+    }
 }
 
 impl ImageToText<GrayImage> for YasOCRModel {
     fn image_to_text(&self, im: &GrayImage, is_preprocessed: bool) -> Result<String> {
         let gray_f32_image: ImageBuffer<Luma<f32>, Vec<f32>> = im.to_f32_gray_image();
         self.image_to_text(&gray_f32_image, is_preprocessed)
+    }
+
+    fn get_average_inference_time(&self) -> Option<Duration> {
+        self.get_average_inference_time()
     }
 }
 

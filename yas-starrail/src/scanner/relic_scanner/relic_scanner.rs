@@ -38,7 +38,7 @@ impl StarRailRelicScanner {
         let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(
             yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
         );
-        // let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(PPOCRChV4RecInfer::new()?);
+        // let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(yas::ocr::PPOCRChV4RecInfer::new()?);
         Ok(model)
     }
 
@@ -218,6 +218,12 @@ impl StarRailRelicScanner {
         match tx.send(None) {
             Ok(_) => info!("扫描结束，等待识别线程结束，请勿关闭程序"),
             Err(_) => info!("扫描结束，识别已完成"),
+        }
+
+        let average_inference_time = self.image_to_text.get_average_inference_time();
+        if let Some(t) = average_inference_time {
+            let ms = t.as_micros() as f64 / 1000.0;
+            info!("平均模型推理时间：{} ms", ms);
         }
 
         match join_handle.join() {

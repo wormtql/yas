@@ -63,7 +63,6 @@ cocoa = "0.25"
 ort = ["dep:ort", "dep:ndarray"]
 tract_onnx = ["dep:tract-onnx"]
 
-default = ["capturer_xcap", "capturer_screenshots"]
 capturer_xcap = ["dep:xcap"]
 capturer_screenshots = ["dep:screenshots"]
 capturer_libwayshot = ["dep:libwayshot"]

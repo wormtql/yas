@@ -279,7 +279,6 @@ impl GenshinRepositoryScanController {
                 return ScrollResult::Interrupt;
             }
 
-            #[cfg(windows)]
             let _ = self.system_control.mouse_scroll(1, false);
 
             // self.mouse_scroll(1, count < 1);

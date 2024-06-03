@@ -17,7 +17,7 @@ pub struct WindowInfoTemplatePerSize {
 impl WindowInfoTemplatePerSize {
     pub fn inject_into_window_info_repo(&self, repo: &mut WindowInfoRepository) {
         for (name, value) in self.data.iter() {
-            repo.add(&name, self.current_resolution, self.ui, self.platform, *value);
+            repo.add(name, self.current_resolution, self.ui, self.platform, *value);
         }
     }
 }

@@ -19,30 +19,30 @@ fn single_artifact_to_string(artifact: &GenshinArtifact) -> String {
         s = s + "," + &sub.name.to_string();
         s = s + "," + &format!("{}", sub.value);
     } else {
-        s = s + ",,";
+        s += ",,";
     }
     if let Some(sub) = &artifact.sub_stat_2 {
         s = s + "," + &sub.name.to_string();
         s = s + "," + &format!("{}", sub.value);
     } else {
-        s = s + ",,";
+        s += ",,";
     }
     if let Some(sub) = &artifact.sub_stat_3 {
         s = s + "," + &sub.name.to_string();
         s = s + "," + &format!("{}", sub.value);
     } else {
-        s = s + ",,";
+        s += ",,";
     }
     if let Some(sub) = &artifact.sub_stat_4 {
         s = s + "," + &sub.name.to_string();
         s = s + "," + &format!("{}", sub.value);
     } else {
-        s = s + ",,";
+        s += ",,";
     }
     if let Some(e) = &artifact.equip {
         s = s + "," + e;
     } else {
-        s = s + ","
+        s += ","
     }
 
     s

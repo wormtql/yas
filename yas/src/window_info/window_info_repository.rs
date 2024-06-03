@@ -56,10 +56,9 @@ impl WindowInfoRepository {
     /// Get window info by name and size
     /// if name or resolution does not exist, then return None
     pub fn get_exact<T>(&self, name: &str, window_size: Size<usize>, ui: UI, platform: Platform) -> Option<T> where WindowInfoType: TryInto<T> {
-        if self.data.contains_key(name) {
-            if self.data[name].contains_key(&(window_size, ui, platform)) {
-                return self.data[name][&(window_size, ui, platform)].try_into().ok();
-            }
+        if self.data.contains_key(name) &&
+          self.data[name].contains_key(&(window_size, ui, platform)) {
+            return self.data[name][&(window_size, ui, platform)].try_into().ok();
         }
 
         None

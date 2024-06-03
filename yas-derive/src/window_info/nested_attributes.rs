@@ -1,15 +1,8 @@
 use syn::{token, Token};
 
+#[derive(Default)]
 pub struct WindowInfoNestedAttributes {
     pub rename: Option<syn::LitStr>,
-}
-
-impl Default for WindowInfoNestedAttributes {
-    fn default() -> Self {
-        Self {
-            rename: None
-        }
-    }
 }
 
 impl WindowInfoNestedAttributes {

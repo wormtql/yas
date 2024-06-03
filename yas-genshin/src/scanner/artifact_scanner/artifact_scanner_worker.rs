@@ -24,7 +24,7 @@ fn parse_level(s: &str) -> Result<i32> {
     }
 
     let level = s[pos.unwrap()..].parse::<i32>()?;
-    return anyhow::Ok(level);
+    anyhow::Ok(level)
 }
 
 fn get_image_to_text() -> Result<Box<dyn ImageToText<RgbImage> + Send>> {
@@ -73,17 +73,17 @@ impl ArtifactScannerWorker {
     fn scan_item_image(&self, item: SendItem) -> Result<GenshinArtifactScanResult> {
         let image = &item.panel_image;
 
-        let str_title = self.model_inference(self.window_info.title_rect, &image)?;
-        let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_rect, &image)?;
-        let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_rect, &image)?;
+        let str_title = self.model_inference(self.window_info.title_rect, image)?;
+        let str_main_stat_name = self.model_inference(self.window_info.main_stat_name_rect, image)?;
+        let str_main_stat_value = self.model_inference(self.window_info.main_stat_value_rect, image)?;
 
-        let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_1, &image)?;
-        let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_2, &image)?;
-        let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_3, &image)?;
-        let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_4, &image)?;
+        let str_sub_stat0 = self.model_inference(self.window_info.sub_stat_1, image)?;
+        let str_sub_stat1 = self.model_inference(self.window_info.sub_stat_2, image)?;
+        let str_sub_stat2 = self.model_inference(self.window_info.sub_stat_3, image)?;
+        let str_sub_stat3 = self.model_inference(self.window_info.sub_stat_4, image)?;
 
-        let str_level = self.model_inference(self.window_info.level_rect, &image)?;
-        let str_equip = self.model_inference(self.window_info.item_equip_rect, &image)?;
+        let str_level = self.model_inference(self.window_info.level_rect, image)?;
+        let str_equip = self.model_inference(self.window_info.item_equip_rect, image)?;
 
         anyhow::Ok(GenshinArtifactScanResult {
             name: str_title,
@@ -116,7 +116,7 @@ impl ArtifactScannerWorker {
             // let model = self.model.clone();
             // let panel_origin = Pos { x: self.window_info.panel_rect.left, y: self.window_info.panel_rect.top };
 
-            for (_cnt, item) in rx.into_iter().enumerate() {
+            for item in rx.into_iter() {
                 let item = match item {
                     Some(v) => v,
                     None => break,

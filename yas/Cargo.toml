@@ -26,14 +26,14 @@ rand = "0.8"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 semver = "1.0"
 lazy_static = "1.4"
-screenshots = "0.8"
+screenshots = { version = "0.8", optional = true }
 png = "0.17"
 anyhow = "1.0"
 once_cell = "1.18"
 indicatif-log-bridge = "0.2"
 indicatif = "0.17"
 console = "0.15"
-xcap = "0.0.4"
+xcap = { version = "0.0.4", optional = true }
 paste = "1.0"
 prettytable-rs = "^0.10"
 bytesize = {version = "1.2.0", features = ["serde"]}
@@ -61,3 +61,8 @@ cocoa = "0.25"
 # default = ["tract_onnx"]
 ort = ["dep:ort", "dep:ndarray"]
 tract_onnx = ["dep:tract-onnx"]
+
+default = ["capturer_xcap", "capturer_screenshots"]
+capturer_xcap = ["dep:xcap"]
+capturer_screenshots = ["dep:screenshots"]
+

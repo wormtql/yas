@@ -40,6 +40,7 @@ bytesize = {version = "1.2.0", features = ["serde"]}
 ort = { version = "2.0.0-rc.2", optional = true }
 ndarray = { version = "0.15", optional = true }
 tract-onnx = { version = "0.21.5", optional = true }
+libwayshot = { version = "0.3.0", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 winapi = { version = "0.3", features = [
@@ -65,4 +66,5 @@ tract_onnx = ["dep:tract-onnx"]
 default = ["capturer_xcap", "capturer_screenshots"]
 capturer_xcap = ["dep:xcap"]
 capturer_screenshots = ["dep:screenshots"]
+capturer_libwayshot = ["dep:libwayshot"]
 

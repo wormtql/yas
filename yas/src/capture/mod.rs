@@ -3,6 +3,8 @@ mod capturer;
 mod screenshots_capturer;
 #[cfg(feature="capturer_xcap")]
 mod xcap_capturer;
+#[cfg(feature="capturer_libwayshot")]
+mod libwayshot_capturer;
 #[cfg(target_os = "windows")]
 mod winapi_capturer;
 mod generic_capturer;

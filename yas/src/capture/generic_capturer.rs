@@ -1,4 +1,6 @@
-use crate::capture::{Capturer, ScreenshotsCapturer, WinapiCapturer};
+use crate::capture::{Capturer, ScreenshotsCapturer};
+#[cfg(target_os = "windows")]
+use crate::capture::WinapiCapturer;
 use anyhow::Result;
 use image::RgbImage;
 use crate::positioning::Rect;
@@ -30,6 +32,6 @@ impl Capturer<RgbImage> for GenericCapturer {
         }
 
         let result = self.fallback_capturer.capture_rect(rect);
-        return result;
+        result
     }
 }

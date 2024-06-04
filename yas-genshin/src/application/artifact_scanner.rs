@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use clap::{command, ArgMatches, Args};
 use log::info;
 
@@ -77,19 +77,17 @@ impl ArtifactScannerApplication {
 
         let mut scanner = GenshinArtifactScanner::from_arg_matches(
             &window_info_repository,
-            &arg_matches,
+            arg_matches,
             game_info.clone()
         )?;
 
         let result = scanner.scan()?;
         let artifacts = result
             .iter()
-            .map(|x| GenshinArtifact::try_from(x))
-            .filter(|x| x.is_ok())
-            .map(|x| x.unwrap())
+            .flat_map(GenshinArtifact::try_from)
             .collect::<Vec<_>>();
 
-        let exporter = GenshinArtifactExporter::new(&arg_matches, &artifacts)?;
+        let exporter = GenshinArtifactExporter::new(arg_matches, &artifacts)?;
         let mut export_assets = ExportAssets::new();
         exporter.emit(&mut export_assets);
 

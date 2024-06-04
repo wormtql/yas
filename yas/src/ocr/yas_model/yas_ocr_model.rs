@@ -114,7 +114,7 @@ impl YasOCRModel {
                 ans = ans + word;
             }
 
-            last_word = word.clone();
+            last_word.clone_from(word);
         }
 
         let time = now.elapsed()?.as_secs_f64();
@@ -126,7 +126,7 @@ impl YasOCRModel {
 
 impl ImageToText<RgbImage> for YasOCRModel {
     fn image_to_text(&self, image: &RgbImage, is_preprocessed: bool) -> Result<String> {
-        assert_eq!(is_preprocessed, false);
+        assert!(!is_preprocessed);
 
         let gray_image_float = preprocess::to_gray(image);
         let (result, non_mono) = preprocess::pre_process(gray_image_float);

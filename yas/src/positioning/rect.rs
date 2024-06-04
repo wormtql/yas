@@ -86,3 +86,4 @@ convert_rect_type!(u32, usize);
 convert_rect_type!(i32, usize);
 convert_rect_type!(i32, f64);
 convert_rect_type!(i32, u32);
+convert_rect_type!(usize, i32);

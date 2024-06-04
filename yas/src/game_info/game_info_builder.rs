@@ -38,6 +38,7 @@ impl GameInfoBuilder {
             // crate::game_info::os::get_game_info(&["原神", "Genshin Impact", "云·原神"])
         }
         
-        // todo other platforms
+        #[cfg(target_os = "linux")]
+        crate::game_info::os::get_game_info()
     }
 }

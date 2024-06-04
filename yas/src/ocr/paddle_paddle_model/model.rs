@@ -109,7 +109,7 @@ impl PPOCRModel {
             None
         } else {
             let count = *self.inference_count.borrow();
-            let duration = self.inference_time.borrow().clone();
+            let duration = *self.inference_time.borrow();
             Some(duration.div_f64(count as f64))
         }
     }
@@ -119,7 +119,7 @@ impl ImageToText<RgbImage> for PPOCRModel {
     fn image_to_text(&self, image: &RgbImage, _is_preprocessed: bool) -> Result<String> {
         let start_time = SystemTime::now();
 
-        let resized_image = resize_img(Shape3D::new(3, 48, 320), &image);
+        let resized_image = resize_img(Shape3D::new(3, 48, 320), image);
 
         #[cfg(feature = "ort")]
         let tensor = normalize_image_to_ndarray(&resized_image);

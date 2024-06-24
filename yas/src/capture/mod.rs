@@ -1,19 +1,28 @@
 mod capturer;
-#[cfg(feature="capturer_screenshots")]
-mod screenshots_capturer;
-#[cfg(feature="capturer_xcap")]
-mod xcap_capturer;
-#[cfg(feature="capturer_libwayshot")]
-mod libwayshot_capturer;
-#[cfg(target_os = "windows")]
-mod winapi_capturer;
 mod generic_capturer;
-// #[cfg(target_os = "windows")]
-// mod window_capture_capturer;
 
 pub use capturer::Capturer;
-#[cfg(feature="capturer_screenshots")]
+pub use generic_capturer::GenericCapturer;
+
+// windows
+
+#[cfg(target_os = "windows")]
+mod screenshots_capturer;
+#[cfg(target_os = "windows")]
+mod winapi_capturer;
+#[cfg(target_os = "windows")]
+mod windows_capturer;
+
+#[cfg(target_os = "windows")]
 pub use screenshots_capturer::ScreenshotsCapturer;
 #[cfg(target_os = "windows")]
 pub use winapi_capturer::WinapiCapturer;
-pub use generic_capturer::GenericCapturer;
+#[cfg(target_os = "windows")]
+pub use windows_capturer::WindowsCapturer;
+
+// linux
+#[cfg(target_os = "linux")]
+mod libwayshot_capturer;
+
+#[cfg(target_os = "linux")]
+pub use libwayshot_capturer::LibwayshotCapturer;

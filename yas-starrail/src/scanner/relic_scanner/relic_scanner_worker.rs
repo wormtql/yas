@@ -6,7 +6,7 @@ use anyhow::Result;
 use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 
-use yas::ocr::{yas_ocr_model, ImageToText, PPOCRChV4RecInfer};
+use yas::ocr::{yas_ocr_model, ImageToText};
 use yas::positioning::{Pos, Rect};
 
 use crate::scanner::relic_scanner::message_items::SendItem;

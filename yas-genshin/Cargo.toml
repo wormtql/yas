@@ -30,6 +30,11 @@ csv = "1.3.0"
 [target.'cfg(target_os = "windows")'.dependencies]
 windows-capture = "1.0.65"
 
+# [profile.release]
+# lto = true
+# panic = "abort"
+# strip = true
+
 [[bin]]
 name = "yas_genshin_playground"
 path = "src/bin/playground.rs"

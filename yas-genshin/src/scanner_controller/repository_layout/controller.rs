@@ -42,7 +42,7 @@ pub struct GenshinRepositoryScanController {
     capturer: Rc<dyn Capturer<RgbImage>>,
 }
 
-fn calc_pool(row: &Vec<u8>) -> f32 {
+fn calc_pool(row: &[u8]) -> f32 {
     let len = row.len() / 3;
     let mut pool: f32 = 0.0;
 
@@ -60,7 +60,7 @@ fn color_distance(c1: &image::Rgb<u8>, c2: &image::Rgb<u8>) -> usize {
     let x = c1.0[0] as i32 - c2.0[0] as i32;
     let y = c1.0[1] as i32 - c2.0[1] as i32;
     let z = c1.0[2] as i32 - c2.0[2] as i32;
-    return (x * x + y * y + z * z) as usize;
+    (x * x + y * y + z * z) as usize
 }
 
 // constructor
@@ -279,7 +279,6 @@ impl GenshinRepositoryScanController {
                 return ScrollResult::Interrupt;
             }
 
-            #[cfg(windows)]
             let _ = self.system_control.mouse_scroll(1, false);
 
             // self.mouse_scroll(1, count < 1);
@@ -377,7 +376,7 @@ impl GenshinRepositoryScanController {
         self.system_control.mouse_scroll(length, try_find).unwrap();
 
         #[cfg(target_os = "linux")]
-        self.system_control.mouse_scroll(length, try_find);
+        self.system_control.mouse_scroll(length, try_find).unwrap();
 
         #[cfg(target_os = "macos")]
         {

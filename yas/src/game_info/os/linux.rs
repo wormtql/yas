@@ -1,28 +1,27 @@
-use crate::game_info::{GameInfo, Platform};
+use anyhow::{Result, anyhow};
 
-pub fn get_game_info() -> GameInfo {
-    let window_id = unsafe {
-        String::from_utf8_unchecked(
+use crate::game_info::{GameInfo, Platform, UI, ResolutionFamily};
+use crate::positioning::Rect;
+
+pub fn get_game_info() -> Result<GameInfo> {
+    let window_id = String::from_utf8(
             std::process::Command::new("sh")
                 .arg("-c")
                 .arg(r#" xwininfo|grep "Window id"|cut -d " " -f 4 "#)
                 .output()
                 .unwrap()
                 .stdout,
-        )
-    };
+        )?;
     let window_id = window_id.trim_end_matches("\n");
 
-    let position_size = unsafe {
-        String::from_utf8_unchecked(
+    let position_size = String::from_utf8(
             std::process::Command::new("sh")
                 .arg("-c")
                 .arg(&format!(r#" xwininfo -id {window_id}|cut -f 2 -d :|tr -cd "0-9\n"|grep -v "^$"|sed -n "1,2p;5,6p" "#))
                 .output()
                 .unwrap()
                 .stdout,
-        )
-    };
+        )?;
 
     let mut info = position_size.split("\n");
 
@@ -32,12 +31,13 @@ pub fn get_game_info() -> GameInfo {
     let height = info.next().unwrap().parse().unwrap();
 
     let rect = Rect::new(left, top, width, height);
+    let rf = ResolutionFamily::new(rect.size()).ok_or(anyhow!("unknown resolution family"))?;
 
-    GameInfo {
-        window: rect,
-        resolution_family: Resolution::new(rect.size),
+    Ok(GameInfo {
+        window: rect.to_rect_i32(),
+        resolution_family: rf,
         is_cloud: false,
         ui: UI::Desktop,
-        platform: Platform::Linux
-    }
+        platform: Platform::Linux,
+    })
 }

@@ -1,7 +1,7 @@
 use yas::positioning::{Pos, Rect, Size};
 use yas_derive::YasWindowInfo;
 
-#[derive(YasWindowInfo)]
+#[derive(Clone, YasWindowInfo)]
 pub struct GenshinRepositoryScanControllerWindowInfo {
     #[window_info(rename = "genshin_repository_panel_rect")]
     pub panel_rect: Rect<f64>,

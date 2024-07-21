@@ -105,6 +105,7 @@ pub struct GenshinArtifact {
     pub set_name: ArtifactSetName,
     pub slot: ArtifactSlot,
     pub star: i32,
+    pub lock: bool,
     pub level: i32,
     pub main_stat: ArtifactStat,
     pub sub_stat_1: Option<ArtifactStat>,
@@ -202,6 +203,7 @@ impl TryFrom<&GenshinArtifactScanResult> for GenshinArtifact {
         let set_name = ArtifactSetName::from_zh_cn(&value.name).ok_or(())?;
         let slot = ArtifactSlot::from_zh_cn(&value.name).ok_or(())?;
         let star = value.star;
+        let lock = value.lock;
 
         let main_stat = ArtifactStat::from_zh_cn_raw(
             (value.main_stat_name.clone() + "+" + value.main_stat_value.as_str()).as_str(),
@@ -230,6 +232,7 @@ impl TryFrom<&GenshinArtifactScanResult> for GenshinArtifact {
             set_name,
             slot,
             star,
+            lock,
             level: value.level,
             main_stat,
             sub_stat_1: sub1,

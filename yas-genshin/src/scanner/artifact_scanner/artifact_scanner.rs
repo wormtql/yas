@@ -12,7 +12,7 @@ use yas::positioning::Pos;
 use yas::window_info::FromWindowInfoRepository;
 use yas::window_info::WindowInfoRepository;
 
-use crate::scanner::artifact_scanner::artifact_scanner_worker::ArtifactScannerWorker;
+use crate::{scanner::artifact_scanner::artifact_scanner_worker::ArtifactScannerWorker, scanner_controller::repository_layout::GenshinRepositoryScanControllerWindowInfo};
 use crate::scanner::artifact_scanner::message_items::SendItem;
 use crate::scanner::artifact_scanner::scan_result::GenshinArtifactScanResult;
 use crate::scanner_controller::repository_layout::{
@@ -37,7 +37,7 @@ pub struct GenshinArtifactScanner {
     game_info: GameInfo,
     image_to_text: Box<dyn ImageToText<RgbImage> + Send>,
     controller: Rc<RefCell<GenshinRepositoryScanController>>,
-    capturer: Rc<dyn Capturer<RgbImage>>,
+    capturer: Rc<dyn Capturer<RgbImage>>
 }
 
 // constructor
@@ -73,7 +73,7 @@ impl GenshinArtifactScanner {
             game_info,
             image_to_text: Self::get_image_to_text()?,
             // item count will be set later, once the scan starts
-            capturer: Self::get_capturer()?,
+            capturer: Self::get_capturer()?
         })
     }
 
@@ -97,7 +97,7 @@ impl GenshinArtifactScanner {
             game_info,
             image_to_text: Self::get_image_to_text()?,
             capturer: Self::get_capturer()?
-        })
+            })
     }
 }
 
@@ -176,7 +176,7 @@ impl GenshinArtifactScanner {
         let count = self.get_item_count()?;
         let worker = ArtifactScannerWorker::new(
             self.window_info.clone(),
-            self.scanner_config.clone(),
+            self.scanner_config.clone()
         )?;
 
         let join_handle = worker.run(rx);
@@ -205,8 +205,38 @@ impl GenshinArtifactScanner {
         }
     }
 
+    fn is_page_first_artifact(&self, max_count: i32, cur_index: i32) -> bool {
+        let col = self.window_info.col;
+        let row = self.window_info.row;
+
+        let page_size = col * row;
+        if cur_index <= (max_count / page_size + 1) * page_size {
+            return cur_index % page_size == 0;
+        } else {
+            let last_start_index = (max_count / page_size) * page_size;
+            let remain_row = (max_count - last_start_index - page_size + col - 1) / col;
+            return last_start_index + col * remain_row == cur_index;
+        }
+    }
+
+    fn get_start_row(&self, max_count: i32, cur_index: i32) -> i32{
+        let col = self.window_info.col;
+        let row = self.window_info.row;
+
+        let page_size = col * row;
+        if max_count - cur_index >= page_size {
+            return 0;
+        } else {
+            let remain = max_count - cur_index;
+            let remain_row = (remain + col - 1) / col;
+            let scroll_row = remain_row.min(row);
+            return row - scroll_row;
+        }
+    }
+
     fn send(&mut self, tx: &Sender<Option<SendItem>>, count: i32) {
         let mut generator = GenshinRepositoryScanController::get_generator(self.controller.clone(), count as usize);
+        let mut artifact_index:i32 = 0;
 
         loop {
             let pinned_generator = Pin::new(&mut generator);
@@ -214,6 +244,43 @@ impl GenshinArtifactScanner {
                 CoroutineState::Yielded(_) => {
                     let image = self.capture_panel().unwrap();
                     let star = self.get_star().unwrap();
+
+                    let game_image = if self.is_page_first_artifact(count, artifact_index) {
+
+                        let origin = self.game_info.window;
+                        let margin = self.window_info.scan_margin_pos;
+                        let gap = self.window_info.item_gap_size;
+                        let size = self.window_info.item_size;
+
+                        let left = (origin.left as f64 + margin.x) as i32;
+                        let top = (origin.top as f64
+                            + margin.y
+                            + (gap.height + size.height)
+                                * self.get_start_row(count, artifact_index) as f64)
+                            as i32;
+                        let width = (origin.width as f64 - margin.x) as i32;
+                        let height = (origin.height as f64
+                            - margin.y
+                            - (gap.height + size.height)
+                                * self.get_start_row(count, artifact_index) as f64)
+                            as i32;
+
+                        let game_image = self
+                            .capturer
+                            .capture_rect(yas::positioning::Rect {
+                                left,
+                                top,
+                                width,
+                                height,
+                            })
+                            .unwrap();
+                        Some(game_image)
+                    } else {
+                        None
+                    };
+
+
+                    artifact_index = artifact_index + 1;
 
                     // todo normalize types
                     if (star as i32) < self.scanner_config.min_star {
@@ -224,7 +291,14 @@ impl GenshinArtifactScanner {
                         break;
                     }
 
-                    if tx.send(Some(SendItem { panel_image: image, star })).is_err() {
+                    if tx
+                        .send(Some(SendItem {
+                            panel_image: image,
+                            star,
+                            game_image
+                        }))
+                        .is_err()
+                    {
                         break;
                     }
 

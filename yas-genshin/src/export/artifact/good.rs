@@ -40,8 +40,11 @@ impl<'a> Serialize for GOODArtifact<'a> {
         root.serialize_entry("level", &artifact.level)?;
         root.serialize_entry("rarity", &artifact.star)?;
         root.serialize_entry("mainStatKey", artifact.main_stat.name.to_good())?;
-        root.serialize_entry("location", "")?;
-        root.serialize_entry("lock", &false)?;
+        root.serialize_entry(
+            "location",
+            equip_from_zh_cn(artifact.equip.clone().as_deref()),
+        );
+        root.serialize_entry("lock", &artifact.lock)?;
         root.serialize_entry("substats", &substats)?;
         root.end()
     }
@@ -161,6 +164,97 @@ impl ArtifactSetName {
             ArtifactSetName::FragmentOfHarmonicWhimsy => "FragmentOfHarmonicWhimsy",
             ArtifactSetName::UnfinishedReverie => "UnfinishedReverie",
         }
+    }
+}
+
+fn equip_from_zh_cn(equip: Option<&str>) -> &'static str {
+    match equip {
+        Some("旅行者") => "Traveler",
+        Some("神里绫华") => "KamisatoAyaka",
+        Some("琴") => "Jean",
+        Some("丽莎") => "Lisa",
+        Some("芭芭拉") => "Barbara",
+        Some("凯亚") => "Kaeya",
+        Some("迪卢克") => "Diluc",
+        Some("雷泽") => "Razor",
+        Some("安柏") => "Amber",
+        Some("温迪") => "Venti",
+        Some("香菱") => "Xiangling",
+        Some("北斗") => "Beidou",
+        Some("行秋") => "Xingqiu",
+        Some("魈") => "Xiao",
+        Some("凝光") => "Ningguang",
+        Some("可莉") => "Klee",
+        Some("钟离") => "Zhongli",
+        Some("菲谢尔") => "Fischl",
+        Some("班尼特") => "Bennett",
+        Some("达达利亚") => "Tartaglia",
+        Some("诺艾尔") => "Noelle",
+        Some("七七") => "Qiqi",
+        Some("重云") => "Chongyun",
+        Some("甘雨") => "Ganyu",
+        Some("阿贝多") => "Albedo",
+        Some("迪奥娜") => "Diona",
+        Some("莫娜") => "Mona",
+        Some("刻晴") => "Keqing",
+        Some("砂糖") => "Sucrose",
+        Some("辛焱") => "Xinyan",
+        Some("罗莎莉亚") => "Rosaria",
+        Some("胡桃") => "HuTao",
+        Some("枫原万叶") => "KaedeharaKazuha",
+        Some("烟绯") => "Yanfei",
+        Some("宵宫") => "Yoimiya",
+        Some("托马") => "Thoma",
+        Some("优菈") => "Eula",
+        Some("雷电将军") => "RaidenShogun",
+        Some("早柚") => "Sayu",
+        Some("珊瑚宫心海") => "SangonomiyaKokomi",
+        Some("五郎") => "Gorou",
+        Some("九条裟罗") => "KujouSara",
+        Some("荒泷一斗") => "AratakiItto",
+        Some("八重神子") => "YaeMiko",
+        Some("鹿野院平藏") => "ShikanoinHeizou",
+        Some("夜兰") => "Yelan",
+        Some("绮良良") => "Kirara",
+        Some("埃洛伊") => "Aloy",
+        Some("申鹤") => "Shenhe",
+        Some("云堇") => "YunJin",
+        Some("久岐忍") => "KukiShinobu",
+        Some("神里绫人") => "KamisatoAyato",
+        Some("柯莱") => "Collei",
+        Some("多莉") => "Dori",
+        Some("提纳里") => "Tighnari",
+        Some("妮露") => "Nilou",
+        Some("赛诺") => "Cyno",
+        Some("坎蒂丝") => "Candace",
+        Some("纳西妲") => "Nahida",
+        Some("莱依拉") => "Layla",
+        Some("流浪者") => "Wanderer",
+        Some("珐露珊") => "Faruzan",
+        Some("瑶瑶") => "Yaoyao",
+        Some("艾尔海森") => "Alhaitham",
+        Some("迪希雅") => "Dehya",
+        Some("米卡") => "Mika",
+        Some("卡维") => "Kaveh",
+        Some("白术") => "Baizhu",
+        Some("琳妮特") => "Lynette",
+        Some("林尼") => "Lyney",
+        Some("菲米尼") => "Freminet",
+        Some("那维莱特") => "Neuvillette",
+        Some("莱欧斯利") => "Wriothesley",
+        Some("夏洛蒂") => "Charlotte",
+        Some("芙宁娜") => "Furina",
+        Some("夏沃蕾") => "Chevreuse",
+        Some("娜维娅") => "Navia",
+        Some("嘉明") => "Gaming",
+        Some("闲云") => "Xianyun",
+        Some("千织") => "Chiori",
+        Some("阿蕾奇诺") => "Arlecchino",
+        Some("希格雯") => "Sigewinne",
+        Some("赛索斯") => "Sethos",
+        Some("克洛琳德") => "Clorinde",
+        Some("艾梅莉埃") => "Emilie",
+        _ => "",
     }
 }
 

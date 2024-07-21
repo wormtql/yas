@@ -7,4 +7,5 @@ pub struct GenshinArtifactScanResult {
     pub equip: String,
     pub level: i32,
     pub star: i32,
+    pub lock: bool,
 }

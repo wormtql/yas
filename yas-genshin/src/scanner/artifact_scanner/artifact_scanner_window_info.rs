@@ -1,4 +1,4 @@
-use yas::positioning::{Pos, Rect};
+use yas::positioning::{Pos, Rect, Size};
 
 #[derive(Clone, yas_derive::YasWindowInfo, Debug)]
 pub struct ArtifactScannerWindowInfo {
@@ -47,4 +47,21 @@ pub struct ArtifactScannerWindowInfo {
     /// how many columns in this layout
     #[window_info(rename = "genshin_repository_item_col")]
     pub col: i32,
+
+    /// how many rows in this layout
+    #[window_info(rename = "genshin_repository_item_row")]
+    pub row: i32,
+
+    #[window_info(rename = "genshin_repository_item_gap_size")]
+    pub item_gap_size: Size<f64>,
+
+    #[window_info(rename = "genshin_repository_item_size")]
+    pub item_size: Size<f64>,
+
+    #[window_info(rename = "genshin_repository_scan_margin_pos")]
+    pub scan_margin_pos: Pos<f64>,
+
+    #[window_info(rename = "genshin_repository_lock_pos")]
+    pub lock_pos: Pos<f64>,
+
 }

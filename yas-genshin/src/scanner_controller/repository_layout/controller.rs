@@ -40,6 +40,7 @@ pub struct GenshinRepositoryScanController {
     window_info: GenshinRepositoryScanControllerWindowInfo,
     system_control: SystemControl,
     capturer: Rc<dyn Capturer<RgbImage>>,
+
 }
 
 fn calc_pool(row: &[u8]) -> f32 {
@@ -412,4 +413,5 @@ impl GenshinRepositoryScanController {
     fn estimate_scroll_length(&self, count: i32) -> i32 {
         ((self.avg_scroll_one_row * count as f64 - 2.0).round() as i32).max(0)
     }
+
 }

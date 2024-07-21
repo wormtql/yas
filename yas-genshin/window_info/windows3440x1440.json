@@ -52,7 +52,12 @@
     "genshin_repository_item_col": {
       "InvariantInt": 11
     },
-
+    "genshin_repository_lock_pos": {
+        "Pos": {
+            "x": 15,
+            "y": 20
+        }
+    },
     "genshin_artifact_item_count_rect": {
       "Rect": {
         "top": 50,
@@ -65,6 +70,12 @@
       "Pos": {
         "x": 3130,
         "y": 200
+      }
+    },
+    "genshin_artifact_lock_pos": {
+      "Pos": {
+        "x": 3114,
+        "y": 592
       }
     },
     "genshin_artifact_main_stat_name_rect": {

@@ -14,7 +14,6 @@ use crate::scanner::artifact_scanner::artifact_scanner_window_info::ArtifactScan
 use crate::scanner::artifact_scanner::GenshinArtifactScannerConfig;
 use crate::scanner::artifact_scanner::message_items::SendItem;
 use crate::scanner::artifact_scanner::scan_result::GenshinArtifactScanResult;
-use crate::scanner_controller::repository_layout::GenshinRepositoryScanControllerWindowInfo;
 
 fn parse_level(s: &str) -> Result<i32> {
     let pos = s.find('+');
@@ -39,7 +38,7 @@ fn get_image_to_text() -> Result<Box<dyn ImageToText<RgbImage> + Send>> {
 pub struct ArtifactScannerWorker {
     model: Box<dyn ImageToText<RgbImage> + Send>,
     window_info: ArtifactScannerWindowInfo,
-    config: GenshinArtifactScannerConfig
+    config: GenshinArtifactScannerConfig,
 }
 
 impl ArtifactScannerWorker {
@@ -71,7 +70,7 @@ impl ArtifactScannerWorker {
     }
 
     /// Parse the captured result (of type SendItem) to a scanned artifact
-    fn scan_item_image(&self, item: SendItem, lock:bool) -> Result<GenshinArtifactScanResult> {
+    fn scan_item_image(&self, item: SendItem, lock: bool) -> Result<GenshinArtifactScanResult> {
         let image = &item.panel_image;
 
         let str_title = self.model_inference(self.window_info.title_rect, image)?;
@@ -99,11 +98,12 @@ impl ArtifactScannerWorker {
             level: parse_level(&str_level)?,
             equip: str_equip,
             star: item.star as i32,
-            lock
+            lock,
         })
     }
 
-    fn get_page_locks(&self, game_image: &RgbImage) -> Vec<bool> {
+    /// Get all lock state from a list image
+    fn get_page_locks(&self, list_image: &RgbImage) -> Vec<bool> {
         let mut result = Vec::new();
 
         let row = self.window_info.row;
@@ -113,7 +113,7 @@ impl ArtifactScannerWorker {
         let lock_pos = self.window_info.lock_pos;
 
         for r in 0..row {
-            if ((gap.height + size.height) * (r as f64)) as u32 > game_image.height() {
+            if ((gap.height + size.height) * (r as f64)) as u32 > list_image.height() {
                 break;
             }
             for c in 0..col {
@@ -123,11 +123,11 @@ impl ArtifactScannerWorker {
                 let mut locked = false;
                 'sq: for dx in -1..1 {
                     for dy in -10..10 {
-                        if pos_y as i32 + dy < 0 || (pos_y as i32 + dy) as u32 >= game_image.height() {
+                        if pos_y as i32 + dy < 0 || (pos_y as i32 + dy) as u32 >= list_image.height() {
                             continue;
                         }
 
-                        let color = game_image
+                        let color = list_image
                             .get_pixel((pos_x as i32 + dx) as u32, (pos_y as i32 + dy) as u32);
 
                         if color.0[0] > 200 {
@@ -158,24 +158,25 @@ impl ArtifactScannerWorker {
             // let panel_origin = Pos { x: self.window_info.panel_rect.left, y: self.window_info.panel_rect.top };
 
             let mut locks = Vec::new();
-            let mut artifact_index:i32 = 0;
+            let mut artifact_index: i32 = 0;
 
             for item in rx.into_iter() {
-
+                // receiving None, which means the worker should end
                 let item = match item {
                     Some(v) => v,
                     None => break,
                 };
 
-                match item.game_image.as_ref() {
+                // if there is a list image, then parse the lock state
+                match item.list_image.as_ref() {
                     Some(v) => {
                         locks = vec![locks, self.get_page_locks(v)].concat()
-                    },
-                    None => {},
+                    }
+                    None => {}
                 };
 
                 artifact_index += 1;
-                let result = match self.scan_item_image(item, locks[artifact_index as usize -1]) {
+                let result = match self.scan_item_image(item, locks[artifact_index as usize - 1]) {
                     Ok(v) => v,
                     Err(e) => {
                         error!("识别错误: {}", e);

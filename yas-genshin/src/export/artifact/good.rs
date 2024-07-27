@@ -43,7 +43,7 @@ impl<'a> Serialize for GOODArtifact<'a> {
         root.serialize_entry(
             "location",
             equip_from_zh_cn(artifact.equip.clone().as_deref()),
-        );
+        )?;
         root.serialize_entry("lock", &artifact.lock)?;
         root.serialize_entry("substats", &substats)?;
         root.end()

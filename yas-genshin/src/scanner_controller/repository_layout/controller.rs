@@ -69,13 +69,13 @@ impl GenshinRepositoryScanController {
     pub fn new(
         window_info_repo: &WindowInfoRepository,
         config: GenshinRepositoryScannerLogicConfig,
-        game_info: GameInfo
+        game_info: GameInfo,
     ) -> Result<Self> {
         let window_info = GenshinRepositoryScanControllerWindowInfo::from_window_info_repository(
             game_info.window.to_rect_usize().size(),
             game_info.ui,
             game_info.platform,
-            window_info_repo
+            window_info_repo,
         )?;
         let row = window_info.genshin_repository_item_row;
         let col = window_info.genshin_repository_item_col;
@@ -109,12 +109,12 @@ impl GenshinRepositoryScanController {
     pub fn from_arg_matches(
         window_info_repo: &WindowInfoRepository,
         arg_matches: &ArgMatches,
-        game_info: GameInfo
+        game_info: GameInfo,
     ) -> Result<Self> {
         Self::new(
             window_info_repo,
             GenshinRepositoryScannerLogicConfig::from_arg_matches(arg_matches)?,
-            game_info
+            game_info,
         )
     }
 }
@@ -125,7 +125,7 @@ pub enum ReturnResult {
 }
 
 impl GenshinRepositoryScanController {
-    pub fn get_generator(object: Rc<RefCell<GenshinRepositoryScanController>>, item_count: usize) -> impl Coroutine<Yield = (), Return = Result<ReturnResult>> {
+    pub fn get_generator(object: Rc<RefCell<GenshinRepositoryScanController>>, item_count: usize) -> impl Coroutine<Yield=(), Return=Result<ReturnResult>> {
         let generator = #[coroutine] move || {
             let mut scanned_row = 0;
             let mut scanned_count = 0;
@@ -206,10 +206,10 @@ impl GenshinRepositoryScanController {
                     ScrollResult::TimeLimitExceeded => {
                         // error!("");
                         return Err(anyhow!("翻页超时，扫描终止……"));
-                    },
+                    }
                     ScrollResult::Interrupt => {
                         return Ok(ReturnResult::Interrupted);
-                    },
+                    }
                     _ => (),
                 }
 
@@ -226,7 +226,7 @@ impl GenshinRepositoryScanController {
     pub fn get_flag_color(&self) -> Result<image::Rgb<u8>> {
         let pos = Pos {
             x: self.window_info.flag_pos.x as i32 + self.game_info.window.left,
-            y: self.window_info.flag_pos.y as i32 + self.game_info.window.top
+            y: self.window_info.flag_pos.y as i32 + self.game_info.window.top,
         };
         self.capturer.capture_color(pos)
     }
@@ -327,7 +327,7 @@ impl GenshinRepositoryScanController {
                 v => {
                     error!("Scrolling failed: {:?}", v);
                     return v;
-                },
+                }
             }
         }
 
@@ -347,7 +347,7 @@ impl GenshinRepositoryScanController {
         while now.elapsed().unwrap().as_millis() < self.config.max_wait_switch_item as u128 {
             let im = self.capturer.capture_relative_to(
                 self.window_info.pool_rect.to_rect_i32(),
-                self.game_info.window.origin()
+                self.game_info.window.origin(),
             )?;
 
             let pool = calc_pool(im.as_raw()) as f64;
@@ -385,14 +385,14 @@ impl GenshinRepositoryScanController {
                 crate::common::UI::Desktop => {
                     self.system_control.mouse_scroll(length);
                     utils::sleep(20);
-                },
+                }
                 crate::common::UI::Mobile => {
                     if try_find {
                         self.system_control.mac_scroll_fast(length);
                     } else {
                         self.system_control.mac_scroll_slow(length);
                     }
-                },
+                }
             }
         }
     }
@@ -413,5 +413,4 @@ impl GenshinRepositoryScanController {
     fn estimate_scroll_length(&self, count: i32) -> i32 {
         ((self.avg_scroll_one_row * count as f64 - 2.0).round() as i32).max(0)
     }
-
 }

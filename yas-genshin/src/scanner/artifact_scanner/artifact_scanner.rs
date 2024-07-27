@@ -205,18 +205,12 @@ impl GenshinArtifactScanner {
         }
     }
 
-    fn is_page_first_artifact(&self, max_count: i32, cur_index: i32) -> bool {
+    fn is_page_first_artifact(&self, cur_index: i32) -> bool {
         let col = self.window_info.col;
         let row = self.window_info.row;
 
         let page_size = col * row;
-        if cur_index <= (max_count / page_size + 1) * page_size {
-            return cur_index % page_size == 0;
-        } else {
-            let last_start_index = (max_count / page_size) * page_size;
-            let remain_row = (max_count - last_start_index - page_size + col - 1) / col;
-            return last_start_index + col * remain_row == cur_index;
-        }
+        return cur_index % page_size == 0;
     }
 
     /// Get the starting row in the page where `cur_index` is in
@@ -248,8 +242,7 @@ impl GenshinArtifactScanner {
                     let image = self.capture_panel().unwrap();
                     let star = self.get_star().unwrap();
 
-                    // if current artifact is the start of a new page, then capture the list to parse locking state
-                    let list_image = if self.is_page_first_artifact(count, artifact_index) {
+                    let list_image = if self.is_page_first_artifact(artifact_index) {
                         let origin = self.game_info.window;
                         let margin = self.window_info.scan_margin_pos;
                         let gap = self.window_info.item_gap_size;

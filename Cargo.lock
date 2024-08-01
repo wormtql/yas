@@ -3590,6 +3590,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "yas-derive-wuthering-waves"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 2.0.52",
+]
+
+[[package]]
+name = "yas-wutheringwaves"
+version = "0.1.0"
+dependencies = [
+ "yas-derive-wuthering-waves",
+]
+
+[[package]]
 name = "yas_core"
 version = "0.1.14"
 dependencies = [

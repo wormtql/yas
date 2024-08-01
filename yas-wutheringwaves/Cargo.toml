@@ -1,0 +1,7 @@
+[package]
+name = "yas-wutheringwaves"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yas-derive-wuthering-waves = { path = "../yas-derive-wuthering-waves" }

@@ -3604,7 +3604,22 @@ dependencies = [
 name = "yas-wutheringwaves"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "clap",
+ "edit-distance",
+ "env_logger",
+ "image",
+ "lazy_static",
+ "log",
+ "nanoid",
+ "regex",
+ "serde",
+ "serde_json",
+ "strum 0.26.2",
+ "strum_macros 0.26.2",
  "yas-derive-wuthering-waves",
+ "yas_core",
+ "yas_derive",
 ]
 
 [[package]]

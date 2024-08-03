@@ -5,3 +5,18 @@ edition = "2021"
 
 [dependencies]
 yas-derive-wuthering-waves = { path = "../yas-derive-wuthering-waves" }
+yas_derive = { path = "../yas-derive" }
+yas = { path = "../yas",  package="yas_core", features = ["ort"] }
+anyhow = "1.0"
+log = "0.4"
+clap = { version = "4.4", features = ["derive"] }
+image = "0.24"
+serde_json = "1.0"
+edit-distance = "2.1"
+regex = "1.5"
+strum = "0.26"
+strum_macros = "0.26"
+lazy_static = "1.4"
+serde = { version = "1.0", features = ["derive"] }
+env_logger = "0.11"
+nanoid = "0.4"

@@ -1,0 +1,214 @@
+{
+  "current_resolution": {
+    "width": 2560,
+    "height": 1440
+  },
+  "platform": "Windows",
+  "ui": "Desktop",
+  "data": {
+    "ww_echo_equip_rect": {
+      "Rect": {
+        "top": 1168,
+        "left": 1800,
+        "width": 181,
+        "height": 40
+      }
+    },
+    "ww_echo_item_count_rect": {
+      "Rect": {
+        "top": 68,
+        "left": 138,
+        "width": 258,
+        "height": 47
+      }
+    },
+    "ww_echo_level_rect": {
+      "Rect": {
+        "top": 331,
+        "left": 2352,
+        "width": 91,
+        "height": 44
+      }
+    },
+    "ww_echo_lock_rect": {
+      "Pos": {
+        "left": 2388,
+        "top": 414,
+        "width": 57,
+        "height": 57
+      }
+    },
+    "ww_echo_main_stat1_name_rect": {
+      "Rect": {
+        "top": 572,
+        "left": 1921,
+        "width": 352,
+        "height": 45
+      }
+    },
+    "ww_echo_main_stat1_value_rect": {
+      "Rect": {
+        "top": 572,
+        "left": 2280,
+        "width": 165,
+        "height": 45
+      }
+    },
+    "ww_echo_main_stat2_name_rect": {
+      "Rect": {
+        "top": 627,
+        "left": 1921,
+        "width": 352,
+        "height": 46
+      }
+    },
+    "ww_echo_main_stat2_value_rect": {
+      "Rect": {
+        "top": 627,
+        "left": 2280,
+        "width": 165,
+        "height": 46
+      }
+    },
+    "ww_echo_star_pos": {
+      "Pos": {
+        "x": 2453,
+        "y": 506
+      }
+    },
+    "ww_echo_sub_stat0_name_rect": {
+      "Rect": {
+        "top": 684,
+        "left": 1921,
+        "width": 352,
+        "height": 46
+      }
+    },
+    "ww_echo_sub_stat0_value_rect": {
+      "Rect": {
+        "top": 684,
+        "left": 2280,
+        "width": 165,
+        "height": 46
+      }
+    },
+    "ww_echo_sub_stat1_name_rect": {
+      "Rect": {
+        "top": 742,
+        "left": 1921,
+        "width": 352,
+        "height": 46
+      }
+    },
+    "ww_echo_sub_stat1_value_rect": {
+      "Rect": {
+        "top": 742,
+        "left": 2280,
+        "width": 165,
+        "height": 46
+      }
+    },
+    "ww_echo_sub_stat2_name_rect": {
+      "Rect": {
+        "top": 795,
+        "left": 1921,
+        "width": 352,
+        "height": 50
+      }
+    },
+    "ww_echo_sub_stat2_value_rect": {
+      "Rect": {
+        "top": 795,
+        "left": 2280,
+        "width": 165,
+        "height": 50
+      }
+    },
+    "ww_echo_sub_stat3_name_rect": {
+      "Rect": {
+        "top": 853,
+        "left": 1921,
+        "width": 352,
+        "height": 48
+      }
+    },
+    "ww_echo_sub_stat3_value_rect": {
+      "Rect": {
+        "top": 853,
+        "left": 2280,
+        "width": 165,
+        "height": 48
+      }
+    },
+    "ww_echo_sub_stat4_name_rect": {
+      "Rect": {
+        "top": 911,
+        "left": 1921,
+        "width": 352,
+        "height": 48
+      }
+    },
+    "ww_echo_sub_stat4_value_rect": {
+      "Rect": {
+        "top": 911,
+        "left": 2280,
+        "width": 165,
+        "height": 48
+      }
+    },
+    "ww_echo_title_rect": {
+      "Rect": {
+        "top": 169,
+        "left": 1745,
+        "width": 388,
+        "height": 51
+      }
+    },
+    "ww_repository_flag_pos": {
+      "Pos": {
+        "y": 154,
+        "x": 1048
+      }
+    },
+    "ww_repository_item_col": {
+      "InvariantInt": 6
+    },
+    "ww_repository_item_gap_size": {
+      "Size": {
+        "width": 30,
+        "height": 40
+      }
+    },
+    "ww_repository_item_row": {
+      "InvariantInt": 4
+    },
+    "ww_repository_item_size": {
+      "Size": {
+        "width": 91,
+        "height": 233
+      }
+    },
+    "ww_repository_panel_rect": {
+      "Rect": {
+        "top": 154,
+        "left": 1728,
+        "width": 744,
+        "height": 1090
+      }
+    },
+    "ww_repository_pool_rect": {
+      "Rect": {
+        "top": 170,
+        "left": 1746,
+        "width": 50,
+        "height": 50
+      }
+    },
+    "ww_repository_scan_margin_pos": {
+      "Pos": {
+        "x": 279,
+        "y": 167
+      }
+    }
+  }
+}

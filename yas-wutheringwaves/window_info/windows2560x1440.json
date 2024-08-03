@@ -30,14 +30,6 @@
         "height": 44
       }
     },
-    "ww_echo_lock_rect": {
-      "Pos": {
-        "left": 2388,
-        "top": 414,
-        "width": 57,
-        "height": 57
-      }
-    },
     "ww_echo_main_stat1_name_rect": {
       "Rect": {
         "top": 572,

@@ -19,12 +19,23 @@ fn get_echo_names(data: &[EchoDataItem]) -> Vec<proc_macro2::TokenStream> {
 fn echo_name_from_chs(data: &[EchoDataItem], echo_names: &[proc_macro2::TokenStream]) -> proc_macro2::TokenStream {
     let chs_names: Vec<_> = data.iter().map(|x| x.name_chs.clone()).collect();
 
+    let mut temp = Vec::new();
+    for i in 0..echo_names.len() {
+        let name = &chs_names[i];
+        let echo_name = &echo_names[i];
+        temp.push(quote! {
+            #name => Some(Self:: #echo_name),
+        });
+    }
+
     quote! {
         impl WWEchoName {
-            pub fn from_chs(chs: &str) -> Self {
+            pub fn from_chs(chs: &str) -> Option<Self> {
                 match chs {
-                    #(#chs_names => Self::#echo_names),*
-                    _ => panic!("Unknown chs name"),
+                    #(#temp)*
+                    // It's weird that this will not compile
+                    // #(#chs_names => Some(Self::#echo_names)),*
+                    _ => return None,
                 }
             }
         }
@@ -41,7 +52,6 @@ pub fn yas_wuthering_waves_echoes(input: TokenStream) -> TokenStream {
     let echo_data: Vec<EchoDataItem> = serde_json::from_str(&content).unwrap();
 
     let echo_names = get_echo_names(&echo_data);
-    println!("{:?}", echo_names);
 
     let echo_name_enum = quote! {
         pub enum WWEchoName {
@@ -54,6 +64,8 @@ pub fn yas_wuthering_waves_echoes(input: TokenStream) -> TokenStream {
         #echo_name_enum
         #echo_name_from_chs_impl
     };
+
+    // println!("{:?}", result.to_string());
 
     result.into()
 }

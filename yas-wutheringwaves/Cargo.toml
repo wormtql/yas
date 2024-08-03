@@ -13,7 +13,7 @@ clap = { version = "4.4", features = ["derive"] }
 image = "0.24"
 serde_json = "1.0"
 edit-distance = "2.1"
-regex = "1.5"
+regex = "1.10"
 strum = "0.26"
 strum_macros = "0.26"
 lazy_static = "1.4"

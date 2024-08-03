@@ -1,6 +1,6 @@
 use clap::arg;
 
-#[derive(Clone, clap::Args)]
+#[derive(clap::Args, Clone)]
 pub struct WWRepositoryLayoutConfig {
     /// Max rows to scan
     #[arg(id = "max-row", long = "max-row", help = "最大扫描行数")]
@@ -18,16 +18,17 @@ pub struct WWRepositoryLayoutConfig {
     pub max_wait_switch_item: i32,
 
     /// The time to wait for switching to the next item in cloud game
-    // #[arg(id = "cloud-wait-switch-item", long = "cloud-wait-switch-item", help = "云游戏切换物品等待时间（ms）", default_value_t = 300)]
-    // pub cloud_wait_switch_item: i32,
+    #[arg(id = "cloud-wait-switch-item", long = "cloud-wait-switch-item", help = "云游戏切换物品等待时间（ms）", default_value_t = 300)]
+    pub cloud_wait_switch_item: i32,
 }
 
 impl Default for WWRepositoryLayoutConfig {
     fn default() -> Self {
         Self {
-            max_row: -1,
+            max_row: None,
             scroll_delay: 80,
-            max_wait_switch_item: 800
+            max_wait_switch_item: 800,
+            cloud_wait_switch_item: 800,
         }
     }
 }

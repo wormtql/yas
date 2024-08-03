@@ -2,18 +2,21 @@ use std::cell::RefCell;
 use std::ops::Coroutine;
 use std::rc::Rc;
 use std::time::SystemTime;
+
+use anyhow::{anyhow, Result};
+use clap::{ArgMatches, FromArgMatches};
 use image::{Rgb, RgbImage};
+use log::{error, info};
+
 use yas::capture::{Capturer, GenericCapturer};
 use yas::game_info::GameInfo;
-use yas::system_control::SystemControl;
-use yas::window_info::WindowInfoRepository;
-use crate::scanner_controller::repository::{WWRepositoryLayoutConfig, WWRepositoryLayoutWindowinfo};
-use anyhow::{anyhow, Result};
-use clap::ArgMatches;
-use log::{error, info};
 use yas::positioning::Pos;
+use yas::system_control::SystemControl;
 use yas::utils;
 use yas::utils::color_distance;
+use yas::window_info::{FromWindowInfoRepository, WindowInfoRepository};
+
+use crate::scanner_controller::repository::{WWRepositoryLayoutConfig, WWRepositoryLayoutWindowinfo};
 
 pub struct WWRepositoryLayoutScanController {
     /// A value computed from a region of the panel, to detect whether an item changes

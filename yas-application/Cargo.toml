@@ -8,6 +8,7 @@ anyhow = "1.0"
 yas = { path = "../yas" , package = "yas_core" }
 yas_genshin = { path = "../yas-genshin", package = "yas_scanner_genshin" }
 yas_starrail = { path = "../yas-starrail", package = "yas_scanner_starrail" }
+yas-wutheringwaves = { path = "../yas-wutheringwaves" }
 clap = { version = "4.4", features = ["derive"] }
 log = "0.4"
 env_logger = "0.11"
@@ -33,3 +34,7 @@ path = "src/bin/yas_artifact.rs"
 [[bin]]
 name = "yas_relic"
 path = "src/bin/yas_relic.rs"
+
+[[bin]]
+name = "yas_ww_echo"
+path = "src/bin/yas_ww_echo.rs"

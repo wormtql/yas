@@ -7,6 +7,7 @@ use crate::scanner::echo_scanner::echo_scanner_config::WWEchoScannerConfig;
 use crate::scanner::echo_scanner::echo_scanner_window_info::EchoScannerWindowInfo;
 use anyhow::Result;
 use log::{error, info, warn};
+use rayon::iter::ParallelBridge;
 use yas::positioning::{Pos, Rect};
 use crate::scanner::echo_scanner::message_item::SendItem;
 use crate::scanner::echo_scanner::scan_result::WWEchoScanResult;
@@ -128,7 +129,7 @@ impl WWEchoScannerWorker {
         })
     }
 
-    pub fn run(self, rx: Receiver<Option<SendItem>>) -> JoinHandle<Vec<WWEchoScanResult>> {
+    pub fn run(self, rx: Receiver<SendItem>) -> JoinHandle<Vec<WWEchoScanResult>> {
         std::thread::spawn(move || {
             let mut results = Vec::new();
             let mut hash = HashSet::new();
@@ -139,16 +140,10 @@ impl WWEchoScannerWorker {
             let info = self.window_info.clone();
 
             for (_cnt, item) in rx.into_iter().enumerate() {
-                // Receiving None means terminate the thread
-                let item = match item {
-                    Some(v) => v,
-                    None => break,
-                };
-
                 let result = match self.parse_item(item) {
                     Ok(v) => v,
                     Err(e) => {
-                        error!("识别错误: {}", e);
+                        // error!("识别错误: {}", e);
                         continue;
                     },
                 };
@@ -157,27 +152,19 @@ impl WWEchoScannerWorker {
                     info!("{:?}", result);
                 }
 
-                // if result.level < min_level {
-                //     info!(
-                //         "找到满足最低等级要求 {} 的物品({})，准备退出……",
-                //         min_level, result.level
-                //     );
-                //     break;
-                // }
-
                 if hash.contains(&result) {
                     consecutive_dup_count += 1;
-                    warn!("识别到重复物品: {:#?}", result);
+                    // warn!("识别到重复物品: {:#?}", result);
                 } else {
                     consecutive_dup_count = 0;
                     hash.insert(result.clone());
                     results.push(result);
                 }
 
-                if consecutive_dup_count >= info.col && !self.config.ignore_dup {
-                    error!("识别到连续多个重复物品，可能为翻页错误，或者为非背包顶部开始扫描");
-                    break;
-                }
+                // if consecutive_dup_count >= info.col && !self.config.ignore_dup {
+                //     error!("识别到连续多个重复物品，可能为翻页错误，或者为非背包顶部开始扫描");
+                //     break;
+                // }
             }
 
             info!("识别结束，非重复物品数量: {}", hash.len());

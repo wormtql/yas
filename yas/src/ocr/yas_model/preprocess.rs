@@ -21,7 +21,7 @@ pub fn to_gray(raw: &RgbImage) -> ImageBuffer<Luma<f32>, Vec<f32>> {
 }
 
 /// normalize an f32 gray image
-/// which makes the bright pixel more bright, the dark pixels more dark
+/// which makes the bright pixel brighter, the dark pixels darker
 fn normalize(im: &mut ImageBuffer<Luma<f32>, Vec<f32>>, auto_inverse: bool) -> bool {
     let width = im.width();
     let height = im.height();
@@ -50,7 +50,11 @@ fn normalize(im: &mut ImageBuffer<Luma<f32>, Vec<f32>>, auto_inverse: bool) -> b
         return false;
     }
 
-    let flag_pixel = im.get_pixel(width - 2, height - 1)[0];
+    let flag_pixel = if width >= 2 {
+        im.get_pixel(width - 2, height - 1)[0]
+    } else {
+        im.get_pixel(width - 1, height - 1)[0]
+    };
     let flag_pixel = (flag_pixel - min) / (max - min);
 
     for i in 0..width {
@@ -108,10 +112,14 @@ fn crop(im: &ImageBuffer<Luma<f32>, Vec<f32>>) -> ImageBuffer<Luma<f32>, Vec<f32
         }
     }
 
+    if min_col > max_col || min_row > max_row {
+        return im.clone();
+    }
+
     let new_height = max_row - min_row + 1;
     let new_width = max_col - min_col + 1;
 
-    let _ans: Vec<f32> = vec![0.0; (new_width * new_height) as usize];
+    // let _ans: Vec<f32> = vec![0.0; (new_width * new_height) as usize];
     let cropped_im = im.view(min_col, min_row, new_width, new_height).to_image();
 
     cropped_im

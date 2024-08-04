@@ -1,8 +1,10 @@
-mod capturer;
-mod generic_capturer;
-
+pub use stream_capturer::StreamingCapturer;
 pub use capturer::Capturer;
 pub use generic_capturer::GenericCapturer;
+
+mod capturer;
+mod generic_capturer;
+mod stream_capturer;
 
 // windows
 

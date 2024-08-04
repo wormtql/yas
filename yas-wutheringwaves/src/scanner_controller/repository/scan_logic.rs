@@ -12,6 +12,7 @@ use log::{error, info};
 use yas::capture::{Capturer, GenericCapturer};
 use yas::game_info::GameInfo;
 use yas::positioning::Pos;
+use yas::profiler::Profiler;
 use yas::system_control::SystemControl;
 use yas::utils;
 use yas::utils::color_distance;
@@ -50,6 +51,9 @@ pub struct WWRepositoryLayoutScanController {
     system_control: SystemControl,
     /// An instance for capturer
     capturer: Rc<dyn Capturer<RgbImage>>,
+
+    /// Profiler
+    pub profiler: RefCell<Profiler>,
 }
 
 impl WWRepositoryLayoutScanController {
@@ -92,6 +96,7 @@ impl WWRepositoryLayoutScanController {
             scanned_count: 0,
 
             capturer,
+            profiler: RefCell::new(Profiler::new()),
         })
     }
 
@@ -124,16 +129,23 @@ enum ScrollResult {
 
 /// Calculate the background pixel ratio
 fn calc_pool(im: &RgbImage) -> u64 {
-    let mut hasher = DefaultHasher::new();
+    let mut count = 0;
     for p in im.pixels() {
-        // let color_dis = color_distance(&background_pixel_color, p);
-        // if color_dis < 5 {
-        //     counter += 1;
-        // }
-        p.hash(&mut hasher);
+        if p.0[0] == 255 && p.0[1] == 255 && p.0[2] == 255 {
+            count += 1;
+        }
     }
 
-    hasher.finish()
+    count
+}
+
+fn has_white_pixel(im: &RgbImage) -> bool {
+    for p in im.pixels() {
+        if p.0[0] == 255 && p.0[1] == 255 && p.0[2] == 255 {
+            return true;
+        }
+    }
+    false
 }
 
 impl WWRepositoryLayoutScanController {
@@ -234,12 +246,16 @@ impl WWRepositoryLayoutScanController {
     }
 
     pub fn capture_flag(&self) -> Result<Rgb<u8>> {
+        self.profiler.borrow_mut().begin("capture_flag");
+
         let window_origin = self.game_info.window.to_rect_f64().origin();
         let pos: Pos<i32> = Pos {
             x: (window_origin.x + self.window_info.flag_pos.x) as i32,
             y: (window_origin.y + self.window_info.flag_pos.y) as i32,
         };
         let color = self.capturer.capture_color(pos)?;
+
+        self.profiler.borrow_mut().end("capture_flag")?;
 
         Ok(color)
     }
@@ -349,11 +365,11 @@ impl WWRepositoryLayoutScanController {
         Ok(ScrollResult::Success)
     }
 
+    /// An aggressive wait scheme. If any change happens, mark this as valid switch.
+    /// This may create duplicate Echoes, but will not overlook any Echo
     fn wait_until_switched(&mut self) -> Result<bool> {
-        // if self.game_info.is_cloud {
-        //     utils::sleep(self.config.cloud_wait_switch_item.try_into()?);
-        //     return Ok(());
-        // }
+        self.profiler.borrow_mut().begin("wait_until_switched");
+        println!("begin wait");
 
         let consecutive_threshold = 1;
         let now = SystemTime::now();
@@ -361,18 +377,27 @@ impl WWRepositoryLayoutScanController {
         let mut consecutive_time = 0;
         let mut diff_flag = false;
         let mut it = 0;
+        let mut is_last_zero = false;
         while now.elapsed()?.as_millis() < self.config.max_wait_switch_item as u128 {
+            self.profiler.borrow_mut().begin("capture_pool");
             let im = self.capturer.capture_relative_to(
                 self.window_info.pool_rect.to_rect_i32(),
                 self.game_info.window.origin()
             )?;
+            self.profiler.borrow_mut().end("capture_pool")?;
+
             let pool = calc_pool(&im);
-            // im.save(format!("{}_{}.png", it, pool))?;
+            println!("{}, last: {}", pool, self.pool);
+            // im.save(format!("{}.png", it))?;
 
             if pool != self.pool {
                 self.pool = pool;
                 diff_flag = true;
                 consecutive_time = 0;
+                if is_last_zero {
+                    self.profiler.borrow_mut().end("wait_until_switched")?;
+                    return Ok(true);
+                }
             } else if diff_flag {
                 consecutive_time += 1;
                 if consecutive_time == consecutive_threshold {
@@ -380,15 +405,24 @@ impl WWRepositoryLayoutScanController {
                         + now.elapsed().unwrap().as_millis() as f64)
                         / (self.scanned_count as f64 + 1.0);
                     self.scanned_count += 1;
+
+                    self.profiler.borrow_mut().end("wait_until_switched")?;
                     return Ok(true);
                 }
+            }
+
+            if pool == 0 {
+                is_last_zero = true;
+            } else {
+                is_last_zero = false;
             }
 
             it += 1;
         }
 
+        self.profiler.borrow_mut().end("wait_until_switched")?;
+
         Ok(false)
-        // Err(anyhow!("Wait until switched failed"))
     }
 
     pub fn mouse_scroll(&mut self, length: i32, try_find: bool) {

@@ -12,7 +12,7 @@ use log::{error, info};
 use regex::Regex;
 use clap::FromArgMatches;
 
-use yas::capture::{Capturer, GenericCapturer};
+use yas::capture::{Capturer, GenericCapturer, StreamingCapturer};
 use yas::game_info::GameInfo;
 use yas::ocr::{ImageToText, yas_ocr_model};
 use yas::window_info::{WindowInfoRepository, FromWindowInfoRepository};
@@ -34,7 +34,7 @@ pub struct WWEchoScanner {
 }
 
 impl WWEchoScanner {
-    fn get_image_to_text() -> anyhow::Result<Box<dyn ImageToText<RgbImage> + Send>> {
+    fn get_image_to_text() -> Result<Box<dyn ImageToText<RgbImage> + Send>> {
         let model: Box<dyn ImageToText<RgbImage> + Send> = Box::new(
             yas_ocr_model!("./models/model_training.onnx", "./models/index_2_word.json")?
         );
@@ -42,7 +42,7 @@ impl WWEchoScanner {
         Ok(model)
     }
 
-    fn get_capturer() -> anyhow::Result<Rc<dyn Capturer<RgbImage>>> {
+    fn get_capturer() -> Result<Rc<dyn Capturer<RgbImage>>> {
         Ok(Rc::new(GenericCapturer::new()?))
     }
 
@@ -96,12 +96,12 @@ impl WWEchoScanner {
 }
 
 impl WWEchoScanner {
-    fn capture_panel(&self) -> Result<RgbImage> {
-        self.capturer.capture_relative_to(
-            self.window_info.panel_rect.to_rect_i32(),
-            self.game_info.window.origin()
-        )
-    }
+    // fn capture_panel(&self) -> Result<RgbImage> {
+    //     self.capturer.capture_relative_to(
+    //         self.window_info.panel_rect.to_rect_i32(),
+    //         self.game_info.window.origin()
+    //     )
+    // }
 
     /// Get Echo count
     fn get_item_count(&self) -> Result<usize> {
@@ -131,40 +131,54 @@ impl WWEchoScanner {
         info!("开始扫描，使用鼠标右键中断扫描");
 
         let now = SystemTime::now();
-        let (tx, rx) = mpsc::channel::<Option<SendItem>>();
-        // let token = self.cancellation_token.clone();
+
+        let (image_tx, image_rx) = mpsc::channel::<SendItem>();
         let count = self.get_item_count()?;
+
         let worker = WWEchoScannerWorker::new(
             self.window_info.clone(),
             self.scanner_config.clone()
         )?;
 
-        let join_handle = worker.run(rx);
-        info!("Worker created");
+        let worker_join_handle = worker.run(image_rx);
+        let panel_rect = self.window_info.panel_rect.to_rect_i32().translate(self.game_info.window.origin());
+        let streaming_capturer = StreamingCapturer::new(panel_rect);
+        let (capturer_join_handle, cancel_image_capturer) = streaming_capturer.start_transform(image_tx, |x| SendItem { panel_image: x });
 
-        self.send(&tx, count);
+        // self.send(&tx, count);
+        //
+        // match tx.send(None) {
+        //     Ok(_) => info!("扫描结束，等待识别线程结束，请勿关闭程序"),
+        //     Err(_) => info!("扫描结束，识别已完成"),
+        // }
 
-        match tx.send(None) {
-            Ok(_) => info!("扫描结束，等待识别线程结束，请勿关闭程序"),
-            Err(_) => info!("扫描结束，识别已完成"),
-        }
+        // let average_inference_time = self.image_to_text.get_average_inference_time();
+        // if let Some(t) = average_inference_time {
+        //     let ms = t.as_micros() as f64 / 1000.0;
+        //     info!("平均模型推理时间：{} ms", ms);
+        // }
 
-        let average_inference_time = self.image_to_text.get_average_inference_time();
-        if let Some(t) = average_inference_time {
-            let ms = t.as_micros() as f64 / 1000.0;
-            info!("平均模型推理时间：{} ms", ms);
-        }
+        self.start_clicking_items(count);
 
-        match join_handle.join() {
-            Ok(v) => {
-                info!("识别耗时: {:?}", now.elapsed()?);
-                Ok(v)
-            },
-            Err(_) => Err(anyhow::anyhow!("识别线程出现错误")),
-        }
+        self.controller.borrow().profiler.borrow().print();
+
+        cancel_image_capturer();
+
+        capturer_join_handle.join();
+        let result = worker_join_handle.join().unwrap();
+
+        Ok(result)
+
+        // match join_handle.join() {
+        //     Ok(v) => {
+        //         info!("识别耗时: {:?}", now.elapsed()?);
+        //         Ok(v)
+        //     },
+        //     Err(_) => Err(anyhow::anyhow!("识别线程出现错误")),
+        // }
     }
 
-    fn send(&mut self, tx: &Sender<Option<SendItem>>, count: usize) {
+    fn start_clicking_items(&mut self, count: usize) {
         let mut generator = WWRepositoryLayoutScanController::get_generator(
             self.controller.clone(),
             count
@@ -174,11 +188,11 @@ impl WWEchoScanner {
             let pinned_generator = Pin::new(&mut generator);
             match pinned_generator.resume(()) {
                 CoroutineState::Yielded(_) => {
-                    let panel_image = self.capture_panel().unwrap();
-
-                    if tx.send(Some(SendItem { panel_image })).is_err() {
-                        break;
-                    }
+                    // let panel_image = self.capture_panel().unwrap();
+                    //
+                    // if tx.send(Some(SendItem { panel_image })).is_err() {
+                    //     break;
+                    // }
                 },
                 CoroutineState::Complete(result) => {
                     match result {

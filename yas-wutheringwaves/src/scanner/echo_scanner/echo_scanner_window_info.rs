@@ -36,7 +36,7 @@ pub struct EchoScannerWindowInfo {
     pub sub_stat_value_3: Rect<f64>,
     #[window_info(rename = "ww_echo_sub_stat3_value_rect")]
     pub sub_stat_value_4: Rect<f64>,
-    #[window_info(rename = "ww_echo_sub_stat5_value_rect")]
+    #[window_info(rename = "ww_echo_sub_stat4_value_rect")]
     pub sub_stat_value_5: Rect<f64>,
 
     #[window_info(rename = "ww_echo_level_rect")]
@@ -54,9 +54,9 @@ pub struct EchoScannerWindowInfo {
     // #[window_info(rename = "ww_echo_lock_pos")]
     // pub lock_pos: Pos<f64>,
 
-    #[window_info(rename = "starrail_repository_panel_rect")]
+    #[window_info(rename = "ww_repository_panel_rect")]
     pub panel_rect: Rect<f64>,
 
-    #[window_info(rename = "starrail_repository_item_col")]
+    #[window_info(rename = "ww_repository_item_col")]
     pub col: i32,
 }

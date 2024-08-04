@@ -45,6 +45,7 @@ impl WWEchoScannerApplication {
 
 impl WWEchoScannerApplication {
     pub fn run(&self) -> Result<()> {
+        println!("START");
         // Self::init();
         let arg_matches = &self.arg_matches;
         let window_info_repository = Self::get_window_info_repository();
@@ -74,25 +75,6 @@ impl WWEchoScannerApplication {
         for item in results.iter() {
             println!("{:?}", item);
         }
-
-
-        // let starrail_relics = results.iter()
-        //     .map(|x| StarRailRelic::try_from(x))
-        //     .filter(|x| x.is_ok())
-        //     .map(|x| x.unwrap())
-        //     .collect::<Vec<_>>();
-        // let exporter = StarRailRelicExporter::new(&arg_matches, &starrail_relics)?;
-        // let mut export_assets = ExportAssets::new();
-        // exporter.emit(&mut export_assets);
-        //
-        // let stats = export_assets.save();
-        // info!("保存结果：");
-        // let table = format!("{}", stats);
-        // // print multiline
-        // for line in table.lines() {
-        //     info!("{}", line);
-        // }
-        // info!("Yas 识别结束，共识别到 {} 件圣遗物。", results.len());
 
         Ok(())
     }

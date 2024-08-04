@@ -18,7 +18,7 @@
       "Rect": {
         "top": 68,
         "left": 138,
-        "width": 258,
+        "width": 302,
         "height": 47
       }
     },
@@ -176,7 +176,7 @@
     },
     "ww_repository_item_size": {
       "Size": {
-        "width": 91,
+        "width": 192,
         "height": 233
       }
     },
@@ -190,10 +190,10 @@
     },
     "ww_repository_pool_rect": {
       "Rect": {
-        "top": 170,
-        "left": 1746,
-        "width": 50,
-        "height": 50
+        "top": 563,
+        "left": 1774,
+        "width": 1,
+        "height": 578
       }
     },
     "ww_repository_scan_margin_pos": {

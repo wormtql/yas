@@ -1,15 +1,21 @@
 use crate::game_info::{GameInfo, ResolutionFamily, UI, Platform};
 use crate::utils;
-use winapi::shared::windef::HWND;
 use anyhow::{Result, anyhow};
+use windows_sys::Win32::Foundation::HWND;
+use windows_sys::Win32::UI::WindowsAndMessaging::*;
 
 fn get_window(window_names: &[&str]) -> Result<(HWND, bool)> {
-    // local game names
-    // let local_game_names = ["原神", "Genshin Impact"];
-    for name in window_names.iter() {
-        let hwnd = utils::find_window_local(name);
-        if let Ok(hwnd) = hwnd {
-            return Ok((hwnd, false));
+    let handles = utils::iterate_window();
+    for hwnd in handles.iter() {
+        let title = utils::get_window_title(*hwnd);
+        if let Some(t) = title {
+            let trimmed = t.trim();
+
+            for name in window_names.iter() {
+                if trimmed == *name {
+                    return Ok((*hwnd, false));
+                }
+            }
         }
     }
 
@@ -26,8 +32,6 @@ fn get_window(window_names: &[&str]) -> Result<(HWND, bool)> {
 }
 
 pub fn get_game_info(window_names: &[&str]) -> Result<GameInfo> {
-    use winapi::um::winuser::{SetForegroundWindow, ShowWindow, SW_RESTORE};
-
     utils::set_dpi_awareness();
 
     let (hwnd, is_cloud) = get_window(window_names)?;

@@ -1,25 +1,10 @@
+use std::ffi::c_void;
 use std::mem::size_of;
 use std::ptr::null_mut;
 
 use anyhow::{anyhow, Result};
 use image::{ImageBuffer, RgbImage};
-use winapi::shared::windef::{HBITMAP, HDC};
-use winapi::um::wingdi::{
-    BI_RGB,
-    BitBlt,
-    BITMAP,
-    BITMAPINFO,
-    BITMAPINFOHEADER,
-    CreateCompatibleBitmap,
-    CreateCompatibleDC,
-    DeleteObject,
-    DIB_RGB_COLORS,
-    GetDIBits,
-    GetObjectW,
-    SelectObject,
-    SRCCOPY,
-};
-use winapi::um::winuser::{GetDC, ReleaseDC};
+use windows_sys::Win32::Graphics::Gdi::*;
 
 use crate::capture::Capturer;
 use crate::positioning::{Pos, Rect};
@@ -38,7 +23,7 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
         return Err(anyhow!("CreateCompatibleBitmap failed"));
     }
 
-    SelectObject(dc_mem, hbm as *mut winapi::ctypes::c_void);
+    SelectObject(dc_mem, hbm as *mut c_void);
 
     let result = BitBlt(
         dc_mem,
@@ -56,7 +41,7 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
     }
 
     let mut bitmap: BITMAP = BITMAP {
-        bmBits: 0 as *mut winapi::ctypes::c_void,
+        bmBits: 0 as *mut c_void,
         bmBitsPixel: 0,
         bmPlanes: 0,
         bmWidthBytes: 0,
@@ -65,9 +50,9 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
         bmType: 0,
     };
     GetObjectW(
-        hbm as *mut winapi::ctypes::c_void,
+        hbm as *mut c_void,
         size_of::<BITMAP>() as i32,
-        (&mut bitmap) as *mut BITMAP as *mut winapi::ctypes::c_void
+        (&mut bitmap) as *mut BITMAP as *mut c_void
     );
 
     let mut bi: BITMAPINFOHEADER = BITMAPINFOHEADER {
@@ -93,13 +78,13 @@ unsafe fn unsafe_capture(rect: Rect<i32>) -> Result<Vec<u8>> {
         0,
         bitmap.bmHeight as u32,
         // lpbitmap,
-        buffer.as_mut_ptr() as *mut winapi::ctypes::c_void,
+        buffer.as_mut_ptr() as *mut c_void,
         (&mut bi) as *mut BITMAPINFOHEADER as *mut BITMAPINFO,
         DIB_RGB_COLORS
     );
 
-    DeleteObject(hbm as *mut winapi::ctypes::c_void);
-    DeleteObject(dc_mem as *mut winapi::ctypes::c_void);
+    DeleteObject(hbm as *mut c_void);
+    DeleteObject(dc_mem as *mut c_void);
     ReleaseDC(null_mut(), dc_window);
 
     Ok(buffer)

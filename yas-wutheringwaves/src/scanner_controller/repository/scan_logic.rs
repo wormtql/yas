@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ops::Coroutine;
 use std::rc::Rc;
 use std::time::SystemTime;
@@ -20,7 +21,7 @@ use crate::scanner_controller::repository::{WWRepositoryLayoutConfig, WWReposito
 
 pub struct WWRepositoryLayoutScanController {
     /// A value computed from a region of the panel, to detect whether an item changes
-    pool: f64,
+    pool: u64,
 
     /// Stores initial gap colors for line gap detection
     initial_flag: Rgb<u8>,
@@ -78,7 +79,7 @@ impl WWRepositoryLayoutScanController {
             window_info,
             config,
 
-            pool: 0.0,
+            pool: 0,
 
             initial_flag: Rgb([0, 0, 0]),
 
@@ -122,19 +123,17 @@ enum ScrollResult {
 }
 
 /// Calculate the background pixel ratio
-fn calc_pool(im: &RgbImage) -> f64 {
-    let background_pixel_color = Rgb([36, 39, 41]);
-    let mut counter = 0;
+fn calc_pool(im: &RgbImage) -> u64 {
+    let mut hasher = DefaultHasher::new();
     for p in im.pixels() {
-        let color_dis = color_distance(&background_pixel_color, p);
-        if color_dis < 5 {
-            counter += 1;
-        }
+        // let color_dis = color_distance(&background_pixel_color, p);
+        // if color_dis < 5 {
+        //     counter += 1;
+        // }
+        p.hash(&mut hasher);
     }
 
-    let pixel_count = im.width() * im.height();
-
-    counter as f64 / pixel_count as f64
+    hasher.finish()
 }
 
 impl WWRepositoryLayoutScanController {
@@ -361,15 +360,16 @@ impl WWRepositoryLayoutScanController {
 
         let mut consecutive_time = 0;
         let mut diff_flag = false;
+        let mut it = 0;
         while now.elapsed()?.as_millis() < self.config.max_wait_switch_item as u128 {
             let im = self.capturer.capture_relative_to(
                 self.window_info.pool_rect.to_rect_i32(),
                 self.game_info.window.origin()
             )?;
-
             let pool = calc_pool(&im);
+            // im.save(format!("{}_{}.png", it, pool))?;
 
-            if (pool - self.pool).abs() > 0.000001 && pool < 0.9 {
+            if pool != self.pool {
                 self.pool = pool;
                 diff_flag = true;
                 consecutive_time = 0;
@@ -383,6 +383,8 @@ impl WWRepositoryLayoutScanController {
                     return Ok(true);
                 }
             }
+
+            it += 1;
         }
 
         Ok(false)

@@ -75,7 +75,7 @@ impl WWEchoScanner {
         window_info_repo: &WindowInfoRepository,
         arg_matches: &clap::ArgMatches,
         game_info: GameInfo,
-    ) -> anyhow::Result<Self> {
+    ) -> Result<Self> {
         let window_info = EchoScannerWindowInfo::from_window_info_repository(
             game_info.window.to_rect_usize().size(),
             game_info.ui,

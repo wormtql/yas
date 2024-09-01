@@ -163,6 +163,8 @@ impl ArtifactSetName {
             ArtifactSetName::NighttimeWhispersInTheEchoingWoods => "NighttimeWhispersInTheEchoingWoods",
             ArtifactSetName::FragmentOfHarmonicWhimsy => "FragmentOfHarmonicWhimsy",
             ArtifactSetName::UnfinishedReverie => "UnfinishedReverie",
+            ArtifactSetName::ScrollOfTheHeroOfCinderCity => "ScrollOfTheHeroOfCinderCity",
+            ArtifactSetName::ObsidianCodex => "ObsidianCodex",
         }
     }
 }

@@ -137,6 +137,8 @@ impl ArtifactSetName {
             ArtifactSetName::NighttimeWhispersInTheEchoingWoods => "nighttime_whispers_in_the_echoing_woods",
             ArtifactSetName::FragmentOfHarmonicWhimsy => "fragment_of_harmonic_whimsy",
             ArtifactSetName::UnfinishedReverie => "unfinished_reverie",
+            ArtifactSetName::ScrollOfTheHeroOfCinderCity => "scroll_of_the_hero_of_cinder_city",
+            ArtifactSetName::ObsidianCodex => "obsidian_codex",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

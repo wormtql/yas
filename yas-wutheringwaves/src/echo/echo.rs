@@ -5,6 +5,7 @@ pub struct WWEcho {
     pub main_stat1: WWStat,
     pub main_stat2: WWStat,
     pub sub_stats: Vec<WWStat>,
+    pub level: usize,
     pub star: usize,
     pub lock: bool,
 }

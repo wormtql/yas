@@ -1,3 +1,4 @@
+#[derive(Debug, Copy, Clone, Eq, PartialEq, strum_macros::Display)]
 pub enum WWStatName {
     CriticalDamage,
     CriticalRate,

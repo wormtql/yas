@@ -54,6 +54,7 @@ pub fn yas_wuthering_waves_echoes(input: TokenStream) -> TokenStream {
     let echo_names = get_echo_names(&echo_data);
 
     let echo_name_enum = quote! {
+        #[derive(Debug, Copy, Clone, Eq, PartialEq, strum_macros::Display)]
         pub enum WWEchoName {
             #(#echo_names),*
         }

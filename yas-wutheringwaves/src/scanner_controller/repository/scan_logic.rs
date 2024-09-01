@@ -262,15 +262,17 @@ impl WWRepositoryLayoutScanController {
 
     pub fn sample_initial_color(&mut self) -> Result<()> {
         self.initial_flag = self.capture_flag()?;
+        println!("initial color: {:?}", self.initial_flag);
         Ok(())
     }
 
     pub fn check_flag(&self) -> Result<bool> {
         let flag = self.capture_flag()?;
-        // println!("{:?}", &flag[..20]);
+        println!("{:?}", &flag);
         // let mut same_count = 0;
+        let threshold = 50;
 
-        if color_distance(&self.initial_flag, &flag) < 10 {
+        if color_distance(&self.initial_flag, &flag) < threshold {
             return Ok(true);
         }
 
@@ -309,11 +311,7 @@ impl WWRepositoryLayoutScanController {
     }
 
     pub fn scroll_one_row(&mut self) -> Result<ScrollResult> {
-        let mut state = 0;
-        let mut count = 0;
-        let max_scroll = 25;
-
-        while count < max_scroll {
+        for _ in 0..8 {
             if utils::is_rmb_down() {
                 return Ok(ScrollResult::Interrupt);
             }
@@ -322,19 +320,36 @@ impl WWRepositoryLayoutScanController {
             self.system_control.mouse_scroll(1, false)?;
 
             utils::sleep(self.config.scroll_delay.try_into().unwrap());
-            count += 1;
-
-            match (state, self.check_flag()?) {
-                (0, false) => state = 1,
-                (1, true) => {
-                    self.update_avg_row(count);
-                    return Ok(ScrollResult::Success);
-                }
-                _ => {}
-            }
         }
 
-        Ok(ScrollResult::TimeLimitExceeded)
+        Ok(ScrollResult::Success)
+
+        // let mut state = 0;
+        // let mut count = 0;
+        // let max_scroll = 25;
+        //
+        // while count < max_scroll {
+        //     if utils::is_rmb_down() {
+        //         return Ok(ScrollResult::Interrupt);
+        //     }
+        //
+        //     #[cfg(windows)]
+        //     self.system_control.mouse_scroll(1, false)?;
+        //
+        //     utils::sleep(self.config.scroll_delay.try_into().unwrap());
+        //     count += 1;
+        //
+        //     match (state, self.check_flag()?) {
+        //         (0, false) => state = 1,
+        //         (1, true) => {
+        //             self.update_avg_row(count);
+        //             return Ok(ScrollResult::Success);
+        //         }
+        //         _ => {}
+        //     }
+        // }
+        //
+        // Ok(ScrollResult::TimeLimitExceeded)
     }
 
     fn scroll_rows(&mut self, count: i32) -> Result<ScrollResult> {
@@ -369,7 +384,7 @@ impl WWRepositoryLayoutScanController {
     /// This may create duplicate Echoes, but will not overlook any Echo
     fn wait_until_switched(&mut self) -> Result<bool> {
         self.profiler.borrow_mut().begin("wait_until_switched");
-        println!("begin wait");
+        // println!("begin wait");
 
         let consecutive_threshold = 1;
         let now = SystemTime::now();
@@ -387,7 +402,7 @@ impl WWRepositoryLayoutScanController {
             self.profiler.borrow_mut().end("capture_pool")?;
 
             let pool = calc_pool(&im);
-            println!("{}, last: {}", pool, self.pool);
+            // println!("{}, last: {}", pool, self.pool);
             // im.save(format!("{}.png", it))?;
 
             if pool != self.pool {

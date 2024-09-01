@@ -1,5 +1,6 @@
 use std::io::Read;
 
+/// Calculate the square of the distance (not the distance itself)
 pub fn color_distance(c1: &image::Rgb<u8>, c2: &image::Rgb<u8>) -> usize {
     let x = c1.0[0] as i32 - c2.0[0] as i32;
     let y = c1.0[1] as i32 - c2.0[1] as i32;

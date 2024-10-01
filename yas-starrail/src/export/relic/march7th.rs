@@ -57,6 +57,8 @@ impl RelicSetName {
             RelicSetName::PrisonerinDeepConfinement => "PrisonerinDeepConfinement",
             RelicSetName::PioneerDiverofDeadWaters => "PioneerDiverofDeadWaters",
             RelicSetName::WatchmakerMasterofDreamMachinations => "WatchmakerMasterofDreamMachinations",
+            RelicSetName::IronCavalryAgainsttheScourge => "IronCavalryAgainsttheScourge",
+            RelicSetName::TheWindSoaringValorous => "TheWindSoaringValorous",
 
             RelicSetName::SpaceSealingStation => "SpaceSealingStation",
             RelicSetName::FleetoftheAgeless => "FleetoftheAgeless",
@@ -70,6 +72,12 @@ impl RelicSetName {
             RelicSetName::BrokenKeel => "BrokenKeel",
             RelicSetName::FirmamentFrontlineGlamoth => "FirmamentFrontlineGlamoth",
             RelicSetName::PenaconyLandoftheDreams => "PenaconyLandoftheDreams",
+            RelicSetName::SigoniatheUnclaimedDesolation => "SigoniatheUnclaimedDesolation",
+            RelicSetName::IzumoGenseiandTakamaDivineRealm => "IzumoGenseiandTakamaDivineRealm",
+            RelicSetName::DuranDynastyofRunningWolves => "DuranDynastyofRunningWolves",
+            RelicSetName::ForgeoftheKalpagniLantern => "ForgeoftheKalpagniLantern",
+            RelicSetName::LushakatheSunkenSeas => "LushakatheSunkenSeas",
+            RelicSetName::TheWondrousBananAmusementPark => "TheWondrousBananAmusementPark",
         };
         String::from(temp)
     }

@@ -83,6 +83,8 @@ impl RelicSetName {
             RelicSetName::PrisonerinDeepConfinement => "Prisoner in Deep Confinement",
             RelicSetName::PioneerDiverofDeadWaters => "Pioneer Diver of Dead Waters",
             RelicSetName::WatchmakerMasterofDreamMachinations => "Watchmaker, Master of Dream Machinations",
+            RelicSetName::IronCavalryAgainsttheScourge => "Iron Cavalry Against the Scourge",
+            RelicSetName::TheWindSoaringValorous => "The Wind-Soaring Valorous",
             RelicSetName::SpaceSealingStation => "Space Sealing Station",
             RelicSetName::FleetoftheAgeless => "Fleet of the Ageless",
             RelicSetName::PanCosmicCommercialEnterprise => "Pan-Cosmic Commercial Enterprise",
@@ -95,6 +97,12 @@ impl RelicSetName {
             RelicSetName::BrokenKeel => "Broken Keel",
             RelicSetName::FirmamentFrontlineGlamoth => "Firmament Frontline: Glamoth",
             RelicSetName::PenaconyLandoftheDreams => "Penacony, Land of the Dreams",
+            RelicSetName::SigoniatheUnclaimedDesolation => "Sigonia, the Unclaimed Desolation",
+            RelicSetName::IzumoGenseiandTakamaDivineRealm => "Izumo Gensei and Takama Divine Realm",
+            RelicSetName::DuranDynastyofRunningWolves => "Duran, Dynasty of Running Wolves",
+            RelicSetName::ForgeoftheKalpagniLantern => "Forge of the Kalpagni Lantern",
+            RelicSetName::LushakatheSunkenSeas => "Lushaka, the Sunken Seas",
+            RelicSetName::TheWondrousBananAmusementPark => "The Wondrous BananAmusement Park",
         }
     }
 }

@@ -21,6 +21,9 @@ pub struct GenshinRepositoryScanControllerWindowInfo {
     #[window_info(rename = "genshin_repository_pool_rect")]
     pub pool_rect: Rect<f64>,
 
+    #[window_info(rename = "genshin_artifact_offset")]
+    pub artifact_panel_offset: Size<f64>,
+
     pub genshin_repository_item_row: i32,
     pub genshin_repository_item_col: i32,
 }

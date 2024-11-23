@@ -68,7 +68,7 @@ impl GenshinArtifactScanner {
                 window_info_repo,
             )?,
             controller: Rc::new(RefCell::new(
-                GenshinRepositoryScanController::new(window_info_repo, controller_config, game_info.clone())?
+                GenshinRepositoryScanController::new(window_info_repo, controller_config, game_info.clone(), true)?
             )),
             game_info,
             image_to_text: Self::get_image_to_text()?,
@@ -92,7 +92,7 @@ impl GenshinArtifactScanner {
             scanner_config: GenshinArtifactScannerConfig::from_arg_matches(arg_matches)?,
             window_info,
             controller: Rc::new(RefCell::new(
-                GenshinRepositoryScanController::from_arg_matches(window_info_repo, arg_matches, game_info.clone())?
+                GenshinRepositoryScanController::from_arg_matches(window_info_repo, arg_matches, game_info.clone(), true)?
             )),
             game_info,
             image_to_text: Self::get_image_to_text()?,

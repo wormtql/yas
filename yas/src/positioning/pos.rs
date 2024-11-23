@@ -3,7 +3,7 @@ use std::ops::{Add, Sub};
 
 use serde::{Deserialize, Serialize};
 
-use crate::positioning::Scalable;
+use crate::positioning::{Scalable, Size};
 
 #[derive(Debug, Clone, PartialEq, Default, Copy, Serialize, Deserialize)]
 pub struct Pos<T> {
@@ -18,6 +18,17 @@ impl<T> Add<Pos<T>> for Pos<T> where T: Add<T, Output = T> {
         Pos {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
+        }
+    }
+}
+
+impl<T> Add<Size<T>> for Pos<T> where T: Add<T, Output = T> {
+    type Output = Self;
+
+    fn add(self, rhs: Size<T>) -> Self::Output {
+        Pos {
+            x: self.x + rhs.width,
+            y: self.y + rhs.height
         }
     }
 }

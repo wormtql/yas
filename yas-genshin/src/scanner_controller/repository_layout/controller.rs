@@ -10,7 +10,7 @@ use log::{error, info};
 
 use yas::capture::{Capturer, GenericCapturer};
 use yas::game_info::GameInfo;
-use yas::positioning::Pos;
+use yas::positioning::{Pos, Size};
 use yas::system_control::SystemControl;
 use yas::utils;
 use yas::window_info::{FromWindowInfoRepository, WindowInfoRepository};
@@ -41,6 +41,8 @@ pub struct GenshinRepositoryScanController {
     system_control: SystemControl,
     capturer: Rc<dyn Capturer<RgbImage>>,
 
+    // artifact panel have different layout
+    is_artifact: bool,
 }
 
 fn calc_pool(row: &[u8]) -> f32 {
@@ -70,6 +72,7 @@ impl GenshinRepositoryScanController {
         window_info_repo: &WindowInfoRepository,
         config: GenshinRepositoryScannerLogicConfig,
         game_info: GameInfo,
+        is_artifact: bool,
     ) -> Result<Self> {
         let window_info = GenshinRepositoryScanControllerWindowInfo::from_window_info_repository(
             game_info.window.to_rect_usize().size(),
@@ -103,6 +106,8 @@ impl GenshinRepositoryScanController {
             scanned_count: 0,
 
             capturer: get_capturer()?,
+
+            is_artifact,
         })
     }
 
@@ -110,11 +115,13 @@ impl GenshinRepositoryScanController {
         window_info_repo: &WindowInfoRepository,
         arg_matches: &ArgMatches,
         game_info: GameInfo,
+        is_artifact: bool,
     ) -> Result<Self> {
         Self::new(
             window_info_repo,
             GenshinRepositoryScannerLogicConfig::from_arg_matches(arg_matches)?,
             game_info,
+            is_artifact,
         )
     }
 }
@@ -224,11 +231,19 @@ impl GenshinRepositoryScanController {
 
     #[inline(always)]
     pub fn get_flag_color(&self) -> Result<image::Rgb<u8>> {
-        let pos = Pos {
-            x: self.window_info.flag_pos.x as i32 + self.game_info.window.left,
-            y: self.window_info.flag_pos.y as i32 + self.game_info.window.top,
+        let mut pos_f64 = Pos {
+            x: self.window_info.flag_pos.x + self.game_info.window.left as f64,
+            y: self.window_info.flag_pos.y + self.game_info.window.top as f64,
         };
-        self.capturer.capture_color(pos)
+        if self.is_artifact {
+            pos_f64.x += self.window_info.artifact_panel_offset.width;
+            pos_f64.y += self.window_info.artifact_panel_offset.height;
+        }
+        let pos_i32 = Pos {
+            x: pos_f64.x as i32,
+            y: pos_f64.y as i32,
+        };
+        self.capturer.capture_color(pos_i32)
     }
 
     #[inline(always)]
@@ -258,11 +273,14 @@ impl GenshinRepositoryScanController {
         let origin = self.game_info.window.to_rect_f64().origin();
 
         let gap = self.window_info.item_gap_size;
-        let margin = self.window_info.scan_margin_pos;
+        let mut margin = self.window_info.scan_margin_pos;
         let size = self.window_info.item_size;
+        if self.is_artifact {
+            margin = margin + self.window_info.artifact_panel_offset;
+        }
 
         let left = origin.x + margin.x + (gap.width + size.width) * (col as f64) + size.width / 2.0;
-        let top = origin.y + margin.y + (gap.height + size.height) * (row as f64) + size.height / 2.0;
+        let top = origin.y + margin.y + (gap.height + size.height) * (row as f64) + size.height / 4.0;
 
         self.system_control.mouse_move_to(left as i32, top as i32).unwrap();
 

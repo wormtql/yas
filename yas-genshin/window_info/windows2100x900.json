@@ -6,6 +6,12 @@
   "platform": "Windows",
   "ui": "Desktop",
   "data": {
+    "genshin_artifact_offset": {
+      "Size": {
+        "width": 0,
+        "height": 39.0
+      }
+    },
     "genshin_repository_panel_rect": {
       "Rect": {
         "top": 100,

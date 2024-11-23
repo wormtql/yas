@@ -3,12 +3,14 @@ use std::sync::mpsc::Receiver;
 use std::thread::JoinHandle;
 
 use anyhow::Result;
+use image::Rgb;
 use image::{GenericImageView, RgbImage};
 use log::{error, info, warn};
 
 use yas::ocr::ImageToText;
 use yas::ocr::yas_ocr_model;
 use yas::positioning::{Pos, Rect};
+use yas::utils::color_distance;
 
 use crate::scanner::artifact_scanner::artifact_scanner_window_info::ArtifactScannerWindowInfo;
 use crate::scanner::artifact_scanner::GenshinArtifactScannerConfig;
@@ -130,7 +132,7 @@ impl ArtifactScannerWorker {
                         let color = list_image
                             .get_pixel((pos_x as i32 + dx) as u32, (pos_y as i32 + dy) as u32);
 
-                        if color.0[0] > 200 {
+                        if color_distance(color, &Rgb([255, 138, 117])) < 30 {
                             locked = true;
                             break 'sq;
                         }

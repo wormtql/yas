@@ -73,10 +73,14 @@ pub fn get_game_info(window_names: &[&str]) -> Result<GameInfo> {
     utils::sleep(1000);
 
     let rect = utils::get_client_rect(hwnd)?;
+    let resolution_family = ResolutionFamily::new(rect.to_rect_usize().size());
+    if resolution_family.is_none() {
+        return Err(anyhow!("Resolution not supported: {}x{}", rect.width, rect.height));
+    }
 
     Ok(GameInfo {
         window: rect,
-        resolution_family: ResolutionFamily::new(rect.to_rect_usize().size()).unwrap(),
+        resolution_family: resolution_family.unwrap(),
         is_cloud,
         ui: UI::Desktop,
         platform: Platform::Windows

@@ -165,6 +165,8 @@ impl ArtifactSetName {
             ArtifactSetName::UnfinishedReverie => "UnfinishedReverie",
             ArtifactSetName::ScrollOfTheHeroOfCinderCity => "ScrollOfTheHeroOfCinderCity",
             ArtifactSetName::ObsidianCodex => "ObsidianCodex",
+            ArtifactSetName::LongNightsOath => "LongNightsOath",
+            ArtifactSetName::FinaleOfTheDeepGalleries => "FinaleOfTheDeepGalleries",
         }
     }
 }

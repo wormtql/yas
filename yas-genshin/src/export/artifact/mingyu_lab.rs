@@ -139,6 +139,8 @@ impl ArtifactSetName {
             ArtifactSetName::UnfinishedReverie => "unfinished_reverie",
             ArtifactSetName::ScrollOfTheHeroOfCinderCity => "scroll_of_the_hero_of_cinder_city",
             ArtifactSetName::ObsidianCodex => "obsidian_codex",
+            ArtifactSetName::FinaleOfTheDeepGalleries => "finale_of_the_deep_galleries",
+            ArtifactSetName::LongNightsOath => "long_nights_oath",
 
             // Not supported by Mingyulab
             ArtifactSetName::Adventurer => unreachable!(),

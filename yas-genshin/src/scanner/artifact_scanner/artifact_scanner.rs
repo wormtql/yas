@@ -252,12 +252,13 @@ impl GenshinArtifactScanner {
                         let gap = self.window_info.item_gap_size;
                         let size = self.window_info.item_size;
 
-                        let left = (origin.left as f64 + margin.x) as i32;
-                        let top = (origin.top as f64
+                        let left = (origin.left as f64 + self.window_info.artifact_panel_offset.width + margin.x) as i32;
+                        let top = (origin.top as f64 + self.window_info.artifact_panel_offset.height
                             + margin.y
                             + (gap.height + size.height)
                             * self.get_start_row(count, artifact_index) as f64)
                             as i32;
+
                         let width = (origin.width as f64 - margin.x) as i32;
                         let height = (origin.height as f64
                             - margin.y
